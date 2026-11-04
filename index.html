@@ -1,0 +1,1922 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.github.com; worker-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="theme-color" content="#06101c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Suivi sport</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2324c99a'/%3E%3Cpath d='M10 28h5v-6h5v20h-5v-6h-5zm10-10h6v28h-6zm6 12h12v4H26zm12-12h6v28h-6zm6 4h5v6h5v8h-5v6h-5z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <style>
+/* Thème sombre par défaut, clair en option (bouton ◐). Mobile d'abord : barre d'onglets en bas, panneau de saisie qui monte du bas. */
+:root {
+  color-scheme: dark;
+  --page: #06101c;
+  --page-glow: radial-gradient(1100px 650px at 5% -10%, rgba(36, 201, 154, .16), transparent 60%), radial-gradient(900px 600px at 100% 0%, rgba(40, 80, 150, .28), transparent 60%);
+  --sidebar: rgba(6, 16, 30, .82);
+  --surface: #131c27;
+  --surface-2: #1d2733;
+  --surface-3: #283342;
+  --border: rgba(255, 255, 255, .07);
+  --text: #f3f6f9;
+  --text-2: #b8c2ce;
+  --muted: #7f8a99;
+  --grid: rgba(255, 255, 255, .06);
+  --axis: rgba(255, 255, 255, .14);
+  --series-1: #24c99a; --series-2: #ff7a45; --series-3: #5b8cff; --series-4: #f5b83d;
+  --series-5: #e86fa8; --series-6: #9b7bff; --series-7: #35c3e8; --series-8: #a0a8b4;
+  --good: #24c99a; --warning: #f5b83d; --critical: #ff5c64;
+  --good-text: #2fd6a4; --warning-text: #f5b83d; --critical-text: #ff6b72;
+  --accent: #24c99a;
+  --accent-ink: #04130e;
+  --accent-soft: rgba(36, 201, 154, .16);
+  --radius: 20px;
+  --radius-sm: 12px;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page: #f2f4f7;
+  --page-glow: radial-gradient(1100px 600px at 5% -10%, rgba(18, 169, 130, .10), transparent 60%);
+  --sidebar: rgba(255, 255, 255, .85);
+  --surface: #ffffff;
+  --surface-2: #eff2f5;
+  --surface-3: #e3e7ec;
+  --border: rgba(10, 20, 40, .08);
+  --text: #0b1320;
+  --text-2: #4a5568;
+  --muted: #7b8698;
+  --grid: rgba(10, 20, 40, .06);
+  --axis: rgba(10, 20, 40, .14);
+  --series-1: #12a982; --series-2: #f0662f; --series-3: #4069f5; --series-4: #d99a12;
+  --series-5: #d6528f; --series-6: #7a5af0; --series-7: #1aa6cc; --series-8: #8a94a2;
+  --good: #12a982; --warning: #d99a12; --critical: #e5484f;
+  --good-text: #0b8a68; --warning-text: #a26f00; --critical-text: #cf3a41;
+  --accent: #12a982;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(18, 169, 130, .12);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--page-glow), var(--page); background-attachment: fixed; color: var(--text);
+  font: 15px/1.45 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-feature-settings: "tnum" 1; -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+body.no-scroll { overflow: hidden; }
+a { color: var(--accent); }
+h1 { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -.02em; }
+h2 { font-size: 14px; font-weight: 600; margin: 0 0 12px; color: var(--text-2); text-transform: uppercase; letter-spacing: .04em; }
+h3 { font-size: 13px; font-weight: 700; margin: 16px 0 6px; color: var(--text-2); }
+ul, ol { padding-left: 20px; margin: 6px 0; }
+li { margin: 3px 0; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.center { text-align: center; padding: 40px; }
+.hidden { display: none !important; }
+.good { color: var(--good-text); } .warn { color: var(--warning-text); } .bad { color: var(--critical-text); }
+
+/* Navigation : barre latérale (ordinateur) / barre du bas (téléphone) */
+.sidebar {
+  position: fixed; inset: 0 auto 0 0; width: 96px; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 18px 8px;
+  background: var(--sidebar); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-right: 1px solid var(--border);
+}
+.brand { width: 44px; height: 44px; border-radius: 14px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 800; text-decoration: none; font-size: 20px; }
+.tabs { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.tabs a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 4px; border-radius: 14px; color: var(--muted); text-decoration: none; font-size: 11px; font-weight: 600; }
+.tabs a svg { width: 22px; height: 22px; fill: currentColor; }
+.tabs a.on { color: var(--text); background: var(--accent-soft); }
+.tabs a.on svg { fill: var(--accent); }
+.tools { position: fixed; left: 0; bottom: 18px; width: 96px; z-index: 12; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+main { margin-left: 96px; padding: 28px 32px 110px; max-width: 1240px; }
+
+.pill { font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); white-space: nowrap; }
+.pill.good { color: var(--good-text); } .pill.warn { color: var(--warning-text); } .pill.bad { color: var(--critical-text); background: rgba(255, 92, 100, .12); }
+.icon-btn { width: 36px; height: 36px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; font-size: 15px; display: inline-grid; place-items: center; flex: none; }
+.icon-btn.sm { width: 30px; height: 30px; font-size: 12px; border-radius: 10px; }
+.fab { position: fixed; right: 24px; bottom: 24px; z-index: 11; width: 58px; height: 58px; border-radius: 20px; border: 0; background: var(--accent); color: var(--accent-ink); font-size: 30px; font-weight: 500; cursor: pointer; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+
+@media (max-width: 760px) {
+  body { font-size: 15px; }
+  .sidebar { inset: auto 0 0 0; width: auto; height: auto; flex-direction: row; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); border-right: 0; border-top: 1px solid var(--border); gap: 0; }
+  .brand, .tools .icon-btn { display: none; }
+  .tabs { flex-direction: row; justify-content: space-around; }
+  .tabs a { flex: 1; padding: 6px 2px; font-size: 10px; }
+  .tools { top: 16px; right: 16px; left: auto; bottom: auto; width: auto; }
+  main { margin: 0; padding: 18px 16px calc(96px + env(safe-area-inset-bottom)); }
+  .fab { right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); }
+  h1 { font-size: 24px; padding-right: 96px; }
+}
+
+/* Page */
+.page-head { margin-bottom: 16px; }
+.page-head p { margin: 4px 0 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; align-items: start; }
+.grid .wide { grid-column: 1 / -1; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; gap: 12px; } }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; min-width: 0; margin-bottom: 0; }
+main > .card { margin-bottom: 16px; }
+.kpi { margin: 0 0 6px; } .kpi b { font-size: 30px; font-weight: 800; letter-spacing: -.02em; }
+.quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; max-width: 520px; }
+.quick button, .big-actions button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
+.quick button span, .big-actions button span { font-size: 24px; }
+.big-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.big-actions button { padding: 22px 8px; background: var(--surface-2); }
+
+.bar { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin: 4px 0 8px; }
+.bar span { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+.bar span.over { background: var(--warning); }
+.bar.p span { background: var(--series-3); } .bar.f span { background: var(--series-4); }
+.bar.p span.over, .bar.f span.over { background: var(--good); }
+.mini-bars { display: grid; gap: 2px; margin: 8px 0; }
+
+.list { display: flex; flex-direction: column; margin-top: 6px; }
+.li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); text-align: left; }
+.li:first-child { border-top: 0; }
+.li-btn { background: none; border: 0; border-top: 1px solid var(--border); color: inherit; font: inherit; cursor: pointer; width: 100%; }
+.li-btn:first-child { border-top: 0; }
+.li-end { display: flex; align-items: center; gap: 6px; flex: none; text-align: right; flex-direction: row; }
+.li-end:has(> .muted.small) { flex-direction: column; align-items: flex-end; gap: 0; }
+.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--surface-2); color: var(--text-2); margin-left: 4px; }
+.badge.good { background: var(--accent-soft); color: var(--good-text); }
+.note { background: var(--surface-2); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; color: var(--text-2); }
+
+.chart { position: relative; height: 260px; }
+.chart.sm { height: 200px; margin-bottom: 12px; }
+
+/* Formulaires */
+label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--text-2); margin: 8px 0; min-width: 0; }
+input, select, textarea { font: inherit; font-size: 16px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; width: 100%; min-width: 0; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+textarea { resize: vertical; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.grid5 input { padding: 10px 6px; }
+@media (max-width: 420px) { .grid5 { grid-template-columns: repeat(3, 1fr); } }
+.check-line { flex-direction: row; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; color: var(--text); margin: 4px 0; }
+.check-line input { width: 20px; height: 20px; flex: none; accent-color: var(--accent); }
+.check-line.barre span { text-decoration: line-through; opacity: .55; }
+.btn { font: inherit; font-weight: 600; padding: 11px 16px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.danger { color: var(--critical-text); }
+.actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; align-items: center; }
+.actions.wrap { flex-wrap: wrap; }
+.link { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; cursor: pointer; text-align: left; }
+.link b { color: var(--text); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.chip { font: inherit; font-size: 14px; font-weight: 600; padding: 8px 12px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-2); cursor: pointer; }
+.chip.on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+[data-chips="rpe"] { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+[data-chips="rpe"] .chip { padding: 9px 0; }
+.stepper { display: flex; align-items: center; gap: 8px; }
+.stepper button { font: inherit; font-weight: 700; width: 48px; height: 44px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; flex: none; }
+.stepper label { flex-direction: row; align-items: center; margin: 0; flex: 1; font-size: 14px; }
+.stepper input { text-align: center; font-weight: 700; }
+.stepper.sm { gap: 4px; } .stepper.sm button { width: 28px; height: 28px; border-radius: 8px; }
+.stepper.sm b { min-width: 18px; text-align: center; }
+
+/* Séance : exercices et séries */
+.exo { background: var(--surface-2); border-radius: var(--radius-sm); padding: 12px; margin: 8px 0; }
+.exo p { margin: 2px 0 8px; }
+.exo-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+.serie { display: grid; grid-template-columns: 26px 1fr 64px 12px 70px 44px; gap: 6px; align-items: center; padding: 4px 0; }
+.serie input { padding: 9px 4px; text-align: center; background: var(--surface); }
+.serie .sn { font-size: 12px; font-weight: 700; color: var(--muted); }
+.serie .prevu { font-size: 12px; color: var(--muted); }
+.serie .x { color: var(--muted); text-align: center; font-size: 12px; }
+.check { height: 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 18px; cursor: pointer; }
+.serie.done .check { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.serie.done input { border-color: var(--accent); }
+
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl th { text-align: left; color: var(--muted); font-weight: 600; padding: 6px 4px; border-bottom: 1px solid var(--border); }
+.tbl td { padding: 7px 4px; border-bottom: 1px solid var(--border); }
+.ecart.ok { color: var(--muted); } .ecart.plus { color: var(--good-text); } .ecart.moins { color: var(--warning-text); } .ecart.nonfaite { color: var(--critical-text); }
+.macros { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; margin: 10px 0; }
+.macros div { background: var(--surface-2); border-radius: 12px; padding: 8px 2px; display: flex; flex-direction: column; }
+.macros b { font-size: 18px; } .macros span { font-size: 11px; color: var(--muted); }
+.pick-list { max-height: 38vh; overflow-y: auto; margin: 8px 0; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 10px; }
+.pick-list h3 { margin-top: 10px; }
+.pick { display: flex; justify-content: space-between; gap: 8px; width: 100%; text-align: left; padding: 10px 8px; margin: 2px 0; border: 0; border-radius: 10px; background: none; color: var(--text); font: inherit; font-size: 14px; cursor: pointer; }
+.pick .muted { font-size: 12px; white-space: nowrap; }
+.pick.on { background: var(--accent-soft); outline: 1px solid var(--accent); }
+
+/* Panneau de saisie */
+.sheet-back { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .5); display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--surface); width: 100%; max-width: 620px; max-height: 92vh; border-radius: 22px 22px 0 0; display: flex; flex-direction: column; border: 1px solid var(--border); }
+@media (min-width: 761px) { .sheet-back { align-items: center; } .sheet { border-radius: 22px; max-height: 88vh; } }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 6px; }
+.sheet-head h2 { margin: 0; text-transform: none; letter-spacing: 0; font-size: 18px; color: var(--text); }
+.sheet-body { overflow-y: auto; padding: 4px 16px calc(18px + env(safe-area-inset-bottom)); }
+.toast { position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 60; background: var(--surface-3); color: var(--text); padding: 10px 16px; border-radius: 14px; font-size: 14px; font-weight: 600; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); transition: opacity .3s; max-width: calc(100vw - 32px); }
+.toast.out { opacity: 0; }
+
+</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#accueil" aria-label="Suivi sport, aujourd'hui">S</a>
+    <nav id="nav" class="tabs" aria-label="Pages"></nav>
+  </aside>
+  <div class="tools">
+      <span id="sync" class="pill"></span>
+      <button id="btn-refresh" class="icon-btn" type="button" title="Recharger les données" aria-label="Recharger les données">↻</button>
+      <button id="btn-theme" class="icon-btn" type="button" title="Clair / sombre" aria-label="Basculer clair / sombre">◐</button>
+  </div>
+  <main id="view"></main>
+  <button id="btn-add" class="fab" type="button" aria-label="Ajouter une séance, un repas ou une pesée">+</button>
+  <script>
+/* Généré par construire-page.ps1 à partir de donnees/data : ne pas modifier à la main. */
+const SEED = {
+  aliments: [
+  {"id": "poulet-filet", "nom": "Filet de poulet", "rayon": "Boucherie", "kcal": 110, "p": 23, "g": 0, "l": 1.8, "f": 0},
+  {"id": "poulet-cuisse", "nom": "Cuisse de poulet désossée", "rayon": "Boucherie", "kcal": 160, "p": 18, "g": 0, "l": 10, "f": 0},
+  {"id": "dinde-escalope", "nom": "Escalope de dinde", "rayon": "Boucherie", "kcal": 105, "p": 23, "g": 0, "l": 1.5, "f": 0},
+  {"id": "boeuf-hache-5", "nom": "Bœuf haché 5 %", "rayon": "Boucherie", "kcal": 125, "p": 21, "g": 0, "l": 5, "f": 0},
+  {"id": "boeuf-braiser", "nom": "Bœuf à braiser (paleron)", "rayon": "Boucherie", "kcal": 150, "p": 21, "g": 0, "l": 7, "f": 0},
+  {"id": "porc-filet-mignon", "nom": "Filet mignon de porc", "rayon": "Boucherie", "kcal": 120, "p": 22, "g": 0, "l": 3.5, "f": 0},
+  {"id": "jambon-blanc", "nom": "Jambon blanc", "rayon": "Charcuterie", "kcal": 115, "p": 21, "g": 1, "l": 3, "f": 0},
+  {"id": "lardons", "nom": "Lardons fumés", "rayon": "Charcuterie", "kcal": 270, "p": 16, "g": 0.5, "l": 23, "f": 0},
+  {"id": "saumon", "nom": "Pavé de saumon", "rayon": "Poissonnerie", "kcal": 200, "p": 20, "g": 0, "l": 13, "f": 0},
+  {"id": "cabillaud", "nom": "Dos de cabillaud", "rayon": "Poissonnerie", "kcal": 80, "p": 18, "g": 0, "l": 0.7, "f": 0},
+  {"id": "crevettes", "nom": "Crevettes décortiquées cuites", "rayon": "Poissonnerie", "kcal": 95, "p": 21, "g": 0, "l": 1, "f": 0},
+  {"id": "thon-naturel", "nom": "Thon au naturel (égoutté)", "rayon": "Épicerie", "kcal": 115, "p": 26, "g": 0, "l": 1, "f": 0},
+  {"id": "oeufs", "nom": "Œufs", "rayon": "Crèmerie", "kcal": 140, "p": 12.5, "g": 0.5, "l": 10, "f": 0, "piece": 55, "unitePiece": "œuf"},
+  {"id": "skyr", "nom": "Skyr nature", "rayon": "Crèmerie", "kcal": 60, "p": 10, "g": 4, "l": 0.2, "f": 0},
+  {"id": "creme-legere", "nom": "Crème fraîche légère 15 %", "rayon": "Crèmerie", "kcal": 160, "p": 3, "g": 4, "l": 15, "f": 0},
+  {"id": "lait-demi", "nom": "Lait demi-écrémé", "rayon": "Crèmerie", "kcal": 46, "p": 3.3, "g": 4.8, "l": 1.6, "f": 0},
+  {"id": "feta", "nom": "Feta", "rayon": "Crèmerie", "kcal": 265, "p": 14, "g": 1, "l": 22, "f": 0},
+  {"id": "parmesan", "nom": "Parmesan", "rayon": "Crèmerie", "kcal": 400, "p": 33, "g": 0, "l": 29, "f": 0},
+  {"id": "emmental-rape", "nom": "Emmental râpé", "rayon": "Crèmerie", "kcal": 370, "p": 28, "g": 0, "l": 29, "f": 0},
+  {"id": "mozzarella", "nom": "Mozzarella", "rayon": "Crèmerie", "kcal": 250, "p": 18, "g": 1, "l": 19, "f": 0},
+  {"id": "tofu-ferme", "nom": "Tofu ferme", "rayon": "Frais", "kcal": 130, "p": 13, "g": 2, "l": 8, "f": 1},
+  {"id": "riz-basmati", "nom": "Riz basmati (cru)", "rayon": "Épicerie", "kcal": 350, "p": 8, "g": 77, "l": 0.8, "f": 1.5},
+  {"id": "pates-completes", "nom": "Pâtes complètes (crues)", "rayon": "Épicerie", "kcal": 350, "p": 13, "g": 64, "l": 2.5, "f": 8},
+  {"id": "quinoa", "nom": "Quinoa (cru)", "rayon": "Épicerie", "kcal": 370, "p": 14, "g": 64, "l": 6, "f": 7},
+  {"id": "semoule", "nom": "Semoule complète (crue)", "rayon": "Épicerie", "kcal": 355, "p": 12, "g": 68, "l": 2, "f": 7},
+  {"id": "lentilles-corail", "nom": "Lentilles corail (sèches)", "rayon": "Épicerie", "kcal": 345, "p": 24, "g": 53, "l": 1.5, "f": 11},
+  {"id": "lentilles-vertes", "nom": "Lentilles vertes (sèches)", "rayon": "Épicerie", "kcal": 330, "p": 24, "g": 48, "l": 1.5, "f": 15},
+  {"id": "pois-chiches", "nom": "Pois chiches en conserve (égouttés)", "rayon": "Épicerie", "kcal": 140, "p": 7, "g": 17, "l": 2.5, "f": 6},
+  {"id": "haricots-rouges", "nom": "Haricots rouges en conserve (égouttés)", "rayon": "Épicerie", "kcal": 115, "p": 8, "g": 15, "l": 0.5, "f": 7},
+  {"id": "mais", "nom": "Maïs en conserve", "rayon": "Épicerie", "kcal": 90, "p": 3, "g": 15, "l": 1.5, "f": 3},
+  {"id": "tomates-concassees", "nom": "Tomates concassées en conserve", "rayon": "Épicerie", "kcal": 25, "p": 1.2, "g": 4, "l": 0.2, "f": 1.2},
+  {"id": "lait-coco-light", "nom": "Lait de coco allégé", "rayon": "Épicerie", "kcal": 75, "p": 0.7, "g": 2, "l": 7, "f": 0},
+  {"id": "tortillas", "nom": "Tortillas de blé", "rayon": "Épicerie", "kcal": 310, "p": 8.5, "g": 52, "l": 7, "f": 3, "piece": 40, "unitePiece": "tortilla"},
+  {"id": "huile-olive", "nom": "Huile d'olive", "rayon": "Épicerie", "kcal": 900, "p": 0, "g": 0, "l": 100, "f": 0, "placard": true},
+  {"id": "sauce-soja", "nom": "Sauce soja", "rayon": "Épicerie", "kcal": 55, "p": 8, "g": 5, "l": 0.5, "f": 0, "placard": true},
+  {"id": "noix-cajou", "nom": "Noix de cajou", "rayon": "Épicerie", "kcal": 590, "p": 18, "g": 27, "l": 46, "f": 3},
+  {"id": "pesto", "nom": "Pesto", "rayon": "Épicerie", "kcal": 450, "p": 5, "g": 5, "l": 45, "f": 2},
+  {"id": "epices", "nom": "Épices et aromates", "rayon": "Épicerie", "kcal": 0, "p": 0, "g": 0, "l": 0, "f": 0, "placard": true},
+  {"id": "bouillon", "nom": "Bouillon cube", "rayon": "Épicerie", "kcal": 0, "p": 0, "g": 0, "l": 0, "f": 0, "placard": true},
+  {"id": "pain-complet", "nom": "Pain complet", "rayon": "Boulangerie", "kcal": 240, "p": 9, "g": 43, "l": 3, "f": 7},
+  {"id": "pomme-de-terre", "nom": "Pommes de terre", "rayon": "Fruits et légumes", "kcal": 80, "p": 2, "g": 17, "l": 0.1, "f": 2},
+  {"id": "patate-douce", "nom": "Patate douce", "rayon": "Fruits et légumes", "kcal": 86, "p": 1.6, "g": 20, "l": 0.1, "f": 3},
+  {"id": "courge-butternut", "nom": "Courge butternut", "rayon": "Fruits et légumes", "kcal": 40, "p": 1, "g": 8, "l": 0.1, "f": 2},
+  {"id": "poireau", "nom": "Poireaux", "rayon": "Fruits et légumes", "kcal": 30, "p": 1.5, "g": 4, "l": 0.3, "f": 3},
+  {"id": "chou-fleur", "nom": "Chou-fleur", "rayon": "Fruits et légumes", "kcal": 25, "p": 2, "g": 3, "l": 0.3, "f": 2.5},
+  {"id": "brocoli", "nom": "Brocoli", "rayon": "Fruits et légumes", "kcal": 35, "p": 3, "g": 4, "l": 0.4, "f": 3},
+  {"id": "choux-bruxelles", "nom": "Choux de Bruxelles", "rayon": "Fruits et légumes", "kcal": 45, "p": 3.4, "g": 5, "l": 0.3, "f": 4},
+  {"id": "chou-vert", "nom": "Chou vert", "rayon": "Fruits et légumes", "kcal": 30, "p": 2, "g": 4, "l": 0.3, "f": 3},
+  {"id": "carotte", "nom": "Carottes", "rayon": "Fruits et légumes", "kcal": 40, "p": 0.8, "g": 8, "l": 0.2, "f": 2.7},
+  {"id": "celeri-rave", "nom": "Céleri-rave", "rayon": "Fruits et légumes", "kcal": 30, "p": 1.2, "g": 3, "l": 0.3, "f": 4},
+  {"id": "oignon", "nom": "Oignons", "rayon": "Fruits et légumes", "kcal": 40, "p": 1.2, "g": 8, "l": 0.2, "f": 1.7},
+  {"id": "ail", "nom": "Ail", "rayon": "Fruits et légumes", "kcal": 130, "p": 6, "g": 25, "l": 0.5, "f": 2, "piece": 5, "unitePiece": "gousse"},
+  {"id": "champignons", "nom": "Champignons de Paris", "rayon": "Fruits et légumes", "kcal": 25, "p": 3, "g": 1, "l": 0.3, "f": 1.5},
+  {"id": "epinards", "nom": "Épinards", "rayon": "Fruits et légumes", "kcal": 25, "p": 3, "g": 1.5, "l": 0.4, "f": 2.5},
+  {"id": "endive", "nom": "Endives", "rayon": "Fruits et légumes", "kcal": 18, "p": 1, "g": 2.5, "l": 0.1, "f": 1},
+  {"id": "mache", "nom": "Mâche", "rayon": "Fruits et légumes", "kcal": 18, "p": 2, "g": 1, "l": 0.4, "f": 1.8},
+  {"id": "betterave", "nom": "Betterave cuite", "rayon": "Fruits et légumes", "kcal": 45, "p": 1.6, "g": 8, "l": 0.1, "f": 2.5},
+  {"id": "poivron", "nom": "Poivrons", "rayon": "Fruits et légumes", "kcal": 30, "p": 1, "g": 5, "l": 0.3, "f": 2},
+  {"id": "courgette", "nom": "Courgettes", "rayon": "Fruits et légumes", "kcal": 18, "p": 1.3, "g": 2, "l": 0.3, "f": 1},
+  {"id": "aubergine", "nom": "Aubergines", "rayon": "Fruits et légumes", "kcal": 22, "p": 1, "g": 3, "l": 0.2, "f": 3},
+  {"id": "tomate", "nom": "Tomates", "rayon": "Fruits et légumes", "kcal": 20, "p": 0.9, "g": 3, "l": 0.2, "f": 1.2},
+  {"id": "concombre", "nom": "Concombre", "rayon": "Fruits et légumes", "kcal": 15, "p": 0.7, "g": 2.5, "l": 0.1, "f": 0.7},
+  {"id": "haricots-verts", "nom": "Haricots verts", "rayon": "Fruits et légumes", "kcal": 30, "p": 2, "g": 4, "l": 0.2, "f": 3},
+  {"id": "asperges", "nom": "Asperges vertes", "rayon": "Fruits et légumes", "kcal": 25, "p": 2.5, "g": 2, "l": 0.2, "f": 2},
+  {"id": "avocat", "nom": "Avocats", "rayon": "Fruits et légumes", "kcal": 190, "p": 1.8, "g": 2, "l": 18, "f": 5, "piece": 150, "unitePiece": "avocat"},
+  {"id": "citron", "nom": "Citrons", "rayon": "Fruits et légumes", "kcal": 30, "p": 0.7, "g": 5.5, "l": 0.3, "f": 2, "piece": 100, "unitePiece": "citron"},
+  {"id": "petits-pois", "nom": "Petits pois surgelés", "rayon": "Surgelés", "kcal": 75, "p": 5.5, "g": 9, "l": 0.4, "f": 5.5}
+],
+  recettes: [
+  {
+    "id": "curry-poulet-butternut", "nom": "Curry de poulet, butternut et pois chiches", "saisons": [9, 10, 11, 12, 1, 2],
+    "portions": 4, "temps": 45, "conservation": 4, "proteine": "poulet",
+    "ingredients": [
+      {"a": "poulet-filet", "g": 600}, {"a": "courge-butternut", "g": 800}, {"a": "pois-chiches", "g": 250},
+      {"a": "lait-coco-light", "g": 400}, {"a": "tomates-concassees", "g": 400}, {"a": "oignon", "g": 150},
+      {"a": "riz-basmati", "g": 260}, {"a": "huile-olive", "g": 15}, {"a": "epices", "g": 0, "txt": "2 c. à s. de curry, gingembre"}
+    ],
+    "etapes": ["Faire revenir l'oignon et le curry dans l'huile.", "Ajouter le poulet en dés, puis la butternut en cubes, les tomates et le lait de coco ; mijoter 25 min.", "Ajouter les pois chiches 5 min avant la fin. Servir avec le riz."]
+  },
+  {
+    "id": "chili-con-carne", "nom": "Chili con carne", "saisons": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "portions": 4, "temps": 45, "conservation": 4, "proteine": "boeuf",
+    "ingredients": [
+      {"a": "boeuf-hache-5", "g": 500}, {"a": "haricots-rouges", "g": 500}, {"a": "tomates-concassees", "g": 800},
+      {"a": "oignon", "g": 150}, {"a": "carotte", "g": 200}, {"a": "mais", "g": 150}, {"a": "riz-basmati", "g": 240},
+      {"a": "huile-olive", "g": 10}, {"a": "epices", "g": 0, "txt": "cumin, paprika, piment"}
+    ],
+    "etapes": ["Dorer l'oignon et la viande dans l'huile avec les épices.", "Ajouter les carottes râpées et les tomates ; mijoter 30 min.", "Ajouter haricots et maïs 10 min avant la fin. Servir avec le riz."]
+  },
+  {
+    "id": "dahl-corail-epinards", "nom": "Dahl de lentilles corail aux épinards", "saisons": [10, 11, 12, 1, 2, 3, 4],
+    "portions": 4, "temps": 35, "conservation": 4, "proteine": "vegetarien",
+    "ingredients": [
+      {"a": "lentilles-corail", "g": 300}, {"a": "lait-coco-light", "g": 400}, {"a": "tomates-concassees", "g": 400},
+      {"a": "epinards", "g": 300}, {"a": "oignon", "g": 150}, {"a": "riz-basmati", "g": 200}, {"a": "skyr", "g": 300},
+      {"a": "huile-olive", "g": 10}, {"a": "epices", "g": 0, "txt": "curry, curcuma, cumin, gingembre"}
+    ],
+    "etapes": ["Faire revenir l'oignon et les épices.", "Ajouter lentilles rincées, tomates, lait de coco et 40 cl d'eau ; cuire 20 min.", "Incorporer les épinards à la fin. Servir avec le riz et une cuillère de skyr."]
+  },
+  {
+    "id": "gratin-pates-poulet-brocoli", "nom": "Gratin de pâtes complètes, poulet et brocoli", "saisons": [9, 10, 11, 12, 1, 2],
+    "portions": 4, "temps": 40, "conservation": 4, "proteine": "poulet",
+    "ingredients": [
+      {"a": "pates-completes", "g": 300}, {"a": "poulet-filet", "g": 500}, {"a": "brocoli", "g": 600},
+      {"a": "creme-legere", "g": 150}, {"a": "lait-demi", "g": 200}, {"a": "emmental-rape", "g": 70}, {"a": "huile-olive", "g": 5}
+    ],
+    "etapes": ["Cuire les pâtes al dente et le brocoli 5 min à l'eau.", "Saisir le poulet en dés.", "Mélanger avec crème et lait, couvrir d'emmental, 20 min au four à 200 °C."]
+  },
+  {
+    "id": "parmentier-patate-douce", "nom": "Hachis parmentier à la patate douce", "saisons": [10, 11, 12, 1, 2, 3],
+    "portions": 4, "temps": 50, "conservation": 4, "proteine": "boeuf",
+    "ingredients": [
+      {"a": "boeuf-hache-5", "g": 500}, {"a": "patate-douce", "g": 600}, {"a": "pomme-de-terre", "g": 400},
+      {"a": "carotte", "g": 300}, {"a": "oignon", "g": 150}, {"a": "lait-demi", "g": 150}, {"a": "emmental-rape", "g": 50},
+      {"a": "huile-olive", "g": 10}
+    ],
+    "etapes": ["Cuire patates douces et pommes de terre, écraser avec le lait.", "Dorer oignon, carottes râpées et viande.", "Viande au fond, purée dessus, emmental ; 20 min à 200 °C."]
+  },
+  {
+    "id": "dinde-poireaux-champignons", "nom": "Dinde, poireaux et champignons à la crème légère, riz", "saisons": [9, 10, 11, 12, 1, 2, 3, 4],
+    "portions": 4, "temps": 30, "conservation": 3, "proteine": "volaille",
+    "ingredients": [
+      {"a": "dinde-escalope", "g": 600}, {"a": "poireau", "g": 600}, {"a": "champignons", "g": 400},
+      {"a": "creme-legere", "g": 150}, {"a": "riz-basmati", "g": 260}, {"a": "huile-olive", "g": 15}, {"a": "epices", "g": 0, "txt": "moutarde, thym"}
+    ],
+    "etapes": ["Faire fondre les poireaux émincés 15 min.", "Saisir la dinde en lanières puis les champignons.", "Lier avec la crème et la moutarde. Servir avec le riz."]
+  },
+  {
+    "id": "saumon-quinoa-poireaux", "nom": "Saumon, quinoa et fondue de poireaux", "saisons": [10, 11, 12, 1, 2, 3, 4],
+    "portions": 4, "temps": 30, "conservation": 3, "proteine": "poisson",
+    "ingredients": [
+      {"a": "saumon", "g": 520}, {"a": "quinoa", "g": 240}, {"a": "poireau", "g": 700}, {"a": "citron", "g": 100},
+      {"a": "skyr", "g": 150}, {"a": "huile-olive", "g": 10}
+    ],
+    "etapes": ["Cuire le quinoa.", "Fondre les poireaux 15 min, lier avec le skyr hors du feu.", "Cuire le saumon 12 min à 200 °C avec le citron."]
+  },
+  {
+    "id": "poulet-tikka-chou-fleur", "nom": "Poulet tikka, chou-fleur rôti et pois chiches", "saisons": [9, 10, 11, 12, 1, 2, 3],
+    "portions": 4, "temps": 45, "conservation": 4, "proteine": "poulet",
+    "ingredients": [
+      {"a": "poulet-filet", "g": 600}, {"a": "chou-fleur", "g": 800}, {"a": "pois-chiches", "g": 250}, {"a": "skyr", "g": 200},
+      {"a": "riz-basmati", "g": 200}, {"a": "huile-olive", "g": 20}, {"a": "epices", "g": 0, "txt": "garam masala, paprika, ail"}
+    ],
+    "etapes": ["Mariner le poulet dans le skyr et les épices (30 min ou la veille).", "Rôtir chou-fleur et pois chiches à 210 °C 25 min avec l'huile.", "Cuire le poulet au four 15 min. Servir avec le riz."]
+  },
+  {
+    "id": "boeuf-carottes", "nom": "Bœuf carottes et pommes de terre", "saisons": [10, 11, 12, 1, 2, 3],
+    "portions": 4, "temps": 150, "conservation": 4, "proteine": "boeuf",
+    "ingredients": [
+      {"a": "boeuf-braiser", "g": 600}, {"a": "carotte", "g": 600}, {"a": "pomme-de-terre", "g": 800},
+      {"a": "oignon", "g": 150}, {"a": "champignons", "g": 250}, {"a": "huile-olive", "g": 10}, {"a": "bouillon", "g": 0, "txt": "1 cube, thym, laurier"}
+    ],
+    "etapes": ["Saisir la viande en cubes, ajouter oignons et carottes.", "Couvrir de bouillon, mijoter 2 h à couvert.", "Ajouter pommes de terre et champignons pour les 30 dernières minutes."]
+  },
+  {
+    "id": "wok-poulet-legumes", "nom": "Wok de poulet aux légumes et cajou", "saisons": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "portions": 4, "temps": 25, "conservation": 3, "proteine": "poulet",
+    "ingredients": [
+      {"a": "poulet-filet", "g": 600}, {"a": "brocoli", "g": 400}, {"a": "carotte", "g": 300}, {"a": "champignons", "g": 250},
+      {"a": "sauce-soja", "g": 60}, {"a": "noix-cajou", "g": 40}, {"a": "riz-basmati", "g": 260}, {"a": "huile-olive", "g": 15},
+      {"a": "epices", "g": 0, "txt": "ail, gingembre"}
+    ],
+    "etapes": ["Saisir le poulet en lanières à feu vif.", "Ajouter les légumes en fines lamelles, 6-8 min.", "Déglacer à la sauce soja, parsemer de cajou. Servir avec le riz."]
+  },
+  {
+    "id": "tajine-poulet-carottes", "nom": "Tajine de poulet, carottes et pois chiches, semoule", "saisons": [9, 10, 11, 12, 1, 2, 3, 4],
+    "portions": 4, "temps": 60, "conservation": 4, "proteine": "poulet",
+    "ingredients": [
+      {"a": "poulet-cuisse", "g": 700}, {"a": "carotte", "g": 500}, {"a": "oignon", "g": 200}, {"a": "pois-chiches", "g": 250},
+      {"a": "semoule", "g": 220}, {"a": "citron", "g": 100}, {"a": "huile-olive", "g": 10}, {"a": "epices", "g": 0, "txt": "ras-el-hanout, cannelle, coriandre"}
+    ],
+    "etapes": ["Dorer le poulet et les oignons avec les épices.", "Ajouter carottes en rondelles et 30 cl d'eau ; mijoter 40 min.", "Ajouter pois chiches et citron 10 min avant la fin. Servir avec la semoule."]
+  },
+  {
+    "id": "bolo-boeuf-lentilles", "nom": "Bolognaise bœuf-lentilles, pâtes complètes", "saisons": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "portions": 4, "temps": 45, "conservation": 4, "proteine": "boeuf",
+    "ingredients": [
+      {"a": "boeuf-hache-5", "g": 400}, {"a": "lentilles-vertes", "g": 120}, {"a": "tomates-concassees", "g": 800},
+      {"a": "carotte", "g": 200}, {"a": "oignon", "g": 150}, {"a": "pates-completes", "g": 300}, {"a": "parmesan", "g": 40},
+      {"a": "huile-olive", "g": 10}
+    ],
+    "etapes": ["Dorer oignon, carottes et viande.", "Ajouter tomates, lentilles et 30 cl d'eau ; mijoter 30 min.", "Servir avec les pâtes et le parmesan."]
+  },
+  {
+    "id": "porc-celeri-pdt", "nom": "Filet mignon, céleri et pommes de terre rôtis", "saisons": [10, 11, 12, 1, 2, 3],
+    "portions": 4, "temps": 50, "conservation": 3, "proteine": "porc",
+    "ingredients": [
+      {"a": "porc-filet-mignon", "g": 600}, {"a": "celeri-rave", "g": 600}, {"a": "pomme-de-terre", "g": 700},
+      {"a": "huile-olive", "g": 20}, {"a": "epices", "g": 0, "txt": "moutarde, romarin"}
+    ],
+    "etapes": ["Rôtir céleri et pommes de terre en cubes 35 min à 200 °C avec l'huile.", "Badigeonner le filet de moutarde, l'ajouter pour les 25 dernières minutes.", "Laisser reposer 5 min avant de trancher."]
+  },
+  {
+    "id": "cabillaud-lentilles-carottes", "nom": "Cabillaud, lentilles vertes et carottes", "saisons": [10, 11, 12, 1, 2, 3, 4],
+    "portions": 4, "temps": 35, "conservation": 3, "proteine": "poisson",
+    "ingredients": [
+      {"a": "cabillaud", "g": 600}, {"a": "lentilles-vertes", "g": 240}, {"a": "carotte", "g": 400}, {"a": "poireau", "g": 300},
+      {"a": "creme-legere", "g": 80}, {"a": "huile-olive", "g": 15}
+    ],
+    "etapes": ["Cuire les lentilles 25 min avec carottes en dés et poireau.", "Cuire le cabillaud 10-12 min au four.", "Lier les lentilles avec la crème."]
+  },
+  {
+    "id": "poulet-patate-douce-bruxelles", "nom": "Poulet rôti, patate douce et choux de Bruxelles", "saisons": [10, 11, 12, 1, 2],
+    "portions": 4, "temps": 45, "conservation": 4, "proteine": "poulet",
+    "ingredients": [
+      {"a": "poulet-filet", "g": 600}, {"a": "patate-douce", "g": 800}, {"a": "choux-bruxelles", "g": 500},
+      {"a": "huile-olive", "g": 20}, {"a": "epices", "g": 0, "txt": "paprika fumé, ail"}
+    ],
+    "etapes": ["Rôtir patates douces et choux coupés en deux 30 min à 210 °C.", "Ajouter le poulet assaisonné pour les 20 dernières minutes."]
+  },
+  {
+    "id": "frittata-poireaux-feta", "nom": "Frittata poireaux, pommes de terre et feta", "saisons": [9, 10, 11, 12, 1, 2, 3, 4],
+    "portions": 4, "temps": 40, "conservation": 3, "proteine": "oeufs",
+    "ingredients": [
+      {"a": "oeufs", "g": 550}, {"a": "poireau", "g": 500}, {"a": "pomme-de-terre", "g": 500}, {"a": "feta", "g": 120},
+      {"a": "lait-demi", "g": 100}, {"a": "huile-olive", "g": 10}, {"a": "mache", "g": 200}
+    ],
+    "etapes": ["Fondre les poireaux, cuire les pommes de terre en rondelles.", "Battre 10 œufs avec le lait, verser sur les légumes, émietter la feta.", "25 min au four à 180 °C. Servir avec la mâche."]
+  },
+  {
+    "id": "pates-saumon-epinards", "nom": "Pâtes complètes saumon-épinards", "saisons": [1, 2, 3, 4, 5, 9, 10, 11, 12],
+    "portions": 4, "temps": 25, "conservation": 3, "proteine": "poisson",
+    "ingredients": [
+      {"a": "saumon", "g": 400}, {"a": "pates-completes", "g": 300}, {"a": "epinards", "g": 400}, {"a": "creme-legere", "g": 120},
+      {"a": "citron", "g": 100}, {"a": "parmesan", "g": 30}
+    ],
+    "etapes": ["Cuire les pâtes.", "Cuire le saumon en dés 5 min, ajouter les épinards jusqu'à ce qu'ils tombent.", "Lier avec la crème et le citron, parsemer de parmesan."]
+  },
+  {
+    "id": "ratatouille-poulet-quinoa", "nom": "Ratatouille au poulet et quinoa", "saisons": [6, 7, 8, 9],
+    "portions": 4, "temps": 50, "conservation": 4, "proteine": "poulet",
+    "ingredients": [
+      {"a": "poulet-filet", "g": 600}, {"a": "courgette", "g": 500}, {"a": "aubergine", "g": 400}, {"a": "poivron", "g": 300},
+      {"a": "tomate", "g": 500}, {"a": "oignon", "g": 150}, {"a": "quinoa", "g": 220}, {"a": "huile-olive", "g": 20}
+    ],
+    "etapes": ["Faire revenir les légumes en dés 35 min.", "Saisir le poulet et l'ajouter.", "Servir avec le quinoa."]
+  },
+  {
+    "id": "salade-quinoa-poulet-feta", "nom": "Salade de quinoa, poulet, feta et crudités", "saisons": [5, 6, 7, 8, 9],
+    "portions": 4, "temps": 25, "conservation": 3, "proteine": "poulet",
+    "ingredients": [
+      {"a": "poulet-filet", "g": 500}, {"a": "quinoa", "g": 220}, {"a": "tomate", "g": 400}, {"a": "concombre", "g": 300},
+      {"a": "feta", "g": 120}, {"a": "mais", "g": 150}, {"a": "huile-olive", "g": 20}, {"a": "citron", "g": 100}
+    ],
+    "etapes": ["Cuire le quinoa et le poulet, laisser refroidir.", "Couper les crudités, mélanger, assaisonner huile-citron au moment de servir."]
+  },
+  {
+    "id": "fajitas-poulet", "nom": "Fajitas de poulet aux poivrons", "saisons": [6, 7, 8, 9],
+    "portions": 4, "temps": 30, "conservation": 3, "proteine": "poulet",
+    "ingredients": [
+      {"a": "poulet-filet", "g": 600}, {"a": "poivron", "g": 500}, {"a": "oignon", "g": 200}, {"a": "tortillas", "g": 320},
+      {"a": "skyr", "g": 200}, {"a": "avocat", "g": 150}, {"a": "huile-olive", "g": 10}, {"a": "epices", "g": 0, "txt": "cumin, paprika, citron vert"}
+    ],
+    "etapes": ["Saisir poulet, poivrons et oignons en lanières avec les épices.", "Garder la garniture à part ; réchauffer et garnir les tortillas au moment du repas (skyr, avocat)."]
+  },
+  {
+    "id": "curry-vert-tofu", "nom": "Curry vert de tofu, courgettes et haricots verts", "saisons": [6, 7, 8, 9],
+    "portions": 4, "temps": 30, "conservation": 4, "proteine": "vegetarien",
+    "ingredients": [
+      {"a": "tofu-ferme", "g": 600}, {"a": "courgette", "g": 500}, {"a": "haricots-verts", "g": 300}, {"a": "lait-coco-light", "g": 400},
+      {"a": "riz-basmati", "g": 240}, {"a": "huile-olive", "g": 10}, {"a": "epices", "g": 0, "txt": "pâte de curry vert"}
+    ],
+    "etapes": ["Dorer le tofu en cubes.", "Ajouter pâte de curry, lait de coco et légumes ; 12 min.", "Servir avec le riz."]
+  },
+  {
+    "id": "poulet-asperges-pdt", "nom": "Poulet, asperges vertes et pommes de terre grenaille", "saisons": [4, 5, 6],
+    "portions": 4, "temps": 35, "conservation": 3, "proteine": "poulet",
+    "ingredients": [
+      {"a": "poulet-filet", "g": 600}, {"a": "asperges", "g": 500}, {"a": "pomme-de-terre", "g": 800}, {"a": "petits-pois", "g": 200},
+      {"a": "huile-olive", "g": 15}, {"a": "citron", "g": 100}
+    ],
+    "etapes": ["Rôtir les pommes de terre 30 min à 200 °C.", "Poêler les asperges et les petits pois, saisir le poulet.", "Citronner au moment de servir."]
+  }
+],
+  plats: [
+  {"id": "cantine-plat", "nom": "Cantine : plat + légumes", "cat": "Midi", "kcal": 650, "p": 32, "g": 70, "l": 24, "f": 6},
+  {"id": "cantine-complet", "nom": "Cantine : entrée + plat + dessert", "cat": "Midi", "kcal": 950, "p": 38, "g": 105, "l": 38, "f": 8},
+  {"id": "foodcheri-plat", "nom": "FoodChéri : plat", "cat": "Midi", "kcal": 600, "p": 30, "g": 60, "l": 22, "f": 8},
+  {"id": "foodcheri-plat-dessert", "nom": "FoodChéri : plat + dessert", "cat": "Midi", "kcal": 850, "p": 33, "g": 95, "l": 32, "f": 9},
+  {"id": "kebab-frites", "nom": "Kebab frites", "cat": "Dehors", "kcal": 1150, "p": 45, "g": 115, "l": 55, "f": 7},
+  {"id": "kebab-seul", "nom": "Kebab sans frites", "cat": "Dehors", "kcal": 720, "p": 38, "g": 65, "l": 32, "f": 4},
+  {"id": "burger-frites", "nom": "Burger frites (resto)", "cat": "Dehors", "kcal": 1150, "p": 45, "g": 100, "l": 60, "f": 6},
+  {"id": "pizza", "nom": "Pizza entière", "cat": "Dehors", "kcal": 1000, "p": 42, "g": 120, "l": 38, "f": 6},
+  {"id": "sushis", "nom": "Sushis / makis (12 pièces) + soupe", "cat": "Dehors", "kcal": 650, "p": 28, "g": 100, "l": 14, "f": 3},
+  {"id": "poke-bowl", "nom": "Poke bowl", "cat": "Dehors", "kcal": 650, "p": 30, "g": 80, "l": 20, "f": 6},
+  {"id": "bo-bun", "nom": "Bo bun", "cat": "Dehors", "kcal": 650, "p": 30, "g": 75, "l": 22, "f": 5},
+  {"id": "salade-resto", "nom": "Salade composée (resto)", "cat": "Dehors", "kcal": 550, "p": 25, "g": 35, "l": 32, "f": 6},
+  {"id": "sandwich", "nom": "Sandwich jambon-beurre", "cat": "Dehors", "kcal": 450, "p": 20, "g": 50, "l": 18, "f": 3},
+  {"id": "resto-plat", "nom": "Resto : plat seul", "cat": "Dehors", "kcal": 800, "p": 38, "g": 70, "l": 38, "f": 5},
+  {"id": "resto-complet", "nom": "Resto : entrée/dessert + plat", "cat": "Dehors", "kcal": 1200, "p": 45, "g": 115, "l": 58, "f": 7},
+  {"id": "pdj-skyr-avoine", "nom": "Skyr + flocons d'avoine + fruit", "cat": "Petit-déjeuner", "kcal": 380, "p": 25, "g": 55, "l": 6, "f": 7},
+  {"id": "pdj-oeufs-pain", "nom": "2 œufs + 2 tranches de pain complet", "cat": "Petit-déjeuner", "kcal": 340, "p": 20, "g": 35, "l": 12, "f": 5},
+  {"id": "pdj-tartines", "nom": "Tartines beurre-confiture + café", "cat": "Petit-déjeuner", "kcal": 350, "p": 8, "g": 55, "l": 11, "f": 3},
+  {"id": "viennoiserie", "nom": "Croissant ou pain au chocolat", "cat": "Collation", "kcal": 280, "p": 5, "g": 30, "l": 16, "f": 1.5},
+  {"id": "shaker-whey", "nom": "Shaker protéiné (eau)", "cat": "Collation", "kcal": 120, "p": 24, "g": 3, "l": 1.5, "f": 0},
+  {"id": "fruit", "nom": "Fruit", "cat": "Collation", "kcal": 80, "p": 1, "g": 18, "l": 0.3, "f": 2.5},
+  {"id": "amandes", "nom": "Poignée d'amandes (30 g)", "cat": "Collation", "kcal": 180, "p": 6, "g": 3, "l": 15, "f": 3.5},
+  {"id": "skyr-pot", "nom": "Pot de skyr (150 g)", "cat": "Collation", "kcal": 90, "p": 15, "g": 6, "l": 0.3, "f": 0},
+  {"id": "barre-choco", "nom": "Barre chocolatée", "cat": "Collation", "kcal": 250, "p": 3, "g": 32, "l": 12, "f": 1},
+  {"id": "biere", "nom": "Bière 50 cl", "cat": "Boissons", "kcal": 210, "p": 2, "g": 17, "l": 0, "f": 0},
+  {"id": "vin", "nom": "Verre de vin (12 cl)", "cat": "Boissons", "kcal": 100, "p": 0, "g": 3, "l": 0, "f": 0},
+  {"id": "cocktail", "nom": "Cocktail", "cat": "Boissons", "kcal": 220, "p": 0, "g": 25, "l": 0, "f": 0},
+  {"id": "soda", "nom": "Soda 33 cl", "cat": "Boissons", "kcal": 140, "p": 0, "g": 35, "l": 0, "f": 0}
+],
+  programme: {
+  "echauffement": "≈ 10 min : ski erg, rameur, tractions, pompes, dips",
+  "seances": [
+    {
+      "id": "upper-a", "nom": "Upper A",
+      "blocs": [
+        {"nom": "Superset 1", "exos": [
+          {"id": "dc-halteres", "nom": "Développé couché haltères", "series": 3, "repsMin": 10, "repsMax": 10, "charge": 17.5, "unite": "kg/haltère", "pas": 2.5, "consigne": "Strapping. Viser 3×10 avant de monter."},
+          {"id": "tirage-vertical-large", "nom": "Tirage vertical large", "series": 3, "repsMin": 8, "repsMax": 10, "charge": 66, "unite": "kg", "pas": 2.5, "consigne": "Garder la charge jusqu'à 3×10. Sangles si le grip lâche."}
+        ]},
+        {"nom": "Superset 2", "exos": [
+          {"id": "dc-incline-halteres", "nom": "Développé incliné haltères", "series": 3, "repsMin": 10, "repsMax": 10, "charge": 17.5, "unite": "kg/haltère", "pas": 2.5, "consigne": "Banc à 30-45°. Viser 3×10."},
+          {"id": "tirage-vertical-serre", "nom": "Tirage vertical serré", "series": 3, "repsMin": 8, "repsMax": 10, "charge": null, "unite": "kg", "pas": 2.5, "consigne": "Prise neutre. Rester à la charge jusqu'à 3×10."}
+        ]},
+        {"nom": "Superset 3", "exos": [
+          {"id": "curl-halteres", "nom": "Curl haltères", "series": 3, "repsMin": 10, "repsMax": 12, "charge": null, "unite": "kg/haltère", "pas": 2, "consigne": "3×12 avant de monter."},
+          {"id": "dead-bug", "nom": "Dead bug", "series": 3, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "poids du corps", "consigne": "Contrôle lombaire."}
+        ]}
+      ]
+    },
+    {
+      "id": "upper-b", "nom": "Upper B",
+      "blocs": [
+        {"nom": "Superset 1", "exos": [
+          {"id": "rowing-horizontal", "nom": "Rowing horizontal (sled pull)", "series": 3, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "kg", "pas": 2.5, "consigne": "Lent, squeeze 1 s. Sangles."},
+          {"id": "dev-militaire-halteres", "nom": "Développé militaire haltères", "series": 3, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "kg/haltère", "pas": 2.5, "consigne": "Strapping."}
+        ]},
+        {"nom": "Superset 2", "exos": [
+          {"id": "elevations-laterales", "nom": "Élévations latérales", "series": 3, "repsMin": 10, "repsMax": 12, "charge": null, "unite": "kg/haltère", "pas": 1, "consigne": "Rester à la charge jusqu'à 3×12."},
+          {"id": "triceps-corde", "nom": "Triceps corde poulie", "series": 3, "repsMin": 12, "repsMax": 12, "charge": null, "unite": "kg", "pas": 2.5, "consigne": ""}
+        ]},
+        {"nom": "Superset 3", "exos": [
+          {"id": "face-pulls", "nom": "Face pulls corde", "series": 3, "repsMin": 15, "repsMax": 15, "charge": null, "unite": "kg", "pas": 2.5, "consigne": ""},
+          {"id": "curl-marteau", "nom": "Curl marteau", "series": 3, "repsMin": 10, "repsMax": 12, "charge": 12, "unite": "kg/haltère", "pas": 2, "consigne": ""}
+        ]}
+      ]
+    }
+  ]
+}
+};
+
+</script>
+  <script>
+/* Calculs purs (sans DOM ni stockage) : dates, cibles nutritionnelles, charge d'entraînement, muscu, menus, courses.
+   Testés par tests.html. */
+
+/* ---------- Dates (chaînes AAAA-MM-JJ, heure locale) ---------- */
+const pad2 = n => String(n).padStart(2, '0');
+function isoDate(d) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+function parseIso(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
+function addDays(s, n) { const d = parseIso(s); d.setDate(d.getDate() + n); return isoDate(d); }
+function diffDays(a, b) { return Math.round((parseIso(a) - parseIso(b)) / 86400000); }
+// Lundi de la semaine de la date
+function debutSemaine(s) { const d = parseIso(s); const j = (d.getDay() + 6) % 7; d.setDate(d.getDate() - j); return isoDate(d); }
+// Semaine du menu : le batch du dimanche est mangé la semaine suivante
+function semaineMenu(s) { return semaineIso(parseIso(s).getDay() === 0 ? addDays(s, 1) : s); }
+function semaineIso(s) {
+  const d = parseIso(s); d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7); // jeudi de la semaine
+  const an = d.getFullYear(), j1 = new Date(an, 0, 4);
+  const n = 1 + Math.round(((d - j1) / 86400000 - 3 + (j1.getDay() + 6) % 7) / 7);
+  return `${an}-W${pad2(n)}`;
+}
+
+/* ---------- Nutrition ---------- */
+const MACROS = ['kcal', 'p', 'g', 'l', 'f'];
+const r1 = x => Math.round(x * 10) / 10;
+
+function age(naissance, date) {
+  const n = parseIso(naissance), d = parseIso(date);
+  let a = d.getFullYear() - n.getFullYear();
+  if (d.getMonth() < n.getMonth() || (d.getMonth() === n.getMonth() && d.getDate() < n.getDate())) a--;
+  return a;
+}
+// Métabolisme de base, formule de Mifflin-St Jeor (kcal/jour)
+function bmr(poids, tailleCm, ageAns, sexe) {
+  return 10 * poids + 6.25 * tailleCm - 5 * ageAns + (sexe === 'F' ? -161 : 5);
+}
+// Cibles du jour : dépense = BMR × niveau d'activité ; kcal = dépense − déficit, arrondi à 50
+function cibles(profil, poids, date) {
+  const b = bmr(poids, profil.tailleCm, age(profil.naissance, date), profil.sexe);
+  const depense = b * profil.nap;
+  return {
+    bmr: Math.round(b), depense: Math.round(depense),
+    kcal: Math.round((depense - profil.deficit) / 50) * 50,
+    p: Math.round(poids * profil.proteinesParKg), f: profil.fibresCible,
+  };
+}
+function totaux(items) {
+  const t = { kcal: 0, p: 0, g: 0, l: 0, f: 0 };
+  for (const it of items) for (const k of MACROS) t[k] += Number(it[k]) || 0;
+  for (const k of MACROS) t[k] = k === 'kcal' ? Math.round(t[k]) : r1(t[k]);
+  return t;
+}
+// Macros d'une recette à partir des grammes de chaque aliment (valeurs pour 100 g)
+function macrosRecette(recette, aliments) {
+  const t = { kcal: 0, p: 0, g: 0, l: 0, f: 0 }, manquants = [];
+  for (const ing of recette.ingredients) {
+    const a = aliments[ing.a];
+    if (!a) { manquants.push(ing.a); continue; }
+    for (const k of MACROS) t[k] += (a[k] || 0) * ing.g / 100;
+  }
+  const parPortion = {};
+  for (const k of MACROS) parPortion[k] = k === 'kcal' ? Math.round(t[k] / recette.portions) : r1(t[k] / recette.portions);
+  return { total: totaux([t]), parPortion, manquants };
+}
+// Moment du repas d'après l'heure
+function momentRepas(heure) {
+  if (heure < 10.5) return 'Petit-déjeuner';
+  if (heure < 15) return 'Déjeuner';
+  if (heure < 18.5) return 'Collation';
+  return 'Dîner';
+}
+
+/* ---------- Poids ---------- */
+// Pesées faites dans les mêmes conditions que la dernière (à jeun / salle habillé : ≈ 1 kg d'écart, à ne pas mélanger)
+function peseesComparables(pesees) {
+  if (!pesees.length) return [];
+  const der = pesees.slice().sort((a, b) => a.date.localeCompare(b.date)).pop();
+  return pesees.filter(p => (p.conditions || 'salle') === (der.conditions || 'salle'));
+}
+// Pour chaque pesée : moyenne des pesées des `jours` derniers jours (elle comprise). Plusieurs pesées le même jour : moyennées.
+function moyenneGlissante(pesees, jours = 7) {
+  const parJour = {};
+  for (const p of pesees) (parJour[p.date] = parJour[p.date] || []).push(p.kg);
+  const dates = Object.keys(parJour).sort();
+  const val = d => parJour[d].reduce((a, b) => a + b, 0) / parJour[d].length;
+  return dates.map(d => {
+    const fen = dates.filter(x => x <= d && diffDays(d, x) < jours);
+    return { date: d, kg: r1(val(d)), moyenne: Math.round(fen.reduce((a, x) => a + val(x), 0) / fen.length * 100) / 100 };
+  });
+}
+// Pente (kg/semaine) par moindres carrés sur les pesées des `jours` derniers jours ; null si moins de 3 pesées ou 7 jours d'écart
+function tendanceHebdo(pesees, date, jours = 28) {
+  const pts = pesees.filter(p => p.date <= date && diffDays(date, p.date) < jours).map(p => [diffDays(p.date, date), p.kg]);
+  if (pts.length < 3) return null;
+  const xs = pts.map(p => p[0]);
+  if (Math.max(...xs) - Math.min(...xs) < 7) return null;
+  const mx = xs.reduce((a, b) => a + b, 0) / pts.length, my = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+  let num = 0, den = 0;
+  for (const [x, y] of pts) { num += (x - mx) * (y - my); den += (x - mx) ** 2; }
+  return Math.round(num / den * 7 * 100) / 100;
+}
+
+/* ---------- Charge d'entraînement (méthode sRPE : effort ressenti 1-10 × durée en minutes) ---------- */
+function chargeSeance(s) { return s.rpe && s.duree ? s.rpe * s.duree : 0; }
+// `nb` semaines se terminant par celle de `date` : [{debut, parSport: {sport: charge}, total, nbSeances}]
+function chargesParSemaine(seances, date, nb = 12) {
+  const fin = debutSemaine(date), semaines = [];
+  for (let i = nb - 1; i >= 0; i--) semaines.push({ debut: addDays(fin, -7 * i), parSport: {}, total: 0, nbSeances: 0 });
+  for (const s of seances) {
+    const w = semaines.find(x => x.debut === debutSemaine(s.date));
+    if (!w) continue;
+    const c = chargeSeance(s);
+    w.parSport[s.sport] = (w.parSport[s.sport] || 0) + c;
+    w.total += c; w.nbSeances++;
+  }
+  return semaines;
+}
+// Charge aiguë (7 derniers jours) / charge chronique (moyenne hebdo des 28 derniers jours).
+// Ratio null tant que l'historique couvre moins de 3 semaines (sinon il vaut 4 dès la première séance).
+function ratioAiguChronique(seances, date) {
+  const somme = j => seances.filter(s => s.date <= date && diffDays(date, s.date) < j).reduce((a, s) => a + chargeSeance(s), 0);
+  const aigu = somme(7), chronique = somme(28) / 4;
+  const premiere = seances.filter(s => s.date <= date).map(s => s.date).sort()[0];
+  const assez = premiere && diffDays(date, premiere) >= 21;
+  return { aigu, chronique: Math.round(chronique), ratio: assez && chronique ? Math.round(aigu / chronique * 100) / 100 : null };
+}
+
+/* ---------- Muscu ---------- */
+const seriesFaites = e => (e.series || []).filter(x => x.faite && x.reps > 0);
+// Historique d'un exercice, du plus ancien au plus récent : charge max, volume (reps × charge), 1RM estimé (Epley)
+function historiqueExo(seances, exoId) {
+  const out = [];
+  for (const s of seances.filter(x => x.exos).sort((a, b) => a.date.localeCompare(b.date) || (a.cree || 0) - (b.cree || 0))) {
+    const e = s.exos.find(x => x.id === exoId);
+    if (!e) continue;
+    const f = seriesFaites(e);
+    if (!f.length) continue;
+    const ch = f.filter(x => x.charge != null && x.charge > 0); // charge inconnue ou poids du corps : pas de max ni de volume
+    out.push({
+      date: s.date, series: f,
+      max: ch.length ? Math.max(...ch.map(x => x.charge)) : null,
+      reps: f.reduce((a, x) => a + x.reps, 0),
+      volume: ch.length ? Math.round(ch.reduce((a, x) => a + x.reps * x.charge, 0)) : null,
+      e1rm: ch.length ? r1(Math.max(...ch.map(x => x.charge * (1 + x.reps / 30)))) : null,
+    });
+  }
+  return out;
+}
+// Prévu pour la prochaine fois : la charge de la dernière séance (sinon celle du programme).
+// « Prêt à monter » : toutes les séries prévues faites au plafond de reps à cette charge.
+function prevuExo(exo, seances) {
+  const h = historiqueExo(seances, exo.id), der = h[h.length - 1];
+  const charge = der && der.max != null ? der.max : exo.charge;
+  let pret = false;
+  if (der && der.max != null && exo.series && exo.pas) {
+    const aCharge = der.series.filter(x => x.charge != null && x.charge >= der.max);
+    pret = der.series.length >= exo.series && aCharge.length >= exo.series && aCharge.every(x => x.reps >= exo.repsMax);
+  }
+  return {
+    charge: charge ?? null, reps: exo.repsMax, pretAMonter: pret,
+    chargeSuggeree: pret && charge != null && exo.pas ? charge + exo.pas : null, derniere: der || null,
+  };
+}
+function ecartSerie(s) {
+  if (!s.faite || !(s.reps > 0)) return { type: 'nonfaite', texte: 'non faite' };
+  if (s.prevuReps == null) return { type: 'plus', texte: 'en plus' }; // série ajoutée pendant la séance
+  const dc = (s.charge || 0) - (s.prevuCharge || 0), dr = s.reps - s.prevuReps;
+  if (s.prevuCharge != null && s.charge != null && Math.abs(dc) >= 0.01) return { type: dc > 0 ? 'plus' : 'moins', texte: `${dc > 0 ? '+' : '−'}${fmtNum(Math.abs(dc))} kg` };
+  if (dr) return { type: dr > 0 ? 'plus' : 'moins', texte: `${dr > 0 ? '+' : '−'}${Math.abs(dr)} rep${Math.abs(dr) > 1 ? 's' : ''}` };
+  return { type: 'ok', texte: '=' };
+}
+// Séance du programme à faire ensuite : celle qui suit la dernière faite
+function prochaineSeance(programme, seances) {
+  const ids = programme.seances.map(s => s.id);
+  const der = seances.filter(s => s.programme && ids.includes(s.programme)).sort((a, b) => a.date.localeCompare(b.date) || (a.cree || 0) - (b.cree || 0)).pop();
+  return der ? ids[(ids.indexOf(der.programme) + 1) % ids.length] : ids[0];
+}
+
+/* ---------- Menus et courses ---------- */
+// Générateur pseudo-aléatoire reproductible (mulberry32)
+function rng(graine) {
+  let a = graine >>> 0;
+  return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+const deSaison = (recettes, mois) => recettes.filter(r => !r.saisons || r.saisons.includes(mois));
+// Choisit `nb` recettes de saison : les plus riches en protéines par kcal sont favorisées, sources de protéines variées.
+function suggererMenu(recettes, aliments, { mois, nb = 3, graine = 1, exclure = [] }) {
+  const alea = rng(graine);
+  const pool = deSaison(recettes, mois).filter(r => !exclure.includes(r.id)).map(r => {
+    const m = macrosRecette(r, aliments).parPortion;
+    return { r, score: (m.kcal ? m.p / m.kcal : 0) * (0.6 + 0.8 * alea()) };
+  }).sort((a, b) => b.score - a.score);
+  const choix = [], sources = new Set();
+  for (const x of pool) if (choix.length < nb && !sources.has(x.r.proteine)) { choix.push(x.r); sources.add(x.r.proteine); }
+  for (const x of pool) if (choix.length < nb && !choix.includes(x.r)) choix.push(x.r);
+  return choix;
+}
+// Répartit soirées × personnes portions entre les recettes
+function repartirPortions(nbRecettes, soirees, personnes) {
+  if (!nbRecettes) return [];
+  const total = soirees * personnes, base = Math.floor(total / nbRecettes);
+  return Array.from({ length: nbRecettes }, (_, i) => base + (i < total % nbRecettes ? 1 : 0));
+}
+function arrondiCourses(g) { return g < 50 ? Math.max(5, Math.round(g / 5) * 5) : Math.round(g / 10) * 10; }
+// Liste de courses : ingrédients cumulés et mis à l'échelle, par rayon. selection = [{recette, portions}]
+function listeCourses(selection, aliments) {
+  const cumul = {};
+  for (const { recette, portions } of selection) {
+    const k = portions / recette.portions;
+    for (const ing of recette.ingredients) {
+      const c = cumul[ing.a] = cumul[ing.a] || { id: ing.a, g: 0, txt: [] };
+      c.g += ing.g * k;
+      if (ing.txt && !c.txt.includes(ing.txt)) c.txt.push(ing.txt);
+    }
+  }
+  const rayons = {};
+  for (const c of Object.values(cumul)) {
+    const a = aliments[c.id] || { nom: c.id, rayon: 'Autres' };
+    const item = { id: c.id, nom: a.nom, placard: !!a.placard, txt: c.txt.join(' ; '), g: c.g ? arrondiCourses(c.g) : 0 };
+    if (a.piece && c.g) { item.pieces = Math.ceil(c.g / a.piece - 0.15); item.unitePiece = a.unitePiece; }
+    (rayons[a.rayon] = rayons[a.rayon] || []).push(item);
+  }
+  const ordre = ['Fruits et légumes', 'Boucherie', 'Poissonnerie', 'Charcuterie', 'Crèmerie', 'Frais', 'Boulangerie', 'Épicerie', 'Surgelés', 'Autres'];
+  return Object.keys(rayons).sort((a, b) => (ordre.indexOf(a) + 99) % 99 - (ordre.indexOf(b) + 99) % 99 || a.localeCompare(b))
+    .map(r => ({ rayon: r, items: rayons[r].sort((a, b) => a.placard - b.placard || a.nom.localeCompare(b.nom)) }));
+}
+
+/* ---------- Format ---------- */
+function fmtNum(x, dec = 1) {
+  if (x == null || !isFinite(x)) return '–';
+  return Number(x).toLocaleString('fr-FR', { maximumFractionDigits: dec });
+}
+
+</script>
+  <script>
+/* Stockage : dépôt GitHub privé (lecture/écriture par l'API, avec file d'attente hors ligne) ou mode local (ce navigateur). */
+
+const SPORTS = [
+  { id: 'muscu', nom: 'Muscu', icone: '🏋️', duree: 75 },
+  { id: 'foot', nom: 'Foot', icone: '⚽', duree: 90 },
+  { id: 'velo', nom: 'Vélo', icone: '🚴', duree: 60, distance: true },
+  { id: 'squash', nom: 'Squash', icone: '🟡', duree: 45 },
+  { id: 'padel', nom: 'Padel', icone: '🎾', duree: 90 },
+  { id: 'tennis', nom: 'Tennis', icone: '🎾', duree: 90 },
+  { id: 'course', nom: 'Course', icone: '🏃', duree: 45, distance: true },
+  { id: 'autre', nom: 'Autre', icone: '✨', duree: 60 },
+];
+const sportDe = id => SPORTS.find(s => s.id === id) || { id, nom: id, icone: '•', duree: 60 };
+
+// Fichiers du dépôt : `liste` = tableau d'objets avec `id` ; `doc` = un objet
+const FICHIERS = {
+  profil: { f: 'profil.json', type: 'doc' },
+  programme: { f: 'programme.json', type: 'doc' },
+  seances: { f: 'seances.json', type: 'liste' },
+  poids: { f: 'poids.json', type: 'liste' },
+  repas: { f: 'repas.json', type: 'liste' },
+  menus: { f: 'menus.json', type: 'liste' },
+  recettes: { f: 'recettes.json', type: 'liste' },
+  aliments: { f: 'aliments.json', type: 'liste' },
+  plats: { f: 'plats.json', type: 'liste' },
+};
+// Valeurs quand le fichier n'existe pas (encore) : bibliothèques intégrées à la page (seed.js), le reste vide
+const PROFIL_DEFAUT = { naissance: '1995-01-01', tailleCm: 175, sexe: 'H', poidsDepart: 80, poidsObjectif: 75, nap: 1.45, deficit: 400, proteinesParKg: 1.8, fibresCible: 30, personnesBatch: 2, soireesBatch: 5 };
+function defaut(nom) {
+  if (nom === 'profil') return { ...PROFIL_DEFAUT };
+  if (typeof SEED !== 'undefined' && SEED[nom]) return JSON.parse(JSON.stringify(SEED[nom]));
+  return FICHIERS[nom].type === 'doc' ? {} : [];
+}
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const today = () => isoDate(new Date());
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* ---------- localStorage protégé (navigation privée, stockage bloqué) ---------- */
+const LS = {
+  get(k, def = null) { try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch { return def; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch { /* stockage indisponible */ } },
+};
+const CLES = { cfg: 'sport.cfg', token: 'sport.token', cache: 'sport.cache', file: 'sport.file', local: 'sport.local', brouillon: 'sport.brouillon', theme: 'sport.theme' };
+
+/* ---------- Configuration ---------- */
+const Config = {
+  lire() {
+    const c = LS.get(CLES.cfg, {}) || {};
+    let token = '';
+    try { token = sessionStorage.getItem(CLES.token) || localStorage.getItem(CLES.token) || ''; } catch { /* rien */ }
+    return { mode: c.mode || 'local', owner: c.owner || 'TheLusup', repo: c.repo || 'Mes-Donnees-Sport', branche: c.branche || 'main', dossier: c.dossier ?? 'data', token, memoriser: c.memoriser !== false };
+  },
+  ecrire(c) {
+    LS.set(CLES.cfg, { mode: c.mode, owner: c.owner, repo: c.repo, branche: c.branche, dossier: c.dossier, memoriser: c.memoriser });
+    try {
+      sessionStorage.removeItem(CLES.token); localStorage.removeItem(CLES.token);
+      if (c.token) (c.memoriser ? localStorage : sessionStorage).setItem(CLES.token, c.token);
+    } catch { /* rien */ }
+  },
+};
+
+/* ---------- API GitHub (Contents) ---------- */
+function ghUrl(cfg, fichier) {
+  const path = [cfg.dossier, fichier].filter(Boolean).join('/').replace(/^\/+|\/+$/g, '').split('/').map(encodeURIComponent).join('/');
+  return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${path}`;
+}
+class GhErreur extends Error { constructor(msg, status) { super(msg); this.status = status; } }
+function ghMessage(status, fichier) {
+  return `${fichier} : ` + ({
+    401: 'token invalide ou expiré', 403: 'accès refusé (droits du token ou limite d’appels)',
+    404: 'introuvable, ou dépôt non accessible avec ce token', 409: 'modifié ailleurs entre-temps', 422: 'modifié ailleurs entre-temps',
+  }[status] || `erreur HTTP ${status}`) + '.';
+}
+const b64Decode = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\s/g, '')), c => c.charCodeAt(0)));
+const b64Encode = txt => btoa(Array.from(new TextEncoder().encode(txt), b => String.fromCharCode(b)).join(''));
+
+// Le dépôt est-il accessible avec ce token ? (un 404 sur un fichier ne dit pas si c'est le fichier ou le dépôt qui manque)
+async function ghDepot(cfg) {
+  let r;
+  try { r = await fetch(`https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}`, { headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + cfg.token }, cache: 'no-store' }); }
+  catch { throw new GhErreur('Impossible de joindre GitHub (hors ligne ?).', 0); }
+  if (r.status === 404) throw new GhErreur(`Dépôt ${cfg.owner}/${cfg.repo} introuvable, ou pas accessible avec ce token.`, 404);
+  if (!r.ok) throw new GhErreur(ghMessage(r.status, `${cfg.owner}/${cfg.repo}`), r.status);
+}
+// → { contenu, sha } ; null si le fichier n'existe pas
+async function ghGet(cfg, fichier) {
+  let r;
+  try { r = await fetch(`${ghUrl(cfg, fichier)}?ref=${encodeURIComponent(cfg.branche)}`, { headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + cfg.token }, cache: 'no-store' }); }
+  catch { throw new GhErreur('Impossible de joindre GitHub (hors ligne ?).', 0); }
+  if (r.status === 404) return null;
+  if (!r.ok) throw new GhErreur(ghMessage(r.status, fichier), r.status);
+  const j = await r.json();
+  if (j.content == null || j.encoding !== 'base64') throw new GhErreur(`${fichier} : fichier trop volumineux pour l’API (> 1 Mo).`, 413);
+  try { return { contenu: JSON.parse(b64Decode(j.content)), sha: j.sha }; }
+  catch { throw new GhErreur(`${fichier} : JSON invalide dans le dépôt (à corriger sur GitHub).`, 400); }
+}
+async function ghPut(cfg, fichier, contenu, sha, message) {
+  let r;
+  try {
+    r = await fetch(ghUrl(cfg, fichier), {
+      method: 'PUT', headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + cfg.token },
+      body: JSON.stringify({ message, branch: cfg.branche, content: b64Encode(JSON.stringify(contenu, null, 1) + '\n'), ...(sha ? { sha } : {}) }),
+    });
+  } catch { throw new GhErreur('Impossible de joindre GitHub (hors ligne ?).', 0); }
+  if (!r.ok) throw new GhErreur(r.status === 403 || r.status === 404 ? `${fichier} : le token n’a pas le droit d’écrire (Contents : Read and write).` : ghMessage(r.status, fichier), r.status);
+}
+
+/* ---------- Opérations ---------- */
+// op = { f: nom, op: 'upsert', item } | { f, op: 'remove', id } | { f, op: 'set', doc }
+function appliquer(valeur, op) {
+  if (op.op === 'set') return op.doc;
+  const liste = Array.isArray(valeur) ? valeur.slice() : [];
+  const i = liste.findIndex(x => x.id === (op.op === 'remove' ? op.id : op.item.id));
+  if (op.op === 'remove') { if (i >= 0) liste.splice(i, 1); }
+  else if (i >= 0) liste[i] = op.item; else liste.push(op.item);
+  return liste;
+}
+
+/* ---------- Store ---------- */
+const Store = {
+  data: {}, cfg: null, etat: { sync: 'ok', message: '', hors_ligne: false },
+  ecouteurs: [],
+  surChangement(fn) { this.ecouteurs.push(fn); },
+  notifier() { this.ecouteurs.forEach(fn => fn()); },
+  enAttente() { return (LS.get(CLES.file, []) || []).length; },
+
+  async charger() {
+    this.cfg = Config.lire();
+    const noms = Object.keys(FICHIERS);
+    if (this.cfg.mode !== 'github') {
+      const local = LS.get(CLES.local, {}) || {};
+      for (const n of noms) this.data[n] = local[n] ?? defaut(n);
+      this.etat = { sync: 'local', message: 'Mode local : données dans ce navigateur uniquement.' };
+      return;
+    }
+    const cache = LS.get(CLES.cache, null) || {};
+    this.bloque = false; // dépôt inaccessible ou dossier vide : on n'écrit rien (risque de créer des fichiers au mauvais endroit)
+    const depuisCache = message => {
+      for (const n of noms) this.data[n] = cache[n] ?? defaut(n);
+      this.etat = { sync: 'erreur', message, hors_ligne: /hors ligne/.test(message) };
+    };
+    if (!this.cfg.token) depuisCache('Token absent sur cet appareil : saisis-le dans Réglages. Les saisies sont gardées en attendant.');
+    else {
+      try {
+        await ghDepot(this.cfg);
+        // Fichier par fichier : un fichier illisible n'empêche pas de charger les autres
+        const res = await Promise.allSettled(noms.map(n => ghGet(this.cfg, FICHIERS[n].f)));
+        const erreurs = [];
+        noms.forEach((n, i) => {
+          const r = res[i];
+          if (r.status === 'fulfilled') this.data[n] = r.value ? r.value.contenu : defaut(n);
+          else { this.data[n] = cache[n] ?? defaut(n); erreurs.push(r.reason.message); }
+        });
+        if (res.every(r => r.status === 'fulfilled' && !r.value)) {
+          this.bloque = true;
+          this.etat = { sync: 'erreur', message: `Aucun fichier dans ${this.cfg.repo}/${this.cfg.dossier || '(racine)'} : vérifie le dossier, ou clique « Initialiser le dépôt ».` };
+        } else {
+          LS.set(CLES.cache, this.data);
+          this.etat = erreurs.length ? { sync: 'erreur', message: erreurs.join(' ') } : { sync: 'ok', message: '' };
+        }
+      } catch (e) {
+        if (e.status !== 0) this.bloque = true;
+        if (!Object.keys(cache).length && e.status !== 0) throw e;
+        depuisCache(e.message + ' Données du dernier chargement affichées.');
+      }
+    }
+    // Les saisies pas encore envoyées restent visibles
+    for (const op of LS.get(CLES.file, []) || []) this.data[op.f] = appliquer(this.data[op.f], op);
+    if (this.cfg.token) this.envoyer();
+  },
+
+  modifier(op) {
+    this.data[op.f] = appliquer(this.data[op.f], op);
+    if (this.etat.sync === 'local') {
+      const local = LS.get(CLES.local, {}) || {};
+      local[op.f] = this.data[op.f];
+      if (!LS.set(CLES.local, local)) this.etat.message = 'Stockage du navigateur indisponible : la saisie sera perdue au rechargement.';
+    } else {
+      const file = LS.get(CLES.file, []) || [];
+      file.push({ ...op, q: uid() });
+      LS.set(CLES.file, file);
+      LS.set(CLES.cache, this.data);
+      this.envoyer();
+    }
+    this.notifier();
+  },
+  upsert(f, item) { this.modifier({ f, op: 'upsert', item }); },
+  remove(f, id) { this.modifier({ f, op: 'remove', id }); },
+  set(f, doc) { this.modifier({ f, op: 'set', doc }); },
+
+  // Envoie la file d'attente, fichier par fichier : relit la dernière version, rejoue les opérations, écrit.
+  // Un fichier en erreur est mis de côté : les autres partent quand même.
+  async envoyer() {
+    if (this.etat.sync === 'local' || !this.cfg || !this.cfg.token || this.bloque) return;
+    if (this.envoi) { this.encore = true; return; }
+    this.envoi = true;
+    const erreurs = [];
+    let aEnvoye = false;
+    try {
+      do {
+        this.encore = false;
+        const enEchec = new Set(erreurs.map(e => e.f));
+        for (;;) {
+          const file = (LS.get(CLES.file, []) || []).filter(o => !enEchec.has(o.f));
+          if (!file.length) break;
+          const f = file[0].f, ops = file.filter(o => o.f === f);
+          this.etat = { sync: 'envoi', message: '' }; this.notifier();
+          try {
+            for (let essai = 0; ; essai++) {
+              const cur = await ghGet(this.cfg, FICHIERS[f].f);
+              let v = cur ? cur.contenu : defaut(f);
+              for (const o of ops) v = appliquer(v, o);
+              try { await ghPut(this.cfg, FICHIERS[f].f, v, cur && cur.sha, `Saisie ${FICHIERS[f].f} depuis la page`); break; }
+              catch (e) { if ((e.status === 409 || e.status === 422) && essai < 2) continue; throw e; }
+            }
+            const envoyes = new Set(ops.map(o => o.q));
+            LS.set(CLES.file, (LS.get(CLES.file, []) || []).filter(o => !envoyes.has(o.q)));
+            aEnvoye = true;
+          } catch (e) {
+            erreurs.push({ f, e }); enEchec.add(f);
+            if (e.status === 0) break; // hors ligne : inutile d'essayer les autres fichiers
+          }
+        }
+      } while (this.encore);
+    } finally {
+      this.envoi = false;
+      if (this.bloque) { /* un rechargement a trouvé le dépôt inaccessible entre-temps : garder son message */ }
+      else if (erreurs.length) {
+        this.etat = { sync: 'erreur', message: erreurs.map(x => x.e.message).join(' ') + ' La saisie est gardée et sera renvoyée.', hors_ligne: erreurs.some(x => x.e.status === 0) };
+        clearTimeout(this.relance);
+        this.relance = setTimeout(() => this.envoyer(), 30000);
+      } else if (aEnvoye || this.etat.sync === 'envoi') this.etat = { sync: 'ok', message: '' };
+      this.notifier();
+    }
+  },
+};
+window.addEventListener('online', () => Store.envoyer());
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Store.enAttente()) Store.envoyer(); });
+
+</script>
+  <script>
+/* Briques d'interface : panneau de saisie (bas d'écran), toasts, graphiques, petits composants. */
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const JOURS_COURTS = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+const fmtDate = (s, opts = { weekday: 'long', day: 'numeric', month: 'long' }) => parseIso(s).toLocaleDateString('fr-FR', opts);
+const fmtCourt = s => { const d = parseIso(s); return `${JOURS_COURTS[d.getDay()]} ${d.getDate()}/${pad2(d.getMonth() + 1)}`; };
+const fmtKcal = x => `${fmtNum(Math.round(x || 0), 0)} kcal`;
+
+/* ---------- Panneau de saisie ---------- */
+const Sheet = {
+  ouvrir(titre, html, init) {
+    this.fermer();
+    const el = document.createElement('div');
+    el.className = 'sheet-back';
+    el.innerHTML = `<section class="sheet" role="dialog" aria-modal="true" aria-label="${esc(titre)}">
+      <header class="sheet-head"><h2>${esc(titre)}</h2><button class="icon-btn" data-close type="button" aria-label="Fermer">✕</button></header>
+      <div class="sheet-body">${html}</div></section>`;
+    // Fermeture par ✕ seulement : un tap à côté ne doit pas effacer une saisie en cours
+    el.addEventListener('click', e => { if (e.target.closest('[data-close]')) this.fermer(); });
+    document.body.appendChild(el);
+    document.body.classList.add('no-scroll');
+    this.el = el;
+    if (init) init($('.sheet-body', el));
+    return el;
+  },
+  corps() { return this.el && $('.sheet-body', this.el); },
+  fermer() {
+    if (!this.el) return;
+    this.el.remove(); this.el = null;
+    document.body.classList.remove('no-scroll');
+  },
+};
+
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('out'), 2200);
+  setTimeout(() => t.remove(), 2600);
+}
+
+/* ---------- Composants ---------- */
+function barre(valeur, cible, { classe = '' } = {}) {
+  const pct = cible ? Math.min(100, valeur / cible * 100) : 0;
+  const trop = cible && valeur > cible;
+  return `<div class="bar ${classe}"><span style="width:${pct}%" class="${trop ? 'over' : ''}"></span></div>`;
+}
+function chips(nom, options, actif) {
+  return `<div class="chips" data-chips="${nom}">${options.map(o =>
+    `<button type="button" class="chip ${String(o.v) === String(actif) ? 'on' : ''}" data-v="${esc(o.v)}">${o.l}</button>`).join('')}</div>`;
+}
+// Active les groupes de chips d'un conteneur ; onChange(nom, valeur)
+function brancherChips(root, onChange) {
+  $$('[data-chips]', root).forEach(g => g.addEventListener('click', e => {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    $$('.chip', g).forEach(x => x.classList.toggle('on', x === b));
+    onChange && onChange(g.dataset.chips, b.dataset.v);
+  }));
+}
+const valeurChips = (root, nom) => { const b = $(`[data-chips="${nom}"] .chip.on`, root); return b ? b.dataset.v : null; };
+const num = v => { if (v == null || v === '') return null; const n = Number(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
+
+/* ---------- Graphiques (Chart.js) ---------- */
+const Graphs = {
+  liste: [],
+  detruire() { this.liste.forEach(c => c.destroy()); this.liste = []; },
+  creer(canvas, config) {
+    if (typeof Chart === 'undefined' || !canvas) return null;
+    const c = new Chart(canvas, config);
+    this.liste.push(c);
+    return c;
+  },
+  base() {
+    const grid = css('--grid'), text = css('--muted');
+    return {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: text, boxWidth: 10, boxHeight: 10, usePointStyle: true } }, tooltip: { backgroundColor: css('--surface-3'), titleColor: css('--text'), bodyColor: css('--text-2') } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: text, maxRotation: 0, autoSkipPadding: 12 }, border: { color: css('--axis') } },
+        y: { grid: { color: grid }, ticks: { color: text }, border: { display: false } },
+      },
+    };
+  },
+};
+const COULEUR_SPORT = { muscu: '--series-1', foot: '--series-2', velo: '--series-3', squash: '--series-4', padel: '--series-5', tennis: '--series-6', course: '--series-7', autre: '--series-8' };
+const couleurSport = id => css(COULEUR_SPORT[id] || '--series-8');
+
+</script>
+  <script>
+/* Formulaires de saisie : séance (muscu ou autre sport), repas, poids. Pensés pour le téléphone : peu de touches, tout pré-rempli. */
+
+const RPE_LABELS = { 1: 'Très facile', 2: 'Facile', 3: 'Modéré', 4: 'Un peu dur', 5: 'Dur', 6: 'Dur +', 7: 'Très dur', 8: 'Très dur +', 9: 'Quasi max', 10: 'Max' };
+const QTES = [{ v: 0.5, l: '½' }, { v: 1, l: '1' }, { v: 1.5, l: '1½' }, { v: 2, l: '2' }];
+const MOMENTS = ['Petit-déjeuner', 'Déjeuner', 'Collation', 'Dîner'];
+const momentActuel = () => { const d = new Date(); return momentRepas(d.getHours() + d.getMinutes() / 60); };
+
+const Saisie = {
+  menu() {
+    Sheet.ouvrir('Ajouter', `<div class="big-actions">
+      <button type="button" data-a="seance"><span>🏋️</span>Séance</button>
+      <button type="button" data-a="repas"><span>🍽️</span>Repas</button>
+      <button type="button" data-a="poids"><span>⚖️</span>Poids</button></div>`, body => {
+      body.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (b) this[b.dataset.a](); });
+    });
+  },
+
+  /* ---------- Séance ---------- */
+  exosDepuisProgramme(ps) {
+    return ps.blocs.flatMap(b => b.exos.map(ex => {
+      const pv = prevuExo(ex, Store.data.seances);
+      return {
+        id: ex.id, nom: ex.nom, bloc: b.nom, unite: ex.unite, consigne: ex.consigne, pret: pv.chargeSuggeree,
+        series: Array.from({ length: ex.series }, () => ({ prevuReps: pv.reps, prevuCharge: pv.charge, reps: pv.reps, charge: pv.charge, faite: false })),
+      };
+    }));
+  },
+  nouvelleSeance(sport, programmeId) {
+    const sp = sportDe(sport);
+    const st = { id: uid(), date: today(), sport, duree: sp.duree, rpe: null, note: '', cree: Date.now() };
+    if (sport === 'muscu') {
+      const prog = Store.data.programme;
+      const pid = programmeId || (prog.seances && prog.seances.length ? prochaineSeance(prog, Store.data.seances) : null);
+      const ps = pid && prog.seances.find(s => s.id === pid);
+      if (ps) { st.programme = ps.id; st.exos = this.exosDepuisProgramme(ps); }
+    }
+    return st;
+  },
+  seance(existante, sportInitial, programmeId) {
+    const edition = !!existante;
+    let st = existante ? JSON.parse(JSON.stringify(existante)) : (LS.get(CLES.brouillon) || null);
+    const brouillon = !edition && !!st;
+    if (!st) st = this.nouvelleSeance(sportInitial || 'muscu', programmeId);
+    const sauverBrouillon = () => { if (!edition) LS.set(CLES.brouillon, st); };
+
+    const rendre = body => {
+      const sp = sportDe(st.sport), prog = Store.data.programme;
+      body.innerHTML = `
+        ${brouillon ? `<p class="note">Séance en cours reprise (brouillon gardé sur ce téléphone). <button type="button" class="link" data-a="jeter">Recommencer</button></p>` : ''}
+        ${edition ? '' : chips('sport', SPORTS.map(s => ({ v: s.id, l: `${s.icone} ${s.nom}` })), st.sport)}
+        <div class="row2"><label>Date<input type="date" name="date" value="${st.date}" max="${today()}"></label>
+          ${st.sport === 'muscu' && prog.seances && !edition ? `<label>Séance<select name="programme">
+            ${prog.seances.map(s => `<option value="${esc(s.id)}" ${s.id === st.programme ? 'selected' : ''}>${esc(s.nom)}</option>`).join('')}
+            <option value="" ${!st.programme ? 'selected' : ''}>Libre (sans programme)</option></select></label>` : ''}
+        </div>
+        ${st.exos ? this.htmlExos(st, prog) : ''}
+        <h3>Durée et effort</h3>
+        <div class="stepper"><button type="button" data-a="duree" data-d="-5">−5</button>
+          <label><input type="number" name="duree" inputmode="numeric" min="0" value="${st.duree ?? ''}"> min</label>
+          <button type="button" data-a="duree" data-d="5">+5</button></div>
+        <p class="muted small">Effort ressenti sur l'ensemble de la séance</p>
+        ${chips('rpe', Array.from({ length: 10 }, (_, i) => ({ v: i + 1, l: String(i + 1) })), st.rpe)}
+        <p class="muted small rpe-label">${st.rpe ? RPE_LABELS[st.rpe] : '1 = très facile · 10 = maximal'}</p>
+        ${sp.distance ? `<label>Distance (km)<input type="text" name="distanceKm" inputmode="decimal" value="${st.distanceKm ?? ''}"></label>` : ''}
+        <label>Note<textarea name="note" rows="2" placeholder="facultatif">${esc(st.note)}</textarea></label>
+        <div class="actions">${edition ? '<button type="button" class="btn danger" data-a="suppr">Supprimer</button>' : ''}
+          <button type="button" class="btn primary" data-a="ok">Enregistrer</button></div>`;
+      brancherChips(body, (nom, v) => {
+        if (nom === 'sport') { st = this.nouvelleSeance(v); sauverBrouillon(); rendre(body); }
+        if (nom === 'rpe') { st.rpe = Number(v); $('.rpe-label', body).textContent = RPE_LABELS[st.rpe]; sauverBrouillon(); }
+      });
+    };
+
+    Sheet.ouvrir(edition ? 'Modifier la séance' : 'Nouvelle séance', '', body => {
+      rendre(body);
+      body.addEventListener('input', e => {
+        const t = e.target;
+        if (t.name === 'date') st.date = t.value;
+        else if (t.name === 'duree') st.duree = num(t.value);
+        else if (t.name === 'distanceKm') st.distanceKm = num(t.value);
+        else if (t.name === 'note') st.note = t.value;
+        else if (t.dataset.k) {
+          const ex = st.exos[+t.dataset.e], s = ex.series[+t.dataset.s];
+          s[t.dataset.k] = num(t.value);
+          // Une charge modifiée est reportée sur les séries suivantes pas encore faites (ou restées sans charge)
+          if (t.dataset.k === 'charge') ex.series.forEach((x, j) => {
+            if (j > +t.dataset.s && (!x.faite || x.charge == null)) { x.charge = s.charge; const inp = $(`[data-e="${t.dataset.e}"][data-s="${j}"][data-k="charge"]`, body); if (inp) inp.value = s.charge ?? ''; }
+          });
+        }
+        sauverBrouillon();
+      });
+      body.addEventListener('change', e => {
+        if (e.target.name === 'programme') {
+          const ps = Store.data.programme.seances.find(s => s.id === e.target.value);
+          st.programme = ps ? ps.id : undefined; st.exos = ps ? this.exosDepuisProgramme(ps) : undefined;
+          sauverBrouillon(); rendre(body);
+        }
+      });
+      body.addEventListener('click', e => {
+        const b = e.target.closest('[data-a]');
+        if (!b) return;
+        const a = b.dataset.a;
+        if (a === 'check') {
+          const ex = st.exos[+b.dataset.e], s = ex.series[+b.dataset.s];
+          s.faite = !s.faite;
+          const prec = ex.series[+b.dataset.s - 1];
+          if (s.faite && s.reps == null) s.reps = s.prevuReps ?? (prec && prec.reps);
+          if (s.faite && s.charge == null && prec && prec.charge != null) s.charge = prec.charge;
+          const ligne = b.closest('.serie');
+          ligne.classList.toggle('done', s.faite);
+          for (const k of ['reps', 'charge']) { const inp = $(`[data-k="${k}"]`, ligne); if (inp) inp.value = s[k] ?? ''; }
+          sauverBrouillon();
+        } else if (a === 'serie+') {
+          const ex = st.exos[+b.dataset.e], der = ex.series[ex.series.length - 1] || {};
+          ex.series.push({ prevuReps: null, prevuCharge: null, reps: der.reps ?? null, charge: der.charge ?? null, faite: false });
+          sauverBrouillon(); rendre(body);
+        } else if (a === 'duree') {
+          st.duree = Math.max(0, (st.duree || 0) + Number(b.dataset.d)); $('[name="duree"]', body).value = st.duree; sauverBrouillon();
+        } else if (a === 'jeter') {
+          LS.del(CLES.brouillon); Sheet.fermer(); this.seance();
+        } else if (a === 'suppr') {
+          if (confirm('Supprimer cette séance ?')) { Store.remove('seances', st.id); Sheet.fermer(); toast('Séance supprimée'); }
+        } else if (a === 'ok') {
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(st.date || '')) return toast('Indique la date');
+          const s = { ...st };
+          if (s.exos) s.exos = s.exos.map(({ id, nom, unite, series }) => ({ id, nom, unite, series }));
+          Store.upsert('seances', s);
+          if (!edition) LS.del(CLES.brouillon);
+          Sheet.fermer();
+          toast(s.rpe && s.duree ? `Séance enregistrée · charge ${s.rpe * s.duree}` : 'Séance enregistrée (sans effort : charge non calculée)');
+        }
+      });
+    });
+  },
+  htmlExos(st, prog) {
+    let bloc = null, h = prog.echauffement && st.programme ? `<p class="note">Échauffement : ${esc(prog.echauffement)}</p>` : '';
+    st.exos.forEach((ex, i) => {
+      if (ex.bloc && ex.bloc !== bloc) { bloc = ex.bloc; h += `<h3>${esc(bloc)}</h3>`; }
+      const pdc = ex.unite === 'poids du corps';
+      h += `<div class="exo"><div class="exo-head"><b>${esc(ex.nom)}</b><span class="muted small">${esc(ex.unite || '')}</span>
+          ${ex.pret ? `<span class="badge good">Prêt à monter → ${fmtNum(ex.pret)} kg</span>` : ''}</div>
+        ${ex.consigne ? `<p class="muted small">${esc(ex.consigne)}</p>` : ''}
+        ${ex.series.map((s, j) => `<div class="serie ${s.faite ? 'done' : ''}">
+          <span class="sn">S${j + 1}</span>
+          <span class="prevu">${s.prevuReps != null ? `${s.prevuReps}${pdc ? ' reps' : ` × ${s.prevuCharge != null ? fmtNum(s.prevuCharge) : '?'}`}` : '—'}</span>
+          <input type="number" inputmode="numeric" data-e="${i}" data-s="${j}" data-k="reps" value="${s.reps ?? ''}" placeholder="reps" aria-label="Répétitions série ${j + 1}">
+          ${pdc ? '<span></span><span></span>' : `<span class="x">×</span><input type="text" inputmode="decimal" data-e="${i}" data-s="${j}" data-k="charge" value="${s.charge ?? ''}" placeholder="kg" aria-label="Charge série ${j + 1}">`}
+          <button type="button" class="check" data-a="check" data-e="${i}" data-s="${j}" aria-label="Série ${j + 1} faite">✓</button></div>`).join('')}
+        <button type="button" class="link small" data-a="serie+" data-e="${i}">+ série</button></div>`;
+    });
+    return h;
+  },
+
+  /* ---------- Repas ---------- */
+  repas(date) {
+    const st = { date: date || today(), moment: momentActuel(), onglet: 'plats', sel: null, qte: 1, q: '' };
+    const menuSemaine = () => Store.data.menus.find(m => m.id === semaineMenu(today()));
+    const aliments = Object.fromEntries(Store.data.aliments.map(a => [a.id, a]));
+
+    const liste = body => {
+      const q = st.q.toLowerCase();
+      let h = '';
+      if (st.onglet === 'plats') {
+        const parCat = {};
+        for (const p of Store.data.plats) if (!q || p.nom.toLowerCase().includes(q)) (parCat[p.cat || 'Autres'] = parCat[p.cat || 'Autres'] || []).push(p);
+        h = Object.entries(parCat).map(([c, ps]) => `<h3>${esc(c)}</h3>` + ps.map(p =>
+          `<button type="button" class="pick ${st.sel && st.sel.ref === p.id ? 'on' : ''}" data-pick="plat:${esc(p.id)}"><span>${esc(p.nom)}</span><span class="muted">${fmtKcal(p.kcal)} · ${fmtNum(p.p, 0)} g P</span></button>`).join('')).join('');
+      } else {
+        const m = menuSemaine(), ids = m ? m.recettes.map(r => r.id) : [];
+        const rs = Store.data.recettes.filter(r => !q || r.nom.toLowerCase().includes(q)).sort((a, b) => (ids.includes(b.id) - ids.includes(a.id)) || a.nom.localeCompare(b.nom));
+        h = rs.map(r => { const pp = macrosRecette(r, aliments).parPortion;
+          return `<button type="button" class="pick ${st.sel && st.sel.ref === r.id ? 'on' : ''}" data-pick="recette:${esc(r.id)}"><span>${ids.includes(r.id) ? '⭐ ' : ''}${esc(r.nom)}</span><span class="muted">${fmtKcal(pp.kcal)} · ${fmtNum(pp.p, 0)} g P / portion</span></button>`; }).join('');
+      }
+      $('.pick-list', body).innerHTML = h || '<p class="muted">Aucun résultat.</p>';
+    };
+    const rendre = body => {
+      body.innerHTML = `
+        <div class="row2"><label>Date<input type="date" name="date" value="${st.date}" max="${today()}"></label>
+          <label>Moment<select name="moment">${MOMENTS.map(m => `<option ${m === st.moment ? 'selected' : ''}>${m}</option>`).join('')}</select></label></div>
+        ${chips('onglet', [{ v: 'plats', l: 'Plats types' }, { v: 'batch', l: 'Mes batchs' }, { v: 'libre', l: 'Libre' }], st.onglet)}
+        ${st.onglet === 'libre' ? `
+          <label>Nom<input name="nom" placeholder="ex. Pâtes carbo chez des amis"></label>
+          <div class="grid5">
+            <label>kcal<input name="kcal" type="number" inputmode="numeric"></label>
+            <label>Prot. (g)<input name="p" type="text" inputmode="decimal"></label>
+            <label>Gluc. (g)<input name="g" type="text" inputmode="decimal"></label>
+            <label>Lip. (g)<input name="l" type="text" inputmode="decimal"></label>
+            <label>Fibres (g)<input name="f" type="text" inputmode="decimal"></label></div>
+          <label class="check-line"><input type="checkbox" name="garder"> Garder comme plat type</label>
+          <p class="muted small">Photo ou étiquette ? Envoie-la à Claude : il estime et l'enregistre.</p>`
+        : `<input type="search" name="q" placeholder="Rechercher…" value="${esc(st.q)}"><div class="pick-list"></div>
+          <p class="muted small">Quantité ${st.onglet === 'batch' ? '(portions)' : ''}</p>${chips('qte', QTES, st.qte)}`}
+        <div class="actions"><button type="button" class="btn primary" data-a="ok">Ajouter</button></div>`;
+      brancherChips(body, (nom, v) => {
+        if (nom === 'onglet') { st.onglet = v; st.sel = null; rendre(body); }
+        if (nom === 'qte') st.qte = Number(v);
+      });
+      if (st.onglet !== 'libre') liste(body);
+    };
+
+    Sheet.ouvrir('Ajouter un repas', '', body => {
+      rendre(body);
+      body.addEventListener('input', e => {
+        if (e.target.name === 'q') { st.q = e.target.value; liste(body); }
+        if (e.target.name === 'date') st.date = e.target.value;
+      });
+      body.addEventListener('change', e => { if (e.target.name === 'moment') st.moment = e.target.value; });
+      body.addEventListener('click', e => {
+        const p = e.target.closest('[data-pick]');
+        if (p) {
+          const [type, ref] = p.dataset.pick.split(':');
+          if (type === 'plat') { const x = Store.data.plats.find(y => y.id === ref); st.sel = { source: 'plat', ref, nom: x.nom, m: x }; }
+          else { const r = Store.data.recettes.find(y => y.id === ref); st.sel = { source: 'recette', ref, nom: r.nom, m: macrosRecette(r, aliments).parPortion }; }
+          $$('.pick', body).forEach(x => x.classList.toggle('on', x === p));
+          return;
+        }
+        if (!e.target.closest('[data-a="ok"]')) return;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(st.date)) return toast('Indique la date');
+        let item;
+        if (st.onglet === 'libre') {
+          const v = n => num($(`[name="${n}"]`, body).value);
+          const nom = $('[name="nom"]', body).value.trim();
+          if (!nom || v('kcal') == null) return toast('Nom et kcal nécessaires');
+          item = { nom, kcal: Math.round(v('kcal')), p: v('p') ?? 0, g: v('g') ?? 0, l: v('l') ?? 0, f: v('f') ?? 0, source: 'libre', qte: 1 };
+          if ($('[name="garder"]', body).checked) Store.upsert('plats', { id: 'perso-' + uid(), nom, cat: 'Perso', kcal: item.kcal, p: item.p, g: item.g, l: item.l, f: item.f });
+        } else {
+          if (!st.sel) return toast('Choisis un plat');
+          const k = st.qte, m = st.sel.m;
+          item = { nom: st.sel.nom, source: st.sel.source, ref: st.sel.ref, qte: k, kcal: Math.round(m.kcal * k), p: r1(m.p * k), g: r1(m.g * k), l: r1(m.l * k), f: r1((m.f || 0) * k) };
+        }
+        Store.upsert('repas', { id: uid(), date: st.date, moment: st.moment, ...item, cree: Date.now() });
+        Sheet.fermer();
+        toast(`${item.nom} · ${fmtKcal(item.kcal)}`);
+      });
+    });
+  },
+
+  /* ---------- Poids ---------- */
+  poids() {
+    const der = Store.data.poids.slice().sort((a, b) => a.date.localeCompare(b.date)).pop();
+    const st = { date: today(), conditions: der ? der.conditions : 'salle' };
+    Sheet.ouvrir('Pesée', `
+      <label>Poids (kg)<input name="kg" type="text" inputmode="decimal" value="${der ? der.kg : ''}" autofocus></label>
+      ${chips('conditions', [{ v: 'jeun', l: 'À jeun, maison' }, { v: 'salle', l: 'Salle, habillé' }], st.conditions)}
+      <p class="muted small">Toujours dans les mêmes conditions : c'est la tendance qui compte.</p>
+      <label>Date<input type="date" name="date" value="${st.date}" max="${today()}"></label>
+      <div class="actions"><button type="button" class="btn primary" data-a="ok">Enregistrer</button></div>`, body => {
+      brancherChips(body, (n, v) => { st.conditions = v; });
+      $('[data-a="ok"]', body).addEventListener('click', () => {
+        const kg = num($('[name="kg"]', body).value), date = $('[name="date"]', body).value;
+        if (!kg || kg < 30 || kg > 250) return toast('Poids invalide');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return toast('Indique la date');
+        Store.upsert('poids', { id: uid(), date, kg, conditions: st.conditions });
+        Sheet.fermer(); toast(`${fmtNum(kg)} kg enregistré`);
+      });
+    });
+  },
+};
+
+</script>
+  <script>
+/* Vues : Aujourd'hui, Muscu, Charge, Nutrition, Menus, Paramètres. Chaque vue renvoie son HTML ; `apres(root)` branche graphiques et clics. */
+
+const alimentsParId = () => Object.fromEntries(Store.data.aliments.map(a => [a.id, a]));
+const parDate = (a, b) => a.date.localeCompare(b.date) || (a.cree || 0) - (b.cree || 0);
+function poidsActuel() {
+  const m = moyenneGlissante(peseesComparables(Store.data.poids));
+  return m.length ? m[m.length - 1].moyenne : Store.data.profil.poidsDepart;
+}
+const carte = (titre, corps, extra = '') => `<section class="card ${extra}">${titre ? `<h2>${titre}</h2>` : ''}${corps}</section>`;
+const ligneRepas = r => `<div class="li"><span><b>${esc(r.nom)}</b>${r.qte && r.qte !== 1 ? ` <span class="muted">×${fmtNum(r.qte)}</span>` : ''}<br><span class="muted small">${esc(r.moment)} · ${fmtNum(r.p, 0)} g P · ${fmtNum(r.f, 0)} g fibres</span></span>
+  <span class="li-end">${fmtKcal(r.kcal)}<button type="button" class="icon-btn sm" data-del-repas="${esc(r.id)}" aria-label="Supprimer ${esc(r.nom)}">✕</button></span></div>`;
+function ligneSeance(s) {
+  const sp = sportDe(s.sport), ps = s.programme && (Store.data.programme.seances || []).find(x => x.id === s.programme);
+  return `<button type="button" class="li li-btn" data-seance="${esc(s.id)}"><span>${sp.icone} <b>${esc(ps ? ps.nom : sp.nom)}</b><br><span class="muted small">${fmtCourt(s.date)} · ${s.duree != null ? fmtNum(s.duree, 0) : '?'} min${s.rpe ? ` · effort ${fmtNum(s.rpe, 0)}/10` : ''}${s.distanceKm ? ` · ${fmtNum(s.distanceKm)} km` : ''}</span></span>
+    <span class="li-end">${chargeSeance(s) ? `<span class="badge">${chargeSeance(s)}</span>` : '<span class="muted small">–</span>'}</span></button>`;
+}
+function brancherListes(root) {
+  root.addEventListener('click', e => {
+    const d = e.target.closest('[data-del-repas]');
+    if (d) { const r = Store.data.repas.find(x => x.id === d.dataset.delRepas); if (r && confirm(`Supprimer « ${r.nom} » ?`)) Store.remove('repas', r.id); return; }
+    const s = e.target.closest('[data-seance]');
+    if (s) { const x = Store.data.seances.find(y => y.id === s.dataset.seance); if (x) (x.exos ? Pages.detailSeance(x) : Saisie.seance(x)); }
+  });
+}
+
+const Pages = {
+  /* ---------- Aujourd'hui ---------- */
+  accueil: {
+    titre: "Aujourd'hui",
+    html() {
+      const D = today(), d = Store.data, c = cibles(d.profil, poidsActuel(), D);
+      const rj = d.repas.filter(r => r.date === D).sort(parDate), t = totaux(rj);
+      const prog = d.programme, pid = prog.seances && prog.seances.length ? prochaineSeance(prog, d.seances) : null;
+      const ps = pid && prog.seances.find(s => s.id === pid), brouillon = LS.get(CLES.brouillon);
+      const lundi = debutSemaine(D), semaine = d.seances.filter(s => s.date >= lundi && s.date <= D).sort(parDate);
+      const rac = ratioAiguChronique(d.seances, D), chargeSem = semaine.reduce((a, s) => a + chargeSeance(s), 0);
+      const comp = peseesComparables(d.poids), pesees = moyenneGlissante(comp), derP = pesees[pesees.length - 1], tend = tendanceHebdo(comp, D);
+      const reste = c.kcal - t.kcal;
+      return `<header class="page-head"><h1>Aujourd'hui</h1><p class="muted">${fmtDate(D)}</p></header>
+        <div class="quick">
+          <button type="button" data-a="seance"><span>🏋️</span>Séance</button>
+          <button type="button" data-a="repas"><span>🍽️</span>Repas</button>
+          <button type="button" data-a="poids"><span>⚖️</span>Poids</button></div>
+        <div class="grid">
+        ${carte('Calories du jour', `
+          <div class="kpi"><b>${fmtNum(t.kcal, 0)}</b><span class="muted"> / ${fmtNum(c.kcal, 0)} kcal</span></div>
+          ${barre(t.kcal, c.kcal)}
+          <p class="small ${reste < 0 ? 'warn' : 'muted'}">${reste >= 0 ? `Il reste ${fmtKcal(reste)}` : `${fmtKcal(-reste)} au-dessus de la cible`}</p>
+          <div class="mini-bars">
+            <div><span class="small">Protéines <b>${fmtNum(t.p, 0)}</b> / ${c.p} g</span>${barre(t.p, c.p, { classe: 'p' })}</div>
+            <div><span class="small">Fibres <b>${fmtNum(t.f, 0)}</b> / ${c.f} g</span>${barre(t.f, c.f, { classe: 'f' })}</div></div>
+          <div class="list">${rj.map(ligneRepas).join('') || '<p class="muted small">Rien de saisi aujourd’hui.</p>'}</div>`)}
+        ${carte('Prochaine séance muscu', brouillon
+          ? `<p>Séance commencée, pas encore enregistrée : <b>${esc(sportDe(brouillon.sport).nom)}</b> du ${fmtCourt(brouillon.date)}</p><button type="button" class="btn primary" data-a="seance">Reprendre</button>`
+          : ps ? `<p class="kpi"><b>${esc(ps.nom)}</b></p><p class="muted small">${ps.blocs.flatMap(b => b.exos).map(e => esc(e.nom)).join(' · ')}</p>
+              <button type="button" class="btn primary" data-a="go" data-p="${esc(ps.id)}">Commencer ${esc(ps.nom)}</button>`
+          : '<p class="muted">Pas de programme.</p>')}
+        ${carte('Cette semaine', `
+          <div class="kpi"><b>${fmtNum(chargeSem, 0)}</b><span class="muted"> de charge · ${semaine.length} séance${semaine.length > 1 ? 's' : ''}</span></div>
+          <p class="muted small">Moyenne des 4 dernières semaines : ${fmtNum(rac.chronique, 0)}${rac.ratio != null ? ` · ratio 7 j / 28 j : <b>${fmtNum(rac.ratio, 2)}</b>` : ''}</p>
+          <div class="list">${semaine.map(ligneSeance).join('') || '<p class="muted small">Aucune séance cette semaine.</p>'}</div>`)}
+        ${carte('Poids', derP ? `
+          <div class="kpi"><b>${fmtNum(derP.moyenne)}</b><span class="muted"> kg (moyenne 7 j)</span></div>
+          <p class="small muted">Dernière pesée ${fmtNum(derP.kg)} kg le ${fmtCourt(derP.date)} · objectif ${fmtNum(d.profil.poidsObjectif)} kg
+            (${derP.moyenne > d.profil.poidsObjectif ? `encore ${fmtNum(derP.moyenne - d.profil.poidsObjectif)} kg` : 'atteint 🎉'})</p>
+          ${tend != null ? `<p class="small">Tendance : <b>${tend > 0 ? '+' : ''}${fmtNum(tend, 2)} kg/semaine</b></p>` : '<p class="muted small">Tendance dès 3 pesées sur au moins une semaine.</p>'}`
+          : '<p class="muted">Aucune pesée. Ajoute la première avec ⚖️.</p>')}
+        </div>`;
+    },
+    apres(root) {
+      root.addEventListener('click', e => {
+        const b = e.target.closest('[data-a]');
+        if (!b) return;
+        if (b.dataset.a === 'go') Saisie.seance(null, 'muscu', b.dataset.p);
+        else if (Saisie[b.dataset.a]) Saisie[b.dataset.a]();
+      });
+      brancherListes(root);
+    },
+  },
+
+  /* ---------- Muscu ---------- */
+  muscu: {
+    titre: 'Muscu', onglet: null,
+    html() {
+      const d = Store.data, prog = d.programme, seances = d.seances;
+      if (!prog.seances || !prog.seances.length) return `<header class="page-head"><h1>Muscu</h1></header>${carte('', '<p class="muted">Aucun programme (programme.json).</p>')}`;
+      if (!prog.seances.some(s => s.id === this.onglet)) this.onglet = prochaineSeance(prog, seances);
+      const ps = prog.seances.find(s => s.id === this.onglet);
+      const hist = seances.filter(s => s.sport === 'muscu').sort(parDate).reverse();
+      return `<header class="page-head"><h1>Muscu</h1><p class="muted">${hist.length} séance${hist.length > 1 ? 's' : ''} enregistrée${hist.length > 1 ? 's' : ''}</p></header>
+        ${chips('onglet', prog.seances.map(s => ({ v: s.id, l: esc(s.nom) })), this.onglet)}
+        ${carte(`${esc(ps.nom)} · prévu la prochaine fois`, ps.blocs.map(b => `<h3>${esc(b.nom)}</h3>` + b.exos.map(ex => {
+          const pv = prevuExo(ex, seances), der = pv.derniere, pdc = ex.unite === 'poids du corps';
+          return `<button type="button" class="li li-btn" data-exo="${esc(ex.id)}"><span><b>${esc(ex.nom)}</b>
+              ${pv.pretAMonter ? `<span class="badge good">Prêt à monter → ${fmtNum(pv.chargeSuggeree)} kg</span>` : ''}<br>
+              <span class="muted small">${der ? `${fmtCourt(der.date)} : ${der.series.map(s => s.reps).join('/')}${pdc ? ' reps' : der.max != null ? ` @ ${fmtNum(der.max)} kg` : ' reps (charge non saisie)'}` : 'Pas encore fait'}</span></span>
+            <span class="li-end"><b>${ex.series}×${ex.repsMax}</b>${pdc ? '' : `<span class="muted small">${pv.charge != null ? `${fmtNum(pv.charge)} ${esc(ex.unite)}` : 'charge ?'}</span>`}</span></button>`;
+        }).join('')).join('') + `<button type="button" class="btn primary" data-a="go">Commencer ${esc(ps.nom)}</button>`)}
+        ${carte('Historique', `<div class="list">${hist.slice(0, 30).map(ligneSeance).join('') || '<p class="muted small">Aucune séance.</p>'}</div>`)}`;
+    },
+    apres(root) {
+      brancherChips(root, (n, v) => { this.onglet = v; App.rendre(); });
+      root.addEventListener('click', e => {
+        if (e.target.closest('[data-a="go"]')) return Saisie.seance(null, 'muscu', this.onglet);
+        const x = e.target.closest('[data-exo]');
+        if (x) Pages.detailExo(x.dataset.exo);
+      });
+      brancherListes(root);
+    },
+  },
+  detailExo(id) {
+    const ex = (Store.data.programme.seances || []).flatMap(s => s.blocs.flatMap(b => b.exos)).find(e => e.id === id);
+    const h = historiqueExo(Store.data.seances, id), pdc = ex && ex.unite === 'poids du corps';
+    Sheet.ouvrir(ex ? ex.nom : id, `
+      ${ex && ex.consigne ? `<p class="muted small">${esc(ex.consigne)}</p>` : ''}
+      ${h.length > 1 ? '<div class="chart sm"><canvas></canvas></div>' : ''}
+      <table class="tbl"><thead><tr><th>Date</th><th>Séries</th>${pdc ? '' : '<th>Max</th><th>Volume</th><th>1RM est.</th>'}</tr></thead><tbody>
+      ${h.slice().reverse().map(x => `<tr><td>${fmtCourt(x.date)}</td><td>${x.series.map(s => pdc ? s.reps : `${s.reps}×${fmtNum(s.charge)}`).join(' · ')}</td>
+        ${pdc ? '' : `<td>${fmtNum(x.max)}</td><td>${fmtNum(x.volume, 0)}</td><td>${fmtNum(x.e1rm)}</td>`}</tr>`).join('') || '<tr><td colspan="5" class="muted">Pas encore d’historique.</td></tr>'}
+      </tbody></table><p class="muted small">1RM estimé (formule d’Epley) : la charge qu’on soulèverait une seule fois.</p>`, body => {
+      if (h.length > 1 && !pdc) Graphs.creer($('canvas', body), {
+        type: 'line',
+        data: { labels: h.map(x => fmtCourt(x.date)), datasets: [
+          { label: 'Charge max', data: h.map(x => x.max), borderColor: css('--accent'), backgroundColor: css('--accent'), tension: .25 },
+          { label: '1RM estimé', data: h.map(x => x.e1rm), borderColor: css('--series-4'), backgroundColor: css('--series-4'), borderDash: [4, 4], tension: .25 }] },
+        options: Graphs.base(),
+      });
+    });
+  },
+  detailSeance(s) {
+    const ps = (Store.data.programme.seances || []).find(x => x.id === s.programme);
+    Sheet.ouvrir(`${ps ? ps.nom : 'Muscu'} · ${fmtCourt(s.date)}`, `
+      <p class="muted small">${s.duree ?? '?'} min · effort ${s.rpe ?? '?'}/10 · charge ${chargeSeance(s) || '–'}${s.note ? ` · ${esc(s.note)}` : ''}</p>
+      ${(s.exos || []).map(e => `<div class="exo"><div class="exo-head"><b>${esc(e.nom)}</b></div>
+        <table class="tbl"><thead><tr><th>Série</th><th>Prévu</th><th>Réalisé</th><th>Écart</th></tr></thead><tbody>
+        ${e.series.map((x, j) => { const ec = ecartSerie(x), pdc = e.unite === 'poids du corps';
+          return `<tr><td>${j + 1}</td><td>${x.prevuReps != null ? `${x.prevuReps}${pdc ? '' : ` × ${fmtNum(x.prevuCharge)}`}` : '–'}</td>
+            <td><b>${x.faite ? `${x.reps}${pdc ? '' : ` × ${fmtNum(x.charge)}`}` : '–'}</b></td><td class="ecart ${ec.type}">${ec.texte}</td></tr>`; }).join('')}
+        </tbody></table></div>`).join('')}
+      <div class="actions"><button type="button" class="btn" data-a="modif">Modifier</button></div>`, body => {
+      $('[data-a="modif"]', body).addEventListener('click', () => Saisie.seance(s));
+    });
+  },
+
+  /* ---------- Charge d'entraînement ---------- */
+  charge: {
+    titre: 'Charge',
+    html() {
+      const D = today(), seances = Store.data.seances, rac = ratioAiguChronique(seances, D);
+      const zone = rac.ratio == null ? ['', 'Pas encore assez d’historique (3 semaines).']
+        : rac.ratio < 0.8 ? ['warn', 'Semaine plus légère que d’habitude.']
+        : rac.ratio <= 1.3 ? ['good', 'Zone stable : la charge suit ton habitude.']
+        : rac.ratio <= 1.5 ? ['warn', 'Hausse marquée : surveille la récupération.']
+        : ['bad', 'Pic de charge : risque de blessure accru, lève le pied.'];
+      const mois = D.slice(0, 7), parSport = {};
+      for (const s of seances.filter(x => x.date.startsWith(mois))) parSport[s.sport] = (parSport[s.sport] || 0) + 1;
+      return `<header class="page-head"><h1>Charge d'entraînement</h1><p class="muted">Effort ressenti (1-10) × durée en minutes</p></header>
+        <div class="grid">
+        ${carte('Charge par semaine', '<div class="chart"><canvas id="ch-charge"></canvas></div>', 'wide')}
+        ${carte('Équilibre', `<div class="kpi"><b>${rac.ratio != null ? fmtNum(rac.ratio, 2) : '–'}</b><span class="muted"> ratio 7 j / 28 j</span></div>
+          <p class="small ${zone[0]}">${zone[1]}</p><p class="muted small">7 derniers jours : ${fmtNum(rac.aigu, 0)} · moyenne hebdo sur 28 jours : ${fmtNum(rac.chronique, 0)}. Zone conseillée : 0,8 à 1,3.</p>`)}
+        ${carte('Ce mois-ci', Object.keys(parSport).length ? `<div class="list">${Object.entries(parSport).sort((a, b) => b[1] - a[1]).map(([sp, n]) =>
+          `<div class="li"><span>${sportDe(sp).icone} ${esc(sportDe(sp).nom)}</span><b>${n}</b></div>`).join('')}</div>` : '<p class="muted small">Aucune séance ce mois-ci.</p>')}
+        ${carte('Toutes les séances', `<div class="list">${seances.slice().sort(parDate).reverse().slice(0, 40).map(ligneSeance).join('') || '<p class="muted small">Aucune séance.</p>'}</div>`, 'wide')}
+        </div>`;
+    },
+    apres(root) {
+      const sem = chargesParSemaine(Store.data.seances, today(), 12);
+      const sports = SPORTS.map(s => s.id).filter(id => sem.some(w => w.parSport[id]));
+      const opt = Graphs.base();
+      opt.scales.x.stacked = opt.scales.y.stacked = true;
+      Graphs.creer($('#ch-charge', root), {
+        type: 'bar',
+        data: { labels: sem.map(w => fmtDate(w.debut, { day: 'numeric', month: 'short' })),
+          datasets: sports.map(id => ({ label: sportDe(id).nom, data: sem.map(w => w.parSport[id] || 0), backgroundColor: couleurSport(id), borderRadius: 4, maxBarThickness: 28 })) },
+        options: opt,
+      });
+      brancherListes(root);
+    },
+  },
+
+  /* ---------- Nutrition et poids ---------- */
+  nutrition: {
+    titre: 'Nutrition',
+    html() {
+      const D = today(), d = Store.data, c = cibles(d.profil, poidsActuel(), D);
+      const jours = Array.from({ length: 7 }, (_, i) => addDays(D, -i));
+      const renseignes = jours.filter(j => d.repas.some(r => r.date === j));
+      const moy = k => renseignes.length ? renseignes.reduce((a, j) => a + totaux(d.repas.filter(r => r.date === j))[k], 0) / renseignes.length : null;
+      return `<header class="page-head"><h1>Poids et nutrition</h1><p class="muted">Cible ${fmtKcal(c.kcal)} · ${c.p} g de protéines · ${c.f} g de fibres</p></header>
+        <div class="quick"><button type="button" data-a="repas"><span>🍽️</span>Repas</button><button type="button" data-a="poids"><span>⚖️</span>Poids</button></div>
+        <div class="grid">
+        ${carte('Poids', d.poids.length ? `<div class="chart"><canvas id="ch-poids"></canvas></div>${peseesComparables(d.poids).length < d.poids.length
+          ? `<p class="muted small">Seules les pesées « ${peseesComparables(d.poids)[0].conditions === 'jeun' ? 'à jeun, maison' : 'salle, habillé'} » sont affichées (mêmes conditions que la dernière) : les deux types ne se comparent pas.</p>` : ''}` : '<p class="muted">Aucune pesée.</p>', 'wide')}
+        ${carte('Moyenne des 7 derniers jours', renseignes.length ? `
+          <p class="muted small">${renseignes.length} jour${renseignes.length > 1 ? 's' : ''} renseigné${renseignes.length > 1 ? 's' : ''} sur 7 (les jours vides ne comptent pas)</p>
+          <div class="mini-bars">
+            <div><span class="small">Calories <b>${fmtNum(moy('kcal'), 0)}</b> / ${c.kcal}</span>${barre(moy('kcal'), c.kcal)}</div>
+            <div><span class="small">Protéines <b>${fmtNum(moy('p'), 0)}</b> / ${c.p} g</span>${barre(moy('p'), c.p, { classe: 'p' })}</div>
+            <div><span class="small">Fibres <b>${fmtNum(moy('f'), 0)}</b> / ${c.f} g</span>${barre(moy('f'), c.f, { classe: 'f' })}</div>
+            <div><span class="small">Glucides <b>${fmtNum(moy('g'), 0)}</b> g · Lipides <b>${fmtNum(moy('l'), 0)}</b> g</span></div></div>` : '<p class="muted">Aucun repas saisi cette semaine.</p>')}
+        ${carte('Calories sur 14 jours', '<div class="chart"><canvas id="ch-kcal"></canvas></div>')}
+        ${carte('Journal', jours.map(j => { const rs = d.repas.filter(r => r.date === j).sort(parDate); if (!rs.length) return '';
+          return `<h3>${fmtDate(j, { weekday: 'long', day: 'numeric', month: 'short' })} <span class="muted small">${fmtKcal(totaux(rs).kcal)}</span></h3><div class="list">${rs.map(ligneRepas).join('')}</div>`; }).join('') || '<p class="muted small">Rien sur 7 jours.</p>', 'wide')}
+        </div>`;
+    },
+    apres(root) {
+      const D = today(), d = Store.data, c = cibles(d.profil, poidsActuel(), D);
+      root.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (b && Saisie[b.dataset.a]) Saisie[b.dataset.a](); });
+      brancherListes(root);
+      const mg = moyenneGlissante(peseesComparables(d.poids));
+      if (mg.length) {
+        const opt = Graphs.base();
+        opt.scales.x.type = 'category';
+        Graphs.creer($('#ch-poids', root), {
+          type: 'line',
+          data: { labels: mg.map(x => fmtCourt(x.date)), datasets: [
+            { label: 'Pesée', data: mg.map(x => x.kg), showLine: false, pointRadius: 3, borderColor: css('--muted'), backgroundColor: css('--muted') },
+            { label: 'Moyenne 7 j', data: mg.map(x => x.moyenne), borderColor: css('--accent'), backgroundColor: css('--accent'), pointRadius: 0, tension: .3, borderWidth: 2.5 },
+            { label: 'Objectif', data: mg.map(() => d.profil.poidsObjectif), borderColor: css('--good'), borderDash: [5, 5], pointRadius: 0, borderWidth: 1.5 }] },
+          options: opt,
+        });
+      }
+      const jours = Array.from({ length: 14 }, (_, i) => addDays(D, i - 13));
+      Graphs.creer($('#ch-kcal', root), {
+        type: 'bar',
+        data: { labels: jours.map(fmtCourt), datasets: [
+          { type: 'line', label: 'Cible', data: jours.map(() => c.kcal), borderColor: css('--good'), borderDash: [5, 5], pointRadius: 0, borderWidth: 1.5 },
+          { label: 'kcal', data: jours.map(j => { const rs = d.repas.filter(r => r.date === j); return rs.length ? totaux(rs).kcal : null; }),
+            backgroundColor: jours.map(j => totaux(d.repas.filter(r => r.date === j)).kcal > c.kcal ? css('--warning') : css('--accent')), borderRadius: 4, maxBarThickness: 22 }] },
+        options: Graphs.base(),
+      });
+    },
+  },
+
+  /* ---------- Menus et courses ---------- */
+  menus: {
+    titre: 'Menus', graine: 1, sel: null, semaine: null, filtreSaison: true,
+    menuSauve() { return Store.data.menus.find(m => m.id === semaineMenu(today())); },
+    selection() {
+      const sem = semaineMenu(today()), p = Store.data.profil;
+      if (this.semaine !== sem) {
+        this.semaine = sem; this.sel = null;
+        try { Object.keys(localStorage).filter(k => k.startsWith('sport.courses.') && k !== 'sport.courses.' + sem).forEach(k => localStorage.removeItem(k)); } catch { /* rien */ }
+      }
+      if (!this.sel) {
+        const m = this.menuSauve();
+        if (m) this.sel = m.recettes.map(x => ({ ...x }));
+        else {
+          const rs = suggererMenu(Store.data.recettes, alimentsParId(), { mois: new Date().getMonth() + 1, nb: 3, graine: this.graine });
+          const parts = repartirPortions(rs.length, p.soireesBatch, p.personnesBatch);
+          this.sel = rs.map((r, i) => ({ id: r.id, portions: parts[i] }));
+        }
+      }
+      // Recette supprimée de la bibliothèque : retirée de la sélection elle-même (les index des boutons en dépendent)
+      this.sel = this.sel.filter(x => Store.data.recettes.some(r => r.id === x.id));
+      return this.sel;
+    },
+    html() {
+      const p = Store.data.profil, al = alimentsParId(), sel = this.selection(), sauve = this.menuSauve();
+      const recette = id => Store.data.recettes.find(r => r.id === id);
+      const totalPortions = sel.reduce((a, x) => a + x.portions, 0), besoin = p.soireesBatch * p.personnesBatch;
+      const courses = listeCourses(sel.map(x => ({ recette: recette(x.id), portions: x.portions })), al);
+      const coches = LS.get('sport.courses.' + this.semaine, []) || [];
+      const mois = new Date().getMonth() + 1;
+      const biblio = Store.data.recettes.filter(r => !this.filtreSaison || deSaison([r], mois).length).sort((a, b) => a.nom.localeCompare(b.nom));
+      const egal = sauve && JSON.stringify(sauve.recettes) === JSON.stringify(sel);
+      return `<header class="page-head"><h1>Menus et courses</h1><p class="muted">Batch du dimanche · semaine ${this.semaine.slice(-2)}</p></header>
+        <div class="grid">
+        ${carte('Batch de la semaine', `
+          <div class="row2"><label>Soirées<input type="number" name="soirees" inputmode="numeric" min="1" max="7" value="${p.soireesBatch}"></label>
+            <label>Personnes<input type="number" name="personnes" inputmode="numeric" min="1" max="6" value="${p.personnesBatch}"></label></div>
+          <p class="small ${totalPortions < besoin ? 'warn' : 'muted'}">${totalPortions} portions prévues pour ${besoin} nécessaires</p>
+          <div class="list">${sel.map((x, i) => { const r = recette(x.id), m = macrosRecette(r, al).parPortion;
+            return `<div class="li"><span><button type="button" class="link" data-voir="${esc(r.id)}"><b>${esc(r.nom)}</b></button><br>
+              <span class="muted small">${fmtKcal(m.kcal)} · ${fmtNum(m.p, 0)} g P · ${fmtNum(m.f, 0)} g fibres / portion · ${fmtNum(r.temps, 0)} min</span></span>
+              <span class="li-end"><span class="stepper sm"><button type="button" data-por="${i}" data-d="-1">−</button><b>${x.portions}</b><button type="button" data-por="${i}" data-d="1">+</button></span>
+              <button type="button" class="icon-btn sm" data-swap="${i}" title="Changer" aria-label="Changer cette recette">⟳</button>
+              <button type="button" class="icon-btn sm" data-retirer="${i}" aria-label="Retirer">✕</button></span></div>`; }).join('') || '<p class="muted small">Aucune recette.</p>'}</div>
+          <div class="actions wrap">
+            ${sauve ? '' : '<button type="button" class="btn" data-a="autre">Autre suggestion</button>'}
+            <button type="button" class="btn" data-a="ajouter">+ Recette</button>
+            ${egal ? '<span class="badge good">Menu validé</span>' : `<button type="button" class="btn primary" data-a="valider">${sauve ? 'Enregistrer les changements' : 'Valider ce menu'}</button>`}
+          </div>`)}
+        ${carte('Liste de courses', `<p class="muted small">Pour ${totalPortions} portions · cochée sur ce téléphone · ⓟ = placard, à vérifier</p>
+          ${courses.map(g => `<h3>${esc(g.rayon)}</h3>` + g.items.map(it => `<label class="check-line ${coches.includes(it.id) ? 'barre' : ''}">
+            <input type="checkbox" data-coche="${esc(it.id)}" ${coches.includes(it.id) ? 'checked' : ''}>
+            <span>${esc(it.nom)}${it.placard ? ' ⓟ' : ''} <span class="muted">${it.g ? (it.pieces ? `${it.pieces} ${esc(it.unitePiece)}${it.pieces > 1 ? 's' : ''} (${fmtNum(it.g, 0)} g)` : `${fmtNum(it.g, 0)} g`) : ''}${it.txt ? ` ${esc(it.txt)}` : ''}</span></span></label>`).join('')).join('')}
+          <div class="actions"><button type="button" class="btn" data-a="copier">Copier la liste</button></div>`)}
+        ${carte('Bibliothèque de recettes', `${chips('saison', [{ v: 1, l: 'De saison' }, { v: 0, l: 'Toutes' }], this.filtreSaison ? 1 : 0)}
+          <div class="list">${biblio.map(r => { const m = macrosRecette(r, al).parPortion;
+            return `<button type="button" class="li li-btn" data-voir="${esc(r.id)}"><span><b>${esc(r.nom)}</b><br><span class="muted small">${fmtKcal(m.kcal)} · ${fmtNum(m.p, 0)} g P · ${fmtNum(r.temps, 0)} min · se garde ${fmtNum(r.conservation, 0)} j</span></span><span class="li-end">›</span></button>`; }).join('')}</div>`, 'wide')}
+        </div>`;
+    },
+    texteCourses() {
+      const al = alimentsParId(), sel = this.selection();
+      return listeCourses(sel.map(x => ({ recette: Store.data.recettes.find(r => r.id === x.id), portions: x.portions })), al)
+        .map(g => `${g.rayon}\n` + g.items.filter(it => !it.placard).map(it => `- ${it.nom}${it.g ? ` : ${it.pieces ? `${it.pieces} ${it.unitePiece}${it.pieces > 1 ? 's' : ''}` : `${it.g} g`}` : ''}`).join('\n'))
+        .filter(t => t.includes('\n-')).join('\n\n');
+    },
+    apres(root) {
+      brancherChips(root, (n, v) => { if (n === 'saison') { this.filtreSaison = v === '1'; App.rendre(); } });
+      root.addEventListener('change', e => {
+        const t = e.target;
+        if (t.name === 'soirees' || t.name === 'personnes') {
+          const p = { ...Store.data.profil, [t.name === 'soirees' ? 'soireesBatch' : 'personnesBatch']: Math.max(1, num(t.value) || 1) };
+          Store.set('profil', p);
+          if (!this.menuSauve()) { const parts = repartirPortions(this.sel.length, p.soireesBatch, p.personnesBatch); this.sel.forEach((x, i) => { x.portions = parts[i]; }); }
+          App.rendre();
+        }
+        if (t.dataset.coche) {
+          const k = 'sport.courses.' + this.semaine, c = new Set(LS.get(k, []) || []);
+          t.checked ? c.add(t.dataset.coche) : c.delete(t.dataset.coche);
+          LS.set(k, [...c]); t.closest('label').classList.toggle('barre', t.checked);
+        }
+      });
+      root.addEventListener('click', e => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        const sel = this.sel;
+        if (b.dataset.voir) return Pages.detailRecette(b.dataset.voir);
+        if (b.dataset.por) { const x = sel[+b.dataset.por]; x.portions = Math.max(1, x.portions + Number(b.dataset.d)); return App.rendre(); }
+        if (b.dataset.retirer) { sel.splice(+b.dataset.retirer, 1); return App.rendre(); }
+        if (b.dataset.swap) {
+          const i = +b.dataset.swap, [r] = suggererMenu(Store.data.recettes, alimentsParId(), { mois: new Date().getMonth() + 1, nb: 1, graine: Date.now(), exclure: sel.map(x => x.id) });
+          if (r) sel[i] = { id: r.id, portions: sel[i].portions }; else toast('Plus d’autre recette de saison');
+          return App.rendre();
+        }
+        const a = b.dataset.a;
+        if (a === 'autre') { this.graine++; this.sel = null; App.rendre(); }
+        else if (a === 'ajouter') Pages.choisirRecette(r => { sel.push({ id: r.id, portions: Store.data.profil.personnesBatch * 2 }); App.rendre(); });
+        else if (a === 'valider') {
+          const j = parseIso(today()).getDay() === 0 ? addDays(today(), 1) : today();
+          Store.upsert('menus', { id: this.semaine, debut: debutSemaine(j), recettes: sel.map(x => ({ ...x })) }); toast('Menu enregistré');
+        }
+        else if (a === 'copier') {
+          const txt = this.texteCourses();
+          (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast('Liste copiée'), () => Sheet.ouvrir('Liste de courses', `<textarea rows="16" readonly>${esc(txt)}</textarea>`));
+        }
+      });
+    },
+  },
+  detailRecette(id) {
+    const r = Store.data.recettes.find(x => x.id === id), al = alimentsParId(), m = macrosRecette(r, al);
+    const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+    Sheet.ouvrir(r.nom, `
+      <p class="muted small">${fmtNum(r.portions, 0)} portions · ${fmtNum(r.temps, 0)} min · se garde ${fmtNum(r.conservation, 0)} jours · ${r.saisons && r.saisons.length < 12 ? 'saison : ' + r.saisons.map(x => MOIS[x - 1]).join(', ') : 'toute l’année'}</p>
+      <div class="macros"><div><b>${fmtNum(m.parPortion.kcal, 0)}</b><span>kcal</span></div><div><b>${fmtNum(m.parPortion.p, 0)}</b><span>prot.</span></div>
+        <div><b>${fmtNum(m.parPortion.g, 0)}</b><span>gluc.</span></div><div><b>${fmtNum(m.parPortion.l, 0)}</b><span>lip.</span></div><div><b>${fmtNum(m.parPortion.f, 0)}</b><span>fibres</span></div></div>
+      <p class="muted small">Par portion, calculé à partir des ingrédients.${m.manquants.length ? ` ⚠️ Aliments inconnus : ${esc(m.manquants.join(', '))}` : ''}</p>
+      <h3>Ingrédients (${fmtNum(r.portions, 0)} portions)</h3>
+      <ul>${r.ingredients.map(i => `<li>${esc((al[i.a] || { nom: i.a }).nom)}${i.g ? ` : ${fmtNum(i.g, 0)} g` : ''}${i.txt ? ` <span class="muted">(${esc(i.txt)})</span>` : ''}</li>`).join('')}</ul>
+      <h3>Étapes</h3><ol>${(r.etapes || []).map(e => `<li>${esc(e)}</li>`).join('')}</ol>`);
+  },
+  choisirRecette(cb) {
+    const al = alimentsParId();
+    Sheet.ouvrir('Ajouter une recette', `<div class="list">${Store.data.recettes.slice().sort((a, b) => a.nom.localeCompare(b.nom)).map(r =>
+      `<button type="button" class="li li-btn" data-r="${esc(r.id)}"><span>${esc(r.nom)}</span><span class="muted small">${fmtKcal(macrosRecette(r, al).parPortion.kcal)}</span></button>`).join('')}</div>`, body => {
+      body.addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (b) { Sheet.fermer(); cb(Store.data.recettes.find(r => r.id === b.dataset.r)); } });
+    });
+  },
+
+  /* ---------- Paramètres ---------- */
+  parametres: {
+    titre: 'Paramètres',
+    html() {
+      const c = Config.lire(), p = Store.data.profil, ci = cibles(p, poidsActuel(), today());
+      const champ = (n, l, v, t = 'text', extra = '') => `<label>${l}<input name="${n}" type="${t}" value="${esc(v ?? '')}" ${extra}></label>`;
+      return `<header class="page-head"><h1>Paramètres</h1></header>
+        <div class="grid">
+        ${carte('Données', `
+          ${chips('mode', [{ v: 'github', l: 'Dépôt GitHub' }, { v: 'local', l: 'Ce navigateur seulement' }], c.mode)}
+          <div class="gh ${c.mode === 'github' ? '' : 'hidden'}">
+            <div class="row2">${champ('owner', 'Propriétaire', c.owner)}${champ('repo', 'Dépôt (privé)', c.repo)}</div>
+            <div class="row2">${champ('branche', 'Branche', c.branche)}${champ('dossier', 'Dossier', c.dossier)}</div>
+            ${champ('token', 'Token GitHub', c.token, 'password', 'autocomplete="off"')}
+            <label class="check-line"><input type="checkbox" name="memoriser" ${c.memoriser ? 'checked' : ''}> Mémoriser le token sur cet appareil</label>
+            <p class="muted small">Token « fine-grained » limité au dépôt de données, droit <b>Contents : Read and write</b>. Il reste dans ce navigateur et n’est envoyé qu’à api.github.com.</p>
+          </div>
+          <div class="actions wrap"><button type="button" class="btn primary" data-a="cfg">Enregistrer et recharger</button>
+            <button type="button" class="btn gh ${c.mode === 'github' ? '' : 'hidden'}" data-a="init">Initialiser le dépôt</button></div>
+          <p class="muted small" id="cfg-msg">${esc(Store.etat.message || '')}${Store.enAttente() ? ` · ${Store.enAttente()} saisie(s) en attente d’envoi` : ''}</p>`)}
+        ${carte('Profil et cibles', `
+          <div class="row2">${champ('naissance', 'Date de naissance', p.naissance, 'date')}${champ('tailleCm', 'Taille (cm)', p.tailleCm, 'number')}</div>
+          <div class="row2">${champ('poidsDepart', 'Poids de départ (kg)', p.poidsDepart, 'number', 'step="0.1"')}${champ('poidsObjectif', 'Objectif (kg)', p.poidsObjectif, 'number', 'step="0.1"')}</div>
+          <div class="row2">${champ('nap', 'Niveau d’activité', p.nap, 'number', 'step="0.05" min="1.2" max="2"')}${champ('deficit', 'Déficit visé (kcal/j)', p.deficit, 'number', 'step="50"')}</div>
+          <div class="row2">${champ('proteinesParKg', 'Protéines (g/kg)', p.proteinesParKg, 'number', 'step="0.1"')}${champ('fibresCible', 'Fibres (g/j)', p.fibresCible, 'number')}</div>
+          <p class="small">Métabolisme de base ${fmtKcal(ci.bmr)} · dépense estimée ${fmtKcal(ci.depense)} · <b>cible ${fmtKcal(ci.kcal)}</b> · ${ci.p} g de protéines
+            <br><span class="muted">Calculé sur ton poids moyen actuel (${fmtNum(poidsActuel())} kg). Niveau d’activité : 1,4 bureau + 2-3 séances/sem., 1,55 sportif régulier. Si le poids ne baisse pas après 3 semaines, baisse-le de 0,05.</span></p>
+          <div class="actions"><button type="button" class="btn primary" data-a="profil">Enregistrer le profil</button></div>`)}
+        ${carte('Sauvegarde', `<p class="muted small">Télécharge toutes les données en un fichier JSON.</p><div class="actions"><button type="button" class="btn" data-a="export">Télécharger</button></div>`)}
+        </div>`;
+    },
+    apres(root) {
+      const v = n => { const el = $(`[name="${n}"]`, root); return el.type === 'checkbox' ? el.checked : el.value.trim(); };
+      const lireCfg = () => ({ mode: valeurChips(root, 'mode'), owner: v('owner'), repo: v('repo'), branche: v('branche') || 'main', dossier: v('dossier'), token: v('token'), memoriser: v('memoriser') });
+      brancherChips(root, (n, val) => { if (n === 'mode') $$('.gh', root).forEach(x => x.classList.toggle('hidden', val !== 'github')); });
+      root.addEventListener('click', async e => {
+        const b = e.target.closest('[data-a]');
+        if (!b) return;
+        const msg = $('#cfg-msg', root);
+        if (b.dataset.a === 'cfg') { Config.ecrire(lireCfg()); await App.charger(); toast(Store.etat.sync === 'erreur' ? 'Erreur de chargement' : 'Paramètres enregistrés'); }
+        else if (b.dataset.a === 'init') {
+          // Crée dans le dépôt les fichiers absents, avec le contenu affiché (bibliothèques intégrées, programme, profil)
+          const cfg = lireCfg(), crees = [];
+          msg.textContent = 'Vérification du dépôt…';
+          try {
+            for (const [n, f] of Object.entries(FICHIERS)) {
+              if (await ghGet(cfg, f.f)) continue;
+              await ghPut(cfg, f.f, Store.data[n], null, `Création de ${f.f}`);
+              crees.push(f.f);
+            }
+            if (crees.length) { Config.ecrire(cfg); await App.charger(); toast(`${crees.length} fichier(s) créé(s) dans le dépôt`); }
+            else msg.textContent = 'Tous les fichiers existent déjà : rien n’a été modifié.';
+          } catch (err) { msg.textContent = err.message; }
+        } else if (b.dataset.a === 'profil') {
+          const p = { ...Store.data.profil };
+          for (const k of ['naissance']) p[k] = v(k);
+          for (const k of ['tailleCm', 'poidsDepart', 'poidsObjectif', 'nap', 'deficit', 'proteinesParKg', 'fibresCible']) { const n = num(v(k)); if (n != null) p[k] = n; }
+          Store.set('profil', p); App.rendre(); toast('Profil enregistré');
+        } else if (b.dataset.a === 'export') {
+          const blob = new Blob([JSON.stringify(Store.data, null, 1)], { type: 'application/json' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob); a.download = `suivi-sport-${today()}.json`; a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+      });
+    },
+  },
+};
+
+</script>
+  <script>
+/* Démarrage, navigation par onglets (#route), thème, état de synchronisation. */
+
+const ROUTES = [
+  { id: 'accueil', page: 'accueil', nom: "Aujourd'hui", icone: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1z"/>' },
+  { id: 'muscu', page: 'muscu', nom: 'Muscu', icone: '<path d="M2 10h2V8h2v8H4v-2H2zm4-4h3v12H6zm3 5h6v2H9zm6-5h3v12h-3zm3 2h2v2h2v4h-2v2h-2z"/>' },
+  { id: 'charge', page: 'charge', nom: 'Charge', icone: '<rect x="4" y="11" width="4" height="9" rx="1.5"/><rect x="10" y="4" width="4" height="16" rx="1.5"/><rect x="16" y="8" width="4" height="12" rx="1.5"/>' },
+  { id: 'nutrition', page: 'nutrition', nom: 'Nutrition', icone: '<path d="M12 21c-4.5 0-8-3.5-8-8 0-3.3 2-5.6 4.6-5.6 1.3 0 2.4.5 3.4 1.3 1-.8 2.1-1.3 3.4-1.3C18 7.4 20 9.7 20 13c0 4.5-3.5 8-8 8zM12 7c0-2.2 1.3-4 3.5-4.5.2 2.2-1.2 4-3.5 4.5z"/>' },
+  { id: 'menus', page: 'menus', nom: 'Menus', icone: '<path d="M4 4h16v3H4zm1 5h14l-1.2 10.2A2 2 0 0 1 15.8 21H8.2a2 2 0 0 1-2-1.8z"/>' },
+  { id: 'parametres', page: 'parametres', nom: 'Réglages', icone: '<path d="M12 2.5 20 6v5.5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/>' },
+];
+
+const App = {
+  route() { const h = location.hash.slice(1); return ROUTES.some(r => r.id === h) ? h : 'accueil'; },
+  nav() {
+    $('#nav').innerHTML = ROUTES.map(r => `<a href="#${r.id}" data-route="${r.id}"><svg viewBox="0 0 24 24" aria-hidden="true">${r.icone}</svg><span>${r.nom}</span></a>`).join('');
+  },
+  pill() {
+    const e = Store.etat, n = Store.enAttente(), p = $('#sync');
+    const [cls, txt] = e.sync === 'local' ? ['', 'Local']
+      : e.sync === 'envoi' ? ['', 'Envoi…']
+      : e.sync === 'erreur' ? ['bad', n ? `${n} en attente` : 'Erreur']
+      : n ? ['warn', `${n} en attente`] : ['good', 'Synchronisé'];
+    p.className = 'pill ' + cls; p.textContent = txt; p.title = e.message || '';
+  },
+  rendre() {
+    const id = this.route(), page = Pages[ROUTES.find(r => r.id === id).page];
+    $$('#nav a').forEach(a => a.classList.toggle('on', a.dataset.route === id));
+    Graphs.detruire();
+    const ancien = $('#view'), view = ancien.cloneNode(false); // remplace le nœud pour repartir sans écouteurs
+    ancien.replaceWith(view);
+    try { view.innerHTML = page.html(); page.apres && page.apres(view); }
+    catch (err) { console.error(err); view.innerHTML = `<section class="card"><h2>Erreur d’affichage</h2><p>${esc(err.message)}</p></section>`; }
+    document.title = `${page.titre} · Suivi sport`;
+    this.pill();
+  },
+  async charger() {
+    $('#view').innerHTML = '<p class="muted center">Chargement…</p>';
+    try { await Store.charger(); }
+    catch (err) {
+      Store.etat = { sync: 'erreur', message: err.message };
+      location.hash = '#parametres';
+    }
+    this.rendre();
+  },
+  theme(t) {
+    document.documentElement.dataset.theme = t;
+    LS.set(CLES.theme, t);
+  },
+  async init() {
+    const t = LS.get(CLES.theme);
+    if (t) this.theme(t);
+    this.nav();
+    window.addEventListener('hashchange', () => { Sheet.fermer(); this.rendre(); window.scrollTo(0, 0); });
+    $('#btn-add').addEventListener('click', () => Saisie.menu());
+    $('#btn-theme').addEventListener('click', () => { this.theme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'); this.rendre(); });
+    $('#btn-refresh').addEventListener('click', () => this.charger());
+    Store.surChangement(() => {
+      // Ne pas effacer un formulaire en cours de saisie dans la page
+      const focus = document.activeElement;
+      if (this.route() === 'parametres' || (focus && $('#view').contains(focus) && /INPUT|TEXTAREA|SELECT/.test(focus.tagName))) this.pill();
+      else this.rendre();
+    });
+    await this.charger();
+  },
+};
+document.addEventListener('DOMContentLoaded', () => App.init());
+// Ouverture sans réseau (salle de sport) : copie de la page gardée par sw.js
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  navigator.serviceWorker.register('sw.js').catch(() => { /* hors ligne non disponible : la page marche quand même */ });
+}
+
+</script>
+</body>
+</html>
