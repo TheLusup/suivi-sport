@@ -197,6 +197,18 @@ main > .card { margin-bottom: 16px; }
 .exo-edit { border: 1px dashed var(--accent); border-radius: var(--radius-sm); padding: 10px 12px; margin: 10px 0; }
 .exo-edit .actions { margin-top: 6px; }
 .exo-plus { width: 100%; margin: 10px 0 4px; border-style: dashed; }
+.tendance { margin-bottom: 22px; }
+.td-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.td-tete h2 { margin: 0; font-size: 16px; }
+.td-tuiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 10px; }
+.td-tuile { background: var(--surface-2); border-radius: var(--radius-sm); padding: 10px 12px; color: var(--text-2); }
+.td-tuile b { display: block; font-size: 24px; font-weight: 800; line-height: 1.1; }
+.td-tuile span { font-size: 12px; font-weight: 600; }
+.td-tuile.good { background: var(--accent-soft); color: var(--good-text); }
+.td-tuile.warn { color: var(--warning-text); }
+.td-alerte { margin: 0; background: var(--surface-2); border-radius: var(--radius-sm); padding: 9px 12px; color: var(--text-2); }
+.td-alerte i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--warning-text); margin-right: 8px; }
+.td-alerte .lien { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--text); text-decoration: underline; cursor: pointer; }
 .exo-groupe { margin-bottom: 22px; }
 .exo-groupe h2 { margin: 0; }
 details.exo-groupe summary { display: flex; align-items: baseline; gap: 10px; cursor: pointer; list-style: none; }
@@ -851,6 +863,22 @@ function progressionExo(h) {
   if (!h.length) return null;
   const p = h[0], d = h[h.length - 1];
   return { seances: h.length, depuis: p.date, deltaCharge: p.max != null && d.max != null ? d.max - p.max : null, deltaReps: d.reps - p.reps };
+}
+// Tendance des exercices du programme (hors échauffement et anciens, hors cardio) : dernière séance vs précédente.
+// La charge max décide d'abord ; à charge égale ou inconnue, le total de reps. Moins de 2 séances : ignoré.
+function tendanceExos(groupes, seances) {
+  const out = { progres: [], stable: [], baisse: [] };
+  for (const g of groupes.filter(g => g.cle !== 'echauffement' && g.cle !== 'anciens')) for (const ex of g.exos) {
+    if (ex.unite === 'min') continue;
+    const h = historiqueExo(seances, ex.id);
+    if (h.length < 2) continue;
+    const a = h[h.length - 2], d = h[h.length - 1];
+    const dc = a.max != null && d.max != null ? r1(d.max - a.max) : 0, dr = d.reps - a.reps;
+    const sens = dc ? Math.sign(dc) : Math.sign(dr);
+    const texte = dc ? `${dc > 0 ? '+' : '−'}${fmtNum(Math.abs(dc))} kg` : dr ? `${dr > 0 ? '+' : '−'}${Math.abs(dr)} rep${Math.abs(dr) > 1 ? 's' : ''}` : 'stable';
+    out[sens > 0 ? 'progres' : sens < 0 ? 'baisse' : 'stable'].push({ id: ex.id, nom: ex.nom, groupe: g.titre, texte });
+  }
+  return out;
 }
 function prevuExo(exo, seances) {
   const h = historiqueExo(seances, exo.id), der = h[h.length - 1];
@@ -1963,8 +1991,19 @@ const Pages = {
           ${h.length > 1 ? `<div class="chart xs"><canvas data-graphe="${esc(ex.id)}"></canvas></div>` : der ? '<p class="muted small">Le graphe apparaît dès la 2e séance.</p>' : ''}
         </button>`;
       };
+      const groupes = groupesExos(prog, seances), td = tendanceExos(groupes, seances);
+      const nbT = td.progres.length + td.stable.length + td.baisse.length;
+      const tuile = (n, lib, cls) => `<div class="td-tuile ${cls}"><b>${n}</b><span>${lib}</span></div>`;
+      const tendance = !nbT ? '' : `<section class="card tendance">
+          <div class="td-tete"><h2>Tendance</h2><span class="muted small">dernière séance vs précédente</span></div>
+          <div class="td-tuiles">${tuile(td.progres.length, 'en progrès', 'good')}${tuile(td.stable.length, 'stable', '')}${tuile(td.baisse.length, 'en baisse', td.baisse.length ? 'warn' : '')}</div>
+          <p class="td-alerte small">${td.baisse.length
+            ? `<i></i>À surveiller : ${td.baisse.map(x => `<button type="button" class="lien" data-exo="${esc(x.id)}">${esc(x.nom)}</button> ${esc(x.texte)} <span class="muted">(${esc(x.groupe)})</span>`).join(' · ')}`
+            : '<span class="muted">Rien en baisse depuis la séance précédente.</span>'}</p>
+        </section>`;
       return `<header class="page-head"><h1>Muscu</h1><p class="muted">Évolution de chaque exercice · ${nb} séance${nb > 1 ? 's' : ''} enregistrée${nb > 1 ? 's' : ''}</p></header>
-        ${groupesExos(prog, seances).map(g => {
+        ${tendance}
+        ${groupes.map(g => {
           const grille = `<div class="grid exo-grid">${g.exos.map(carteExo).join('')}</div>`;
           // L'échauffement et les anciens exercices sont repliés : moins utiles au quotidien
           return g.cle === 'echauffement' || g.cle === 'anciens'
