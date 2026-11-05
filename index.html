@@ -2295,7 +2295,7 @@ const App = {
 document.addEventListener('DOMContentLoaded', () => App.init());
 // Ouverture sans réseau (salle de sport) : copie de la page gardée par sw.js
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-  navigator.serviceWorker.register('sw.js').catch(() => { /* hors ligne non disponible : la page marche quand même */ });
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => { /* hors ligne non disponible : la page marche quand même */ });
 }
 
 </script>
