@@ -261,6 +261,7 @@ textarea { resize: vertical; }
 .exo p { margin: 2px 0 8px; }
 .exo-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
 .serie { display: grid; grid-template-columns: 26px 1fr 64px 12px 70px 44px; gap: 6px; align-items: center; padding: 4px 0; }
+.serie.aidee { grid-template-columns: 26px 1fr 56px 30px 64px 44px; }
 .serie input { padding: 9px 4px; text-align: center; background: var(--surface); }
 .serie .sn { font-size: 12px; font-weight: 700; color: var(--muted); }
 .serie .prevu { font-size: 12px; color: var(--muted); }
@@ -626,7 +627,7 @@ const SEED = {
         {"nom": "Échauffement", "exos": [
           {"id": "ech-ski-erg", "nom": "Ski erg", "series": 1, "repsMin": 2, "repsMax": 2, "charge": null, "unite": "min", "consigne": "≈ 10 min d'échauffement au total. Durées et reps à ajuster."},
           {"id": "ech-rameur", "nom": "Rameur", "series": 1, "repsMin": 2, "repsMax": 2, "charge": null, "unite": "min", "consigne": ""},
-          {"id": "ech-tractions", "nom": "Tractions", "series": 1, "repsMin": 5, "repsMax": 5, "charge": null, "unite": "poids du corps", "consigne": ""},
+          {"id": "ech-tractions", "nom": "Tractions", "series": 1, "repsMin": 5, "repsMax": 5, "charge": null, "unite": "poids du corps", "assiste": true, "aide": 40, "consigne": "Assistées à l'élastique : note l'aide en kg (vert ≈ 40 kg)."},
           {"id": "ech-pompes", "nom": "Pompes", "series": 1, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "poids du corps", "consigne": ""},
           {"id": "ech-dips", "nom": "Dips", "series": 1, "repsMin": 8, "repsMax": 8, "charge": null, "unite": "poids du corps", "consigne": ""}
         ]},
@@ -650,7 +651,7 @@ const SEED = {
         {"nom": "Échauffement", "exos": [
           {"id": "ech-ski-erg", "nom": "Ski erg", "series": 1, "repsMin": 2, "repsMax": 2, "charge": null, "unite": "min", "consigne": "≈ 10 min d'échauffement au total. Durées et reps à ajuster."},
           {"id": "ech-rameur", "nom": "Rameur", "series": 1, "repsMin": 2, "repsMax": 2, "charge": null, "unite": "min", "consigne": ""},
-          {"id": "ech-tractions", "nom": "Tractions", "series": 1, "repsMin": 5, "repsMax": 5, "charge": null, "unite": "poids du corps", "consigne": ""},
+          {"id": "ech-tractions", "nom": "Tractions", "series": 1, "repsMin": 5, "repsMax": 5, "charge": null, "unite": "poids du corps", "assiste": true, "aide": 40, "consigne": "Assistées à l'élastique : note l'aide en kg (vert ≈ 40 kg)."},
           {"id": "ech-pompes", "nom": "Pompes", "series": 1, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "poids du corps", "consigne": ""},
           {"id": "ech-dips", "nom": "Dips", "series": 1, "repsMin": 8, "repsMax": 8, "charge": null, "unite": "poids du corps", "consigne": ""}
         ]},
@@ -811,6 +812,8 @@ function ratioAiguChronique(seances, date) {
 
 /* ---------- Muscu ---------- */
 const seriesFaites = e => (e.series || []).filter(x => x.faite && x.reps > 0);
+// Exercice assisté (élastique, machine) : aide en kg, la plus faible de la séance ; moins d'aide = progrès
+const aideMin = series => { const a = series.filter(x => x.aide > 0).map(x => x.aide); return a.length ? Math.min(...a) : null; };
 // Historique d'un exercice, du plus ancien au plus récent : charge max, volume (reps × charge), 1RM estimé (Epley)
 function historiqueExo(seances, exoId) {
   const out = [];
@@ -826,6 +829,7 @@ function historiqueExo(seances, exoId) {
       reps: f.reduce((a, x) => a + x.reps, 0),
       volume: ch.length ? Math.round(ch.reduce((a, x) => a + x.reps * x.charge, 0)) : null,
       e1rm: ch.length ? r1(Math.max(...ch.map(x => x.charge * (1 + x.reps / 30)))) : null,
+      aide: aideMin(f),
     });
   }
   return out;
@@ -862,7 +866,8 @@ function exoParNom(nom, catalogue, unite) {
 function progressionExo(h) {
   if (!h.length) return null;
   const p = h[0], d = h[h.length - 1];
-  return { seances: h.length, depuis: p.date, deltaCharge: p.max != null && d.max != null ? d.max - p.max : null, deltaReps: d.reps - p.reps };
+  return { seances: h.length, depuis: p.date, deltaCharge: p.max != null && d.max != null ? d.max - p.max : null, deltaReps: d.reps - p.reps,
+    deltaAide: p.aide != null && d.aide != null ? r1(d.aide - p.aide) : null };
 }
 // Tendance des exercices du programme (hors échauffement et anciens, hors cardio) : dernière séance vs précédente.
 // La charge max décide d'abord ; à charge égale ou inconnue, le total de reps. Moins de 2 séances : ignoré.
@@ -874,8 +879,10 @@ function tendanceExos(groupes, seances) {
     if (h.length < 2) continue;
     const a = h[h.length - 2], d = h[h.length - 1];
     const dc = a.max != null && d.max != null ? r1(d.max - a.max) : 0, dr = d.reps - a.reps;
-    const sens = dc ? Math.sign(dc) : Math.sign(dr);
-    const texte = dc ? `${dc > 0 ? '+' : '−'}${fmtNum(Math.abs(dc))} kg` : dr ? `${dr > 0 ? '+' : '−'}${Math.abs(dr)} rep${Math.abs(dr) > 1 ? 's' : ''}` : 'stable';
+    const da = a.aide != null && d.aide != null ? r1(d.aide - a.aide) : 0;   // aide en baisse = progrès
+    const sens = dc ? Math.sign(dc) : da ? -Math.sign(da) : Math.sign(dr);
+    const texte = dc ? `${dc > 0 ? '+' : '−'}${fmtNum(Math.abs(dc))} kg` : da ? `aide ${da > 0 ? '+' : '−'}${fmtNum(Math.abs(da))} kg`
+      : dr ? `${dr > 0 ? '+' : '−'}${Math.abs(dr)} rep${Math.abs(dr) > 1 ? 's' : ''}` : 'stable';
     out[sens > 0 ? 'progres' : sens < 0 ? 'baisse' : 'stable'].push({ id: ex.id, nom: ex.nom, groupe: g.titre, texte });
   }
   return out;
@@ -890,6 +897,7 @@ function prevuExo(exo, seances) {
   }
   return {
     charge: charge ?? null, reps: exo.repsMax, pretAMonter: pret,
+    aide: exo.assiste ? (der && der.aide != null ? der.aide : exo.aide ?? null) : null,
     chargeSuggeree: pret && charge != null && exo.pas ? charge + exo.pas : null, derniere: der || null,
   };
 }
@@ -1394,8 +1402,8 @@ const Saisie = {
     return ps.blocs.flatMap(b => b.exos.map(ex => {
       const pv = prevuExo(ex, Store.data.seances);
       return {
-        id: ex.id, nom: ex.nom, bloc: b.nom, unite: ex.unite, consigne: ex.consigne, pret: pv.chargeSuggeree,
-        series: Array.from({ length: ex.series }, () => ({ prevuReps: pv.reps, prevuCharge: pv.charge, reps: pv.reps, charge: pv.charge, faite: false })),
+        id: ex.id, nom: ex.nom, bloc: b.nom, unite: ex.unite, consigne: ex.consigne, pret: pv.chargeSuggeree, ...(ex.assiste ? { assiste: true } : {}),
+        series: Array.from({ length: ex.series }, () => ({ prevuReps: pv.reps, prevuCharge: pv.charge, reps: pv.reps, charge: pv.charge, faite: false, ...this.aideSerie(pv) })),
       };
     }));
   },
@@ -1404,13 +1412,15 @@ const Saisie = {
     const pv = prevuExo({ series: nbSeries, repsMax: null, ...def }, Store.data.seances), der = pv.derniere;
     const n = nbSeries || def.series || (der ? der.series.length : 3);
     return {
-      id: def.id, nom: def.nom, bloc, unite: def.unite, consigne: def.consigne, pret: pv.chargeSuggeree,
+      id: def.id, nom: def.nom, bloc, unite: def.unite, consigne: def.consigne, pret: pv.chargeSuggeree, ...(def.assiste ? { assiste: true } : {}),
       series: Array.from({ length: n }, (_, j) => {
         const r = pv.reps ?? (der && der.series[Math.min(j, der.series.length - 1)].reps) ?? null;
-        return { prevuReps: r, prevuCharge: pv.charge, reps: r, charge: pv.charge, faite: false };
+        return { prevuReps: r, prevuCharge: pv.charge, reps: r, charge: pv.charge, faite: false, ...this.aideSerie(pv) };
       }),
     };
   },
+  // Exercice assisté : aide prévue = celle de la dernière fois (sinon celle du programme)
+  aideSerie(pv) { return pv.aide != null ? { prevuAide: pv.aide, aide: pv.aide } : {}; },
   catalogueExos() { return groupesExos(Store.data.programme, Store.data.seances).flatMap(g => g.exos); },
   nouvelleSeance(sport, programmeId, date) {
     const sp = sportDe(sport);
@@ -1488,9 +1498,9 @@ const Saisie = {
           }
           s[t.dataset.k] = num(t.value);
           // Une charge modifiée est reportée sur les séries suivantes pas encore faites (ou restées sans charge)
-          if (t.dataset.k === 'charge') ex.series.forEach((x, j) => {
-            if (j > +t.dataset.s && (!x.faite || x.charge == null)) { x.charge = s.charge; const inp = $(`[data-e="${t.dataset.e}"][data-s="${j}"][data-k="charge"]`, body); if (inp) inp.value = s.charge ?? ''; }
-          });
+          if (t.dataset.k === 'charge' || t.dataset.k === 'aide') { const k = t.dataset.k; ex.series.forEach((x, j) => {
+            if (j > +t.dataset.s && (!x.faite || x[k] == null)) { x[k] = s[k]; const inp = $(`[data-e="${t.dataset.e}"][data-s="${j}"][data-k="${k}"]`, body); if (inp) inp.value = s[k] ?? ''; }
+          }); }
         }
         sauverBrouillon();
       });
@@ -1515,14 +1525,15 @@ const Saisie = {
           const prec = ex.series[+b.dataset.s - 1];
           if (s.faite && s.reps == null) s.reps = s.prevuReps ?? (prec && prec.reps);
           if (s.faite && s.charge == null && prec && prec.charge != null) s.charge = prec.charge;
+          if (s.faite && ex.assiste && s.aide == null && prec && prec.aide != null) s.aide = prec.aide;
           const ligne = b.closest('.serie');
           ligne.classList.toggle('done', s.faite);
-          for (const k of ['reps', 'charge']) { const inp = $(`[data-k="${k}"]`, ligne); if (inp) inp.value = k === 'reps' && ex.unite === 'min' ? fmtDuree(s.reps) : s[k] ?? ''; }
+          for (const k of ['reps', 'charge', 'aide']) { const inp = $(`[data-k="${k}"]`, ligne); if (inp) inp.value = k === 'reps' && ex.unite === 'min' ? fmtDuree(s.reps) : s[k] ?? ''; }
           if (ex.unite === 'min') { s.tempsIllisible = false; const p = $(`[data-allure="${b.dataset.e}"]`, body); if (p) p.innerHTML = this.texteAllure(st, +b.dataset.e); }
           sauverBrouillon();
         } else if (a === 'serie+') {
           const ex = st.exos[+b.dataset.e], der = ex.series[ex.series.length - 1] || {};
-          ex.series.push({ prevuReps: null, prevuCharge: null, reps: der.reps ?? null, charge: der.charge ?? null, faite: false });
+          ex.series.push({ prevuReps: null, prevuCharge: null, reps: der.reps ?? null, charge: der.charge ?? null, faite: false, ...(ex.assiste ? { aide: der.aide ?? null } : {}) });
           sauverBrouillon(); rendre(body);
         } else if (a === 'exo-remplacer' || a === 'exo-ajouter') {
           modifExo = { mode: a === 'exo-ajouter' ? 'ajouter' : 'remplacer', i: +b.dataset.e };
@@ -1557,7 +1568,7 @@ const Saisie = {
           if (montre.erreur) return toast(montre.erreur);
           const s = { ...st };
           if (montre.valeurs) s.montre = montre.valeurs; else delete s.montre;
-          if (s.exos) s.exos = s.exos.map(({ id, nom, unite, series }) => ({ id, nom, unite, series: series.map(({ tempsIllisible, ...x }) => x) }));
+          if (s.exos) s.exos = s.exos.map(({ id, nom, unite, assiste, series }) => ({ id, nom, unite, ...(assiste ? { assiste: true } : {}), series: series.map(({ tempsIllisible, ...x }) => x) }));
           Store.upsert('seances', s);
           if (!edition && !autreJour) LS.del(CLES.brouillon);
           Sheet.fermer();
@@ -1586,13 +1597,13 @@ const Saisie = {
       h += `<div class="exo"><div class="exo-head"><b>${esc(ex.nom)}</b><span class="muted small">${esc(ex.unite || '')}</span>
           ${ex.pret ? `<span class="badge good">Prêt à monter → ${fmtNum(ex.pret)} kg</span>` : ''}</div>
         ${ex.consigne ? `<p class="muted small">${esc(ex.consigne)}</p>` : ''}
-        ${ex.series.map((s, j) => `<div class="serie ${s.faite ? 'done' : ''}">
+        ${ex.series.map((s, j) => `<div class="serie ${s.faite ? 'done' : ''} ${pdc && ex.assiste ? 'aidee' : ''}">
           <span class="sn">S${j + 1}</span>
-          <span class="prevu">${s.prevuReps != null ? `${s.prevuReps}${pdc ? ` ${ur}` : ` ×${s.prevuCharge != null ? fmtNum(s.prevuCharge) : '?'}`}` : '—'}</span>
+          <span class="prevu">${s.prevuReps != null ? `${s.prevuReps}${pdc ? ` ${ur}` : ` ×${s.prevuCharge != null ? fmtNum(s.prevuCharge) : '?'}`}` : '—'}${ex.assiste && s.prevuAide != null ? ` · aide ${fmtNum(s.prevuAide)}` : ''}</span>
           ${cardio ? `<input type="text" data-e="${i}" data-s="${j}" data-k="reps" value="${fmtDuree(s.reps)}" placeholder="m:ss" aria-label="Temps série ${j + 1}">
             <span class="x">·</span><input type="number" inputmode="numeric" data-e="${i}" data-s="${j}" data-k="dist" value="${s.dist ?? ''}" placeholder="m" aria-label="Distance série ${j + 1} (m)">`
           : `<input type="number" inputmode="numeric" data-e="${i}" data-s="${j}" data-k="reps" value="${s.reps ?? ''}" placeholder="${ur}" aria-label="Répétitions série ${j + 1}">
-          ${pdc ? '<span></span><span></span>' : `<span class="x">×</span><input type="text" inputmode="decimal" data-e="${i}" data-s="${j}" data-k="charge" value="${s.charge ?? ''}" placeholder="kg" aria-label="Charge série ${j + 1}">`}`}
+          ${pdc ? (ex.assiste ? `<span class="x">aide</span><input type="text" inputmode="decimal" data-e="${i}" data-s="${j}" data-k="aide" value="${s.aide ?? ''}" placeholder="aide kg" aria-label="Aide de l’élastique série ${j + 1} (kg)">` : '<span></span><span></span>') : `<span class="x">×</span><input type="text" inputmode="decimal" data-e="${i}" data-s="${j}" data-k="charge" value="${s.charge ?? ''}" placeholder="kg" aria-label="Charge série ${j + 1}">`}`}
           <button type="button" class="check" data-a="check" data-e="${i}" data-s="${j}" aria-label="Série ${j + 1} faite">✓</button></div>`).join('')}
         ${cardio ? `<p class="muted small allure" data-allure="${i}">${this.texteAllure(st, i)}</p>` : ''}
         <div class="exo-liens"><button type="button" class="link small" data-a="serie+" data-e="${i}">+ série</button>
@@ -1792,14 +1803,17 @@ const ligneRepas = (r, avecMoment) => `<div class="li"><span><b>${esc(r.nom)}</b
 const texteMontre = m => [m.kcal != null && `${fmtNum(m.kcal, 0)} kcal`, m.fcMoy != null && `FC moy ${m.fcMoy}`, m.fcMax != null && `FC max ${m.fcMax}`, m.charge != null && `charge montre ${m.charge}`].filter(Boolean).join(' · ');
 // Graphe d'un exercice : charge max (courbe, axe gauche) et reps totales (barres, axe droit) ; minutes pour le cardio
 function grapheExo(ex, h) {
-  const opt = Graphs.base(), cardio = ex.unite === 'min', avecCharge = !sansCharge(ex.unite) && h.some(x => x.max != null);
+  const opt = Graphs.base(), cardio = ex.unite === 'min', avecAide = h.some(x => x.aide != null);
+  const avecCharge = (!sansCharge(ex.unite) && h.some(x => x.max != null)) || avecAide;
   opt.plugins.legend.labels.font = { size: 10 };
   opt.scales.y.beginAtZero = !avecCharge;
   const barres = { type: 'bar', label: cardio ? 'Minutes' : 'Reps totales', data: h.map(x => cardio ? Math.round(x.reps * 10) / 10 : x.reps),
     backgroundColor: css('--series-3'), borderRadius: 3, maxBarThickness: 18, yAxisID: avecCharge ? 'y1' : 'y', order: 2 };
   const ds = [barres];
   if (avecCharge) {
-    ds.unshift({ type: 'line', label: 'Charge max (kg)', data: h.map(x => x.max), borderColor: css('--accent'), backgroundColor: css('--accent'), tension: .25, spanGaps: true, yAxisID: 'y', order: 1 });
+    ds.unshift(avecAide
+      ? { type: 'line', label: 'Aide élastique (kg)', data: h.map(x => x.aide), borderColor: css('--series-4'), backgroundColor: css('--series-4'), tension: .25, spanGaps: true, yAxisID: 'y', order: 1 }
+      : { type: 'line', label: 'Charge max (kg)', data: h.map(x => x.max), borderColor: css('--accent'), backgroundColor: css('--accent'), tension: .25, spanGaps: true, yAxisID: 'y', order: 1 });
     opt.scales.y1 = { position: 'right', beginAtZero: true, grid: { display: false }, ticks: { color: css('--muted') }, border: { display: false } };
   }
   return { type: 'bar', data: { labels: h.map(x => fmtCourt(x.date)), datasets: ds }, options: opt };
@@ -1979,9 +1993,10 @@ const Pages = {
         const pdc = sansCharge(ex.unite), cardio = ex.unite === 'min';
         const dernier = !der ? `<span class="muted">Pas encore fait · prévu ${ex.series}×${cardio ? fmtDuree(ex.repsMax) : ex.repsMax}${!pdc && pv.charge != null ? ` @ ${fmtNum(pv.charge)} kg` : ''}</span>`
           : cardio ? `<b>${der.series.map(texteCardio).join(' / ')}</b>`
-          : `<b>${der.max != null ? `${fmtNum(der.max)} kg` : ''}</b> <span class="muted">${der.series.map(s => s.reps).join('/')} ${pdc ? 'reps' : ''}</span>`;
+          : `<b>${der.max != null ? `${fmtNum(der.max)} kg` : ''}</b> <span class="muted">${der.series.map(s => s.reps).join('/')} ${pdc ? 'reps' : ''}</span>${der.aide != null ? ` <b>· aide ${fmtNum(der.aide)} kg</b>` : ''}`;
         const evo = pr && pr.seances > 1 ? [
           pr.deltaCharge ? `<span class="${pr.deltaCharge > 0 ? 'good' : 'warn'}">${pr.deltaCharge > 0 ? '+' : '−'}${fmtNum(Math.abs(pr.deltaCharge))} kg</span>` : '',
+          pr.deltaAide ? `<span class="${pr.deltaAide < 0 ? 'good' : 'warn'}">aide ${pr.deltaAide > 0 ? '+' : '−'}${fmtNum(Math.abs(pr.deltaAide))} kg</span>` : '',
           !cardio && pr.deltaReps ? `<span class="${pr.deltaReps > 0 ? 'good' : 'warn'}">${pr.deltaReps > 0 ? '+' : '−'}${Math.abs(pr.deltaReps)} reps</span>` : '',
         ].filter(Boolean).join(' · ') || 'stable' : '';
         return `<button type="button" class="card exo-card" data-exo="${esc(ex.id)}">
@@ -2034,7 +2049,7 @@ const Pages = {
       ${ex && ex.consigne ? `<p class="muted small">${esc(ex.consigne)}</p>` : ''}
       ${h.length > 1 ? '<div class="chart sm"><canvas></canvas></div>' : ''}
       <table class="tbl"><thead><tr><th>Date</th><th>Séries</th>${pdc ? '' : '<th>Max</th><th>Volume</th><th>1RM est.</th>'}</tr></thead><tbody>
-      ${h.slice().reverse().map(x => `<tr><td>${fmtCourt(x.date)}</td><td>${x.series.map(s => ex && ex.unite === 'min' ? texteCardio(s) : pdc ? s.reps : `${s.reps}×${fmtNum(s.charge)}`).join(ex && ex.unite === 'min' ? '<br>' : ' · ')}</td>
+      ${h.slice().reverse().map(x => `<tr><td>${fmtCourt(x.date)}</td><td>${x.series.map(s => ex && ex.unite === 'min' ? texteCardio(s) : pdc ? `${s.reps}${s.aide > 0 ? ` (aide ${fmtNum(s.aide)} kg)` : ''}` : `${s.reps}×${fmtNum(s.charge)}`).join(ex && ex.unite === 'min' ? '<br>' : ' · ')}</td>
         ${pdc ? '' : `<td>${fmtNum(x.max)}</td><td>${fmtNum(x.volume, 0)}</td><td>${fmtNum(x.e1rm)}</td>`}</tr>`).join('') || '<tr><td colspan="5" class="muted">Pas encore d’historique.</td></tr>'}
       </tbody></table><p class="muted small">1RM estimé (formule d’Epley) : la charge qu’on soulèverait une seule fois.</p>`, body => {
       if (h.length > 1 && !pdc) Graphs.creer($('canvas', body), {
@@ -2054,8 +2069,9 @@ const Pages = {
       ${(s.exos || []).map(e => `<div class="exo"><div class="exo-head"><b>${esc(e.nom)}</b></div>
         <table class="tbl"><thead><tr><th>Série</th><th>Prévu</th><th>Réalisé</th><th>Écart</th></tr></thead><tbody>
         ${e.series.map((x, j) => { const ec = ecartSerie(x, e.unite), pdc = sansCharge(e.unite), cardio = e.unite === 'min';
-          return `<tr><td>${j + 1}</td><td>${x.prevuReps != null ? (cardio ? fmtDuree(x.prevuReps) : `${x.prevuReps}${pdc ? '' : ` × ${fmtNum(x.prevuCharge)}`}`) : '–'}</td>
-            <td><b>${x.faite ? (cardio ? texteCardio(x) : `${x.reps}${pdc ? '' : ` × ${fmtNum(x.charge)}`}`) : '–'}</b></td><td class="ecart ${ec.type}">${ec.texte}</td></tr>`; }).join('')}
+          const aide = v => (v > 0 ? ` · aide ${fmtNum(v)} kg` : '');
+          return `<tr><td>${j + 1}</td><td>${x.prevuReps != null ? (cardio ? fmtDuree(x.prevuReps) : `${x.prevuReps}${pdc ? aide(x.prevuAide) : ` × ${fmtNum(x.prevuCharge)}`}`) : '–'}</td>
+            <td><b>${x.faite ? (cardio ? texteCardio(x) : `${x.reps}${pdc ? aide(x.aide) : ` × ${fmtNum(x.charge)}`}`) : '–'}</b></td><td class="ecart ${ec.type}">${ec.texte}</td></tr>`; }).join('')}
         </tbody></table></div>`).join('')}
       <div class="actions"><button type="button" class="btn" data-a="modif">Modifier</button></div>`, body => {
       $('[data-a="modif"]', body).addEventListener('click', () => Saisie.seance(s));
