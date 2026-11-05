@@ -90,6 +90,7 @@ li { margin: 3px 0; }
 .tabs { display: flex; flex-direction: column; gap: 6px; width: 100%; }
 .tabs a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 4px; border-radius: 14px; color: var(--muted); text-decoration: none; font-size: 11px; font-weight: 600; }
 .tabs a svg { width: 22px; height: 22px; fill: currentColor; }
+.tabs a .t-c { display: none; }
 .tabs a.on { color: var(--text); background: var(--accent-soft); }
 .tabs a.on svg { fill: var(--accent); }
 .tools { position: fixed; left: 0; bottom: 18px; width: 96px; z-index: 12; display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -106,7 +107,9 @@ main { margin-left: 96px; padding: 28px 32px 110px; max-width: 1240px; }
   .sidebar { inset: auto 0 0 0; width: auto; height: auto; flex-direction: row; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); border-right: 0; border-top: 1px solid var(--border); gap: 0; }
   .brand, .tools .icon-btn { display: none; }
   .tabs { flex-direction: row; justify-content: space-around; }
-  .tabs a { flex: 1; padding: 6px 2px; font-size: 10px; }
+  .tabs a { flex: 1; min-width: 0; padding: 6px 1px; font-size: 9.5px; }
+  .tabs a .t-l { display: none; } .tabs a .t-c { display: block; }
+  .tabs a span { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tools { top: 16px; right: 16px; left: auto; bottom: auto; width: auto; }
   main { margin: 0; padding: 18px 16px calc(96px + env(safe-area-inset-bottom)); }
   .fab { right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); }
@@ -145,6 +148,40 @@ main > .card { margin-bottom: 16px; }
 .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--surface-2); color: var(--text-2); margin-left: 4px; }
 .badge.good { background: var(--accent-soft); color: var(--good-text); }
 .note { background: var(--surface-2); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; color: var(--text-2); }
+
+/* Calendrier */
+.btn.sm { padding: 6px 12px; font-size: 13px; min-height: 0; }
+.cal-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.cal-head h2 { margin: 0; flex: 1; text-align: center; text-transform: capitalize; }
+.cal-grille { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-jn { text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; padding-bottom: 2px; }
+.cal-j { min-height: 86px; display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding: 6px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: inherit; cursor: pointer; text-align: left; min-width: 0; }
+.cal-j:hover { border-color: var(--accent); }
+.cal-j.hors { opacity: .4; }
+.cal-j.auj { border: 2px solid var(--accent); }
+.cal-j.auj .cal-n { background: var(--accent); color: var(--accent-ink); border-radius: 99px; padding: 0 6px; }
+.cal-n { font-size: 12px; font-weight: 700; align-self: flex-start; }
+.cal-evs { display: flex; flex-wrap: wrap; gap: 3px; }
+.ev { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; font-size: 13px; line-height: 1; border: 2px solid var(--c, var(--muted)); }
+.ev.fait { background: var(--c); }
+.ev.a-venir { background: transparent; border-style: dashed; }
+.ev.non-fait { border-color: var(--border); background: transparent; filter: grayscale(1); opacity: .5; }
+.cal-leg { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 10px 0 0; }
+.cal-leg .ev { width: 14px; height: 14px; border-radius: 4px; margin-left: 8px; }
+.cal-leg .ev:first-child { margin-left: 0; }
+.ag { align-items: flex-start; justify-content: flex-start; }
+.ag-d { flex: none; width: 74px; font-weight: 700; font-size: 13px; padding-top: 1px; }
+.ag.auj .ag-d { color: var(--accent); }
+.ag-l { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ag-l .non-fait { color: var(--muted); }
+.badge.prevu { background: transparent; border: 1px dashed var(--accent); color: var(--accent); }
+@media (max-width: 760px) {
+  .cal { padding: 12px 8px; }
+  .cal-grille { gap: 2px; }
+  .cal-j { min-height: 56px; padding: 3px; gap: 2px; border-radius: 8px; }
+  .ev { width: 18px; height: 18px; font-size: 10px; border-radius: 5px; border-width: 1.5px; }
+  .cal-head .btn.sm { padding: 5px 8px; font-size: 12px; }
+}
 
 .chart { position: relative; height: 260px; }
 .chart.sm { height: 200px; margin-bottom: 12px; }
@@ -759,6 +796,33 @@ function prochaineSeance(programme, seances) {
   return der ? ids[(ids.indexOf(der.programme) + 1) % ids.length] : ids[0];
 }
 
+/* ---------- Calendrier ---------- */
+// Semaines (lundi → dimanche) qui couvrent le mois 'AAAA-MM' : tableau de 4 à 6 semaines de 7 dates
+function grilleMois(mois) {
+  const premier = mois + '-01', semaines = [];
+  let j = debutSemaine(premier);
+  while (j.slice(0, 7) <= mois) {
+    semaines.push(Array.from({ length: 7 }, (_, i) => addDays(j, i)));
+    j = addDays(j, 7);
+  }
+  return semaines;
+}
+function moisVoisin(mois, n) { const d = parseIso(mois + '-01'); d.setMonth(d.getMonth() + n); return isoDate(d).slice(0, 7); }
+// Séance prévue : « fait » si une séance du même sport existe ce jour-là, sinon « à venir » ou « non fait »
+function statutPrevu(p, seances, date) {
+  if (seances.some(s => s.date === p.date && s.sport === p.sport)) return 'fait';
+  return p.date >= date ? 'a-venir' : 'non-fait';
+}
+// Séance du programme à prévoir à une date : celle qui suit la dernière muscu faite ou prévue avant cette date
+function programmePourDate(programme, seances, planning, date) {
+  const ids = (programme.seances || []).map(s => s.id);
+  if (!ids.length) return null;
+  const avant = [...seances, ...planning].filter(x => x.sport === 'muscu' && x.programme && ids.includes(x.programme) && x.date < date)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.cree || 0) - (b.cree || 0));
+  const der = avant[avant.length - 1];
+  return der ? ids[(ids.indexOf(der.programme) + 1) % ids.length] : ids[0];
+}
+
 /* ---------- Menus et courses ---------- */
 // Générateur pseudo-aléatoire reproductible (mulberry32)
 function rng(graine) {
@@ -835,6 +899,7 @@ const FICHIERS = {
   profil: { f: 'profil.json', type: 'doc' },
   programme: { f: 'programme.json', type: 'doc' },
   seances: { f: 'seances.json', type: 'liste' },
+  planning: { f: 'planning.json', type: 'liste' },
   poids: { f: 'poids.json', type: 'liste' },
   repas: { f: 'repas.json', type: 'liste' },
   menus: { f: 'menus.json', type: 'liste' },
@@ -1179,9 +1244,9 @@ const Saisie = {
       };
     }));
   },
-  nouvelleSeance(sport, programmeId) {
+  nouvelleSeance(sport, programmeId, date) {
     const sp = sportDe(sport);
-    const st = { id: uid(), date: today(), sport, duree: sp.duree, rpe: null, note: '', cree: Date.now() };
+    const st = { id: uid(), date: date || today(), sport, duree: sp.duree, rpe: null, note: '', cree: Date.now() };
     if (sport === 'muscu') {
       const prog = Store.data.programme;
       const pid = programmeId || (prog.seances && prog.seances.length ? prochaineSeance(prog, Store.data.seances) : null);
@@ -1190,12 +1255,14 @@ const Saisie = {
     }
     return st;
   },
-  seance(existante, sportInitial, programmeId) {
-    const edition = !!existante;
-    let st = existante ? JSON.parse(JSON.stringify(existante)) : (LS.get(CLES.brouillon) || null);
+  // date : pour saisir après coup une séance d'un autre jour (depuis le calendrier) ; le brouillon en cours est alors ignoré
+  seance(existante, sportInitial, programmeId, date) {
+    const edition = !!existante, autreJour = !!date && date !== today();
+    let st = existante ? JSON.parse(JSON.stringify(existante)) : (autreJour ? null : LS.get(CLES.brouillon) || null);
     const brouillon = !edition && !!st;
-    if (!st) st = this.nouvelleSeance(sportInitial || 'muscu', programmeId);
-    const sauverBrouillon = () => { if (!edition) LS.set(CLES.brouillon, st); };
+    if (!st) st = this.nouvelleSeance(sportInitial || 'muscu', programmeId, date);
+    // Une séance saisie après coup (autre jour, depuis le calendrier) ne touche pas au brouillon de la séance en cours
+    const sauverBrouillon = () => { if (!edition && !autreJour) LS.set(CLES.brouillon, st); };
 
     const rendre = body => {
       const sp = sportDe(st.sport), prog = Store.data.programme;
@@ -1220,7 +1287,7 @@ const Saisie = {
         <div class="actions">${edition ? '<button type="button" class="btn danger" data-a="suppr">Supprimer</button>' : ''}
           <button type="button" class="btn primary" data-a="ok">Enregistrer</button></div>`;
       brancherChips(body, (nom, v) => {
-        if (nom === 'sport') { st = this.nouvelleSeance(v); sauverBrouillon(); rendre(body); }
+        if (nom === 'sport') { st = this.nouvelleSeance(v, null, st.date); sauverBrouillon(); rendre(body); }
         if (nom === 'rpe') { st.rpe = Number(v); $('.rpe-label', body).textContent = RPE_LABELS[st.rpe]; sauverBrouillon(); }
       });
     };
@@ -1279,7 +1346,7 @@ const Saisie = {
           const s = { ...st };
           if (s.exos) s.exos = s.exos.map(({ id, nom, unite, series }) => ({ id, nom, unite, series }));
           Store.upsert('seances', s);
-          if (!edition) LS.del(CLES.brouillon);
+          if (!edition && !autreJour) LS.del(CLES.brouillon);
           Sheet.fermer();
           toast(s.rpe && s.duree ? `Séance enregistrée · charge ${s.rpe * s.duree}` : 'Séance enregistrée (sans effort : charge non calculée)');
         }
@@ -1389,6 +1456,56 @@ const Saisie = {
     });
   },
 
+  /* ---------- Planifier une séance (calendrier) ---------- */
+  planifier(date, existant) {
+    const d = Store.data, prog = d.programme, edition = !!existant;
+    const st = existant ? { ...existant } : { id: uid(), date: date || today(), sport: 'muscu', note: '', cree: Date.now() };
+    if (!edition && st.sport === 'muscu') st.programme = programmePourDate(prog, d.seances, d.planning, st.date) || undefined;
+    const rendre = body => {
+      body.innerHTML = `
+        ${chips('sport', SPORTS.map(s => ({ v: s.id, l: `${s.icone} ${s.nom}` })), st.sport)}
+        <div class="row2"><label>Date<input type="date" name="date" value="${st.date}"></label>
+          <label>Heure<input type="time" name="heure" value="${esc(st.heure || '')}"></label></div>
+        ${st.sport === 'muscu' && prog.seances && prog.seances.length ? `<label>Séance<select name="programme">
+          ${prog.seances.map(s => `<option value="${esc(s.id)}" ${s.id === st.programme ? 'selected' : ''}>${esc(s.nom)}</option>`).join('')}
+          <option value="" ${!st.programme ? 'selected' : ''}>Libre</option></select></label>` : ''}
+        <label>Note<input name="note" value="${esc(st.note)}" placeholder="ex. avec Corentin, five KPMG"></label>
+        ${edition ? '' : `<label>Répéter chaque semaine<select name="repeter">
+          ${[1, 2, 4, 8, 12].map(n => `<option value="${n}">${n === 1 ? 'Non, une seule fois' : `Pendant ${n} semaines`}</option>`).join('')}</select></label>`}
+        <div class="actions">${edition ? '<button type="button" class="btn danger" data-a="suppr">Supprimer</button>' : ''}
+          <button type="button" class="btn primary" data-a="ok">${edition ? 'Enregistrer' : 'Planifier'}</button></div>`;
+      brancherChips(body, (n, v) => {
+        st.sport = v;
+        st.programme = v === 'muscu' ? programmePourDate(prog, d.seances, d.planning.filter(p => p.id !== st.id), st.date) || undefined : undefined;
+        rendre(body);
+      });
+    };
+    Sheet.ouvrir(edition ? 'Séance prévue' : 'Planifier une séance', '', body => {
+      rendre(body);
+      body.addEventListener('input', e => {
+        const t = e.target;
+        if (t.name === 'date') st.date = t.value;
+        else if (t.name === 'heure') st.heure = t.value || undefined;
+        else if (t.name === 'note') st.note = t.value;
+      });
+      body.addEventListener('change', e => { if (e.target.name === 'programme') st.programme = e.target.value || undefined; });
+      body.addEventListener('click', e => {
+        const a = e.target.closest('[data-a]');
+        if (!a) return;
+        if (a.dataset.a === 'suppr') {
+          if (confirm('Supprimer cette séance prévue ?')) { Store.remove('planning', st.id); Sheet.fermer(); toast('Séance prévue supprimée'); }
+          return;
+        }
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(st.date || '')) return toast('Indique la date');
+        const n = edition ? 1 : Number($('[name="repeter"]', body).value) || 1;
+        // Même séance chaque semaine : avec 2 créneaux hebdo (ex. lundi Upper A, jeudi Upper B), l'alternance est respectée
+        for (let i = 0; i < n; i++) Store.upsert('planning', { ...st, id: i ? uid() : st.id, date: addDays(st.date, 7 * i), cree: st.cree + i });
+        Sheet.fermer();
+        toast(n > 1 ? `${n} séances planifiées` : 'Séance planifiée');
+      });
+    });
+  },
+
   /* ---------- Poids ---------- */
   poids() {
     const der = Store.data.poids.slice().sort((a, b) => a.date.localeCompare(b.date)).pop();
@@ -1490,6 +1607,100 @@ const Pages = {
         else if (Saisie[b.dataset.a]) Saisie[b.dataset.a]();
       });
       brancherListes(root);
+    },
+  },
+
+  /* ---------- Calendrier (vue mois : fait par le passé, prévu à venir) ---------- */
+  calendrier: {
+    titre: 'Calendrier', mois: null,
+    // Événements d'un jour : séances faites + séances prévues pas encore couvertes par une séance du même sport
+    evts(date) {
+      const d = Store.data, D = today();
+      const faits = d.seances.filter(s => s.date === date).sort(parDate);
+      const prevus = d.planning.filter(p => p.date === date).sort((a, b) => (a.heure || '99').localeCompare(b.heure || '99') || (a.cree || 0) - (b.cree || 0))
+        .map(p => ({ ...p, statut: statutPrevu(p, d.seances, D) }));
+      return { faits, prevus, ouverts: prevus.filter(p => p.statut !== 'fait') };
+    },
+    nomPrevu(p) {
+      const ps = p.programme && (Store.data.programme.seances || []).find(x => x.id === p.programme);
+      return ps ? ps.nom : sportDe(p.sport).nom;
+    },
+    pastille: (sport, cls, titre) => `<span class="ev ${cls}" style="--c: var(${COULEUR_SPORT[sport] || '--series-8'})" title="${esc(titre)}">${sportDe(sport).icone}</span>`,
+    html() {
+      const D = today(), d = Store.data;
+      if (!/^\d{4}-\d{2}$/.test(this.mois || '')) this.mois = D.slice(0, 7);
+      const mois = this.mois, sem = grilleMois(mois);
+      const titreMois = parseIso(mois + '-01').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      const duMois = d.seances.filter(s => s.date.startsWith(mois));
+      const aVenir = d.planning.filter(p => p.date.startsWith(mois) && statutPrevu(p, d.seances, D) === 'a-venir');
+      const chargeMois = duMois.reduce((a, s) => a + chargeSeance(s), 0);
+      const cellule = date => {
+        const e = this.evts(date), hors = date.slice(0, 7) !== mois;
+        const pts = e.faits.map(s => this.pastille(s.sport, 'fait', sportDe(s.sport).nom))
+          .concat(e.ouverts.map(p => this.pastille(p.sport, p.statut, `${this.nomPrevu(p)} (${p.statut === 'a-venir' ? 'prévu' : 'non fait'})`)));
+        return `<button type="button" class="cal-j${hors ? ' hors' : ''}${date === D ? ' auj' : ''}${date < D ? ' passe' : ''}" data-jour="${date}" aria-label="${fmtDate(date)}">
+          <span class="cal-n">${parseIso(date).getDate()}</span><span class="cal-evs">${pts.join('')}</span></button>`;
+      };
+      // Agenda du mois : chaque jour qui a quelque chose, dans l'ordre
+      const jours = [...new Set([...duMois.map(s => s.date), ...d.planning.filter(p => p.date.startsWith(mois)).map(p => p.date)])].sort();
+      const agenda = jours.map(j => {
+        const e = this.evts(j);
+        const lignes = e.faits.map(s => `<span>${sportDe(s.sport).icone} ${esc(this.nomPrevu(s))}${s.duree ? ` · ${fmtNum(s.duree, 0)} min` : ''}<span class="badge">${chargeSeance(s) || 'fait'}</span></span>`)
+          .concat(e.ouverts.map(p => `<span class="${p.statut}">${sportDe(p.sport).icone} ${esc(this.nomPrevu(p))}${p.heure ? ` · ${esc(p.heure)}` : ''}${p.note ? ` · <span class="muted">${esc(p.note)}</span>` : ''}
+            <span class="badge ${p.statut === 'a-venir' ? 'prevu' : ''}">${p.statut === 'a-venir' ? 'prévu' : 'non fait'}</span></span>`));
+        return lignes.length ? `<button type="button" class="li li-btn ag${j === D ? ' auj' : ''}" data-jour="${j}"><span class="ag-d">${fmtCourt(j)}</span><span class="ag-l">${lignes.join('')}</span></button>` : '';
+      }).join('');
+      return `<header class="page-head"><h1>Calendrier</h1><p class="muted">Fait par le passé, prévu à venir. Touche un jour pour planifier.</p></header>
+        <section class="card cal">
+          <div class="cal-head"><button type="button" class="icon-btn" data-m="-1" aria-label="Mois précédent">‹</button>
+            <h2>${titreMois}</h2>
+            <button type="button" class="icon-btn" data-m="1" aria-label="Mois suivant">›</button>
+            <button type="button" class="btn sm" data-m="0">Aujourd'hui</button></div>
+          <div class="cal-grille">${['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'].map(j => `<span class="cal-jn">${j}</span>`).join('')}
+            ${sem.flat().map(cellule).join('')}</div>
+          <p class="cal-leg small muted"><span class="ev fait" style="--c: var(--accent)"></span> fait
+            <span class="ev a-venir" style="--c: var(--accent)"></span> prévu <span class="ev non-fait"></span> prévu non fait</p>
+        </section>
+        <div class="grid">
+        ${carte('Ce mois-ci', `<div class="kpi"><b>${duMois.length}</b><span class="muted"> séance${duMois.length > 1 ? 's' : ''} faite${duMois.length > 1 ? 's' : ''} · charge ${fmtNum(chargeMois, 0)}</span></div>
+          <p class="muted small">${aVenir.length} séance${aVenir.length > 1 ? 's' : ''} prévue${aVenir.length > 1 ? 's' : ''} à venir</p>
+          <button type="button" class="btn primary" data-a="planifier">+ Planifier une séance</button>`)}
+        ${carte('Agenda', `<div class="list">${agenda || '<p class="muted small">Rien ce mois-ci.</p>'}</div>`, 'wide')}
+        </div>`;
+    },
+    apres(root) {
+      root.addEventListener('click', e => {
+        const m = e.target.closest('[data-m]');
+        if (m) { this.mois = m.dataset.m === '0' ? today().slice(0, 7) : moisVoisin(this.mois, Number(m.dataset.m)); return App.rendre(); }
+        if (e.target.closest('[data-a="planifier"]')) return Saisie.planifier(this.mois === today().slice(0, 7) ? today() : this.mois + '-01');
+        const j = e.target.closest('[data-jour]');
+        if (j) this.jour(j.dataset.jour);
+      });
+    },
+    jour(date) {
+      const D = today(), e = this.evts(date), d = Store.data;
+      const kcal = d.repas.filter(r => r.date === date).reduce((a, r) => a + (r.kcal || 0), 0);
+      const pesee = d.poids.filter(p => p.date === date).pop();
+      const prevu = p => `<div class="li"><span>${sportDe(p.sport).icone} <b>${esc(this.nomPrevu(p))}</b>${p.heure ? ` · ${esc(p.heure)}` : ''}<br>
+          <span class="muted small">${p.statut === 'fait' ? 'Prévu et fait ✓' : p.statut === 'a-venir' ? 'Prévu' : 'Prévu, pas fait'}${p.note ? ` · ${esc(p.note)}` : ''}</span></span>
+        <span class="li-end">${p.statut !== 'fait' && date <= D ? `<button type="button" class="btn sm primary" data-go="${esc(p.id)}">${date === D ? 'Commencer' : 'Saisir'}</button>` : ''}
+          <button type="button" class="icon-btn sm" data-plan="${esc(p.id)}" aria-label="Modifier">✎</button></span></div>`;
+      Sheet.ouvrir(fmtDate(date), `
+        ${e.faits.length ? `<h3>Fait</h3><div class="list">${e.faits.map(ligneSeance).join('')}</div>` : ''}
+        ${e.prevus.length ? `<h3>Prévu</h3><div class="list">${e.prevus.map(prevu).join('')}</div>` : ''}
+        ${!e.faits.length && !e.prevus.length ? '<p class="muted">Rien ce jour-là.</p>' : ''}
+        ${date <= D && (kcal || pesee) ? `<p class="muted small">${kcal ? `Repas : ${fmtKcal(kcal)}` : ''}${kcal && pesee ? ' · ' : ''}${pesee ? `Pesée : ${fmtNum(pesee.kg)} kg` : ''}</p>` : ''}
+        <div class="actions"><button type="button" class="btn${date > D ? ' primary' : ''}" data-a="plan">+ Planifier</button>
+          ${date <= D ? '<button type="button" class="btn primary" data-a="fait">+ Séance faite ce jour</button>' : ''}</div>`, body => {
+        brancherListes(body);
+        body.addEventListener('click', ev => {
+          const g = ev.target.closest('[data-go]'), p = ev.target.closest('[data-plan]'), a = ev.target.closest('[data-a]');
+          if (g) { const x = d.planning.find(y => y.id === g.dataset.go); if (x) Saisie.seance(null, x.sport, x.programme, date); }
+          else if (p) { const x = d.planning.find(y => y.id === p.dataset.plan); if (x) Saisie.planifier(date, x); }
+          else if (a && a.dataset.a === 'plan') Saisie.planifier(date);
+          else if (a && a.dataset.a === 'fait') Saisie.seance(null, 'muscu', programmePourDate(d.programme, d.seances, [], date), date);
+        });
+      });
     },
   },
 
@@ -1849,7 +2060,8 @@ const Pages = {
 /* Démarrage, navigation par onglets (#route), thème, état de synchronisation. */
 
 const ROUTES = [
-  { id: 'accueil', page: 'accueil', nom: "Aujourd'hui", icone: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1z"/>' },
+  { id: 'accueil', page: 'accueil', nom: "Aujourd'hui", court: 'Jour', icone: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1z"/>' },
+  { id: 'calendrier', page: 'calendrier', nom: 'Calendrier', court: 'Agenda', icone: '<path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2zM5 9v10h14V9zm2 2h3v3H7z"/>' },
   { id: 'muscu', page: 'muscu', nom: 'Muscu', icone: '<path d="M2 10h2V8h2v8H4v-2H2zm4-4h3v12H6zm3 5h6v2H9zm6-5h3v12h-3zm3 2h2v2h2v4h-2v2h-2z"/>' },
   { id: 'charge', page: 'charge', nom: 'Charge', icone: '<rect x="4" y="11" width="4" height="9" rx="1.5"/><rect x="10" y="4" width="4" height="16" rx="1.5"/><rect x="16" y="8" width="4" height="12" rx="1.5"/>' },
   { id: 'nutrition', page: 'nutrition', nom: 'Nutrition', icone: '<path d="M12 21c-4.5 0-8-3.5-8-8 0-3.3 2-5.6 4.6-5.6 1.3 0 2.4.5 3.4 1.3 1-.8 2.1-1.3 3.4-1.3C18 7.4 20 9.7 20 13c0 4.5-3.5 8-8 8zM12 7c0-2.2 1.3-4 3.5-4.5.2 2.2-1.2 4-3.5 4.5z"/>' },
@@ -1860,7 +2072,7 @@ const ROUTES = [
 const App = {
   route() { const h = location.hash.slice(1); return ROUTES.some(r => r.id === h) ? h : 'accueil'; },
   nav() {
-    $('#nav').innerHTML = ROUTES.map(r => `<a href="#${r.id}" data-route="${r.id}"><svg viewBox="0 0 24 24" aria-hidden="true">${r.icone}</svg><span>${r.nom}</span></a>`).join('');
+    $('#nav').innerHTML = ROUTES.map(r => `<a href="#${r.id}" data-route="${r.id}"><svg viewBox="0 0 24 24" aria-hidden="true">${r.icone}</svg><span class="t-l">${r.nom}</span><span class="t-c">${r.court || r.nom}</span></a>`).join('');
   },
   pill() {
     const e = Store.etat, n = Store.enAttente(), p = $('#sync');
