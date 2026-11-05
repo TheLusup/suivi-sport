@@ -799,10 +799,11 @@ function prevuExo(exo, seances) {
     chargeSuggeree: pret && charge != null && exo.pas ? charge + exo.pas : null, derniere: der || null,
   };
 }
-function ecartSerie(s) {
+function ecartSerie(s, unite) {
   if (!s.faite || !(s.reps > 0)) return { type: 'nonfaite', texte: 'non faite' };
   if (s.prevuReps == null) return { type: 'plus', texte: 'en plus' }; // série ajoutée pendant la séance
   const dc = (s.charge || 0) - (s.prevuCharge || 0), dr = s.reps - s.prevuReps;
+  if (unite === 'min') return Math.abs(dr) < 1 / 120 ? { type: 'ok', texte: '=' } : { type: dr > 0 ? 'plus' : 'moins', texte: `${dr > 0 ? '+' : '−'}${fmtDuree(Math.abs(dr))}` };
   if (s.prevuCharge != null && s.charge != null && Math.abs(dc) >= 0.01) return { type: dc > 0 ? 'plus' : 'moins', texte: `${dc > 0 ? '+' : '−'}${fmtNum(Math.abs(dc))} kg` };
   if (dr) return { type: dr > 0 ? 'plus' : 'moins', texte: `${dr > 0 ? '+' : '−'}${Math.abs(dr)} rep${Math.abs(dr) > 1 ? 's' : ''}` };
   return { type: 'ok', texte: '=' };
@@ -831,6 +832,25 @@ function nettoyerMontre(m) {
 // Exercices sans charge : poids du corps (reps) ou cardio d'échauffement (minutes)
 const sansCharge = u => u === 'poids du corps' || u === 'min';
 const uniteReps = u => (u === 'min' ? 'min' : 'reps');
+// Cardio (SkiErg, rameur) : temps saisi « 2:30 » ou « 2 » (minutes), gardé en minutes décimales ; allure en temps aux 500 m
+function lireDuree(txt) {
+  const s = String(txt ?? '').trim().replace(',', '.');
+  if (!s) return null;
+  const m = s.match(/^(\d+)(?::([0-5]?\d))?$/) || s.match(/^(\d*\.\d+)$/);
+  if (!m) return null;
+  const v = m[2] != null ? Number(m[1]) + Number(m[2]) / 60 : Number(m[1]);
+  return v > 0 ? Math.round(v * 60) / 60 : null;
+}
+function fmtDuree(min) {
+  if (!(min > 0)) return '';
+  const s = Math.round(min * 60);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+// Secondes aux 500 m ; null si temps ou distance manquant
+const allure500 = (min, distM) => (min > 0 && distM > 0 ? (min * 60 * 500) / distM : null);
+const fmtAllure = sec => (sec > 0 ? `${fmtDuree(sec / 60)} /500 m` : '');
+// « 2:30 · 600 m · 2:05 /500 m » (distance et allure seulement si la distance est saisie)
+const texteCardio = s => [fmtDuree(s.reps), s.dist > 0 ? `${fmtNum(s.dist, 0)} m` : '', fmtAllure(allure500(s.reps, s.dist))].filter(Boolean).join(' · ');
 function prochaineSeance(programme, seances) {
   const ids = programme.seances.map(s => s.id);
   const der = seances.filter(s => s.programme && ids.includes(s.programme)).sort((a, b) => a.date.localeCompare(b.date) || (a.cree || 0) - (b.cree || 0)).pop();
@@ -1347,6 +1367,12 @@ const Saisie = {
         else if (t.name && t.name.startsWith('montre.')) st.montre = { ...st.montre, [t.name.slice(7)]: num(t.value) };
         else if (t.dataset.k) {
           const ex = st.exos[+t.dataset.e], s = ex.series[+t.dataset.s];
+          if (ex.unite === 'min') {   // cardio : temps « m:ss » et distance (m), allure recalculée
+            if (t.dataset.k === 'reps') { s.reps = lireDuree(t.value); s.tempsIllisible = !!t.value.trim() && s.reps == null; }
+            else s.dist = num(t.value) > 0 ? Math.round(num(t.value)) : null;
+            const p = $(`[data-allure="${t.dataset.e}"]`, body); if (p) p.innerHTML = this.texteAllure(st, +t.dataset.e);
+            sauverBrouillon(); return;
+          }
           s[t.dataset.k] = num(t.value);
           // Une charge modifiée est reportée sur les séries suivantes pas encore faites (ou restées sans charge)
           if (t.dataset.k === 'charge') ex.series.forEach((x, j) => {
@@ -1356,6 +1382,9 @@ const Saisie = {
         sauverBrouillon();
       });
       body.addEventListener('change', e => {
+        // Temps cardio : remis au format m:ss en quittant le champ (« 2 » → « 2:00 »)
+        const t = e.target;
+        if (t.dataset.k === 'reps' && st.exos && st.exos[+t.dataset.e].unite === 'min') { const s = st.exos[+t.dataset.e].series[+t.dataset.s]; if (s.reps != null) t.value = fmtDuree(s.reps); }
         if (e.target.name === 'programme') {
           const ps = Store.data.programme.seances.find(s => s.id === e.target.value);
           st.programme = ps ? ps.id : undefined; st.exos = ps ? this.exosDepuisProgramme(ps) : undefined;
@@ -1374,7 +1403,8 @@ const Saisie = {
           if (s.faite && s.charge == null && prec && prec.charge != null) s.charge = prec.charge;
           const ligne = b.closest('.serie');
           ligne.classList.toggle('done', s.faite);
-          for (const k of ['reps', 'charge']) { const inp = $(`[data-k="${k}"]`, ligne); if (inp) inp.value = s[k] ?? ''; }
+          for (const k of ['reps', 'charge']) { const inp = $(`[data-k="${k}"]`, ligne); if (inp) inp.value = k === 'reps' && ex.unite === 'min' ? fmtDuree(s.reps) : s[k] ?? ''; }
+          if (ex.unite === 'min') { s.tempsIllisible = false; const p = $(`[data-allure="${b.dataset.e}"]`, body); if (p) p.innerHTML = this.texteAllure(st, +b.dataset.e); }
           sauverBrouillon();
         } else if (a === 'serie+') {
           const ex = st.exos[+b.dataset.e], der = ex.series[ex.series.length - 1] || {};
@@ -1392,7 +1422,7 @@ const Saisie = {
           if (montre.erreur) return toast(montre.erreur);
           const s = { ...st };
           if (montre.valeurs) s.montre = montre.valeurs; else delete s.montre;
-          if (s.exos) s.exos = s.exos.map(({ id, nom, unite, series }) => ({ id, nom, unite, series }));
+          if (s.exos) s.exos = s.exos.map(({ id, nom, unite, series }) => ({ id, nom, unite, series: series.map(({ tempsIllisible, ...x }) => x) }));
           Store.upsert('seances', s);
           if (!edition && !autreJour) LS.del(CLES.brouillon);
           Sheet.fermer();
@@ -1405,19 +1435,31 @@ const Saisie = {
     let bloc = null, h = prog.echauffement && st.programme ? `<p class="note">Échauffement : ${esc(prog.echauffement)}</p>` : '';
     st.exos.forEach((ex, i) => {
       if (ex.bloc && ex.bloc !== bloc) { bloc = ex.bloc; h += `<h3>${esc(bloc)}</h3>`; }
-      const pdc = sansCharge(ex.unite), ur = uniteReps(ex.unite);
+      const pdc = sansCharge(ex.unite), ur = uniteReps(ex.unite), cardio = ex.unite === 'min';
       h += `<div class="exo"><div class="exo-head"><b>${esc(ex.nom)}</b><span class="muted small">${esc(ex.unite || '')}</span>
           ${ex.pret ? `<span class="badge good">Prêt à monter → ${fmtNum(ex.pret)} kg</span>` : ''}</div>
         ${ex.consigne ? `<p class="muted small">${esc(ex.consigne)}</p>` : ''}
         ${ex.series.map((s, j) => `<div class="serie ${s.faite ? 'done' : ''}">
           <span class="sn">S${j + 1}</span>
           <span class="prevu">${s.prevuReps != null ? `${s.prevuReps}${pdc ? ` ${ur}` : ` ×${s.prevuCharge != null ? fmtNum(s.prevuCharge) : '?'}`}` : '—'}</span>
-          <input type="number" inputmode="numeric" data-e="${i}" data-s="${j}" data-k="reps" value="${s.reps ?? ''}" placeholder="${ur}" aria-label="${ur === 'min' ? 'Minutes' : 'Répétitions'} série ${j + 1}">
-          ${pdc ? '<span></span><span></span>' : `<span class="x">×</span><input type="text" inputmode="decimal" data-e="${i}" data-s="${j}" data-k="charge" value="${s.charge ?? ''}" placeholder="kg" aria-label="Charge série ${j + 1}">`}
+          ${cardio ? `<input type="text" data-e="${i}" data-s="${j}" data-k="reps" value="${fmtDuree(s.reps)}" placeholder="m:ss" aria-label="Temps série ${j + 1}">
+            <span class="x">·</span><input type="number" inputmode="numeric" data-e="${i}" data-s="${j}" data-k="dist" value="${s.dist ?? ''}" placeholder="m" aria-label="Distance série ${j + 1} (m)">`
+          : `<input type="number" inputmode="numeric" data-e="${i}" data-s="${j}" data-k="reps" value="${s.reps ?? ''}" placeholder="${ur}" aria-label="Répétitions série ${j + 1}">
+          ${pdc ? '<span></span><span></span>' : `<span class="x">×</span><input type="text" inputmode="decimal" data-e="${i}" data-s="${j}" data-k="charge" value="${s.charge ?? ''}" placeholder="kg" aria-label="Charge série ${j + 1}">`}`}
           <button type="button" class="check" data-a="check" data-e="${i}" data-s="${j}" aria-label="Série ${j + 1} faite">✓</button></div>`).join('')}
+        ${cardio ? `<p class="muted small allure" data-allure="${i}">${this.texteAllure(st, i)}</p>` : ''}
         <button type="button" class="link small" data-a="serie+" data-e="${i}">+ série</button></div>`;
     });
     return h;
+  },
+  // Allure de chaque série saisie (temps + distance), et celle de la dernière fois pour comparer
+  texteAllure(st, i) {
+    const ex = st.exos[i];
+    const actuel = ex.series.map((s, j) => (s.tempsIllisible ? `S${j + 1} : temps illisible (ex. 2:30)` : allure500(s.reps, s.dist) ? `S${j + 1} : <b>${fmtAllure(allure500(s.reps, s.dist))}</b>` : '')).filter(Boolean);
+    const avant = historiqueExo(Store.data.seances.filter(x => x.id !== st.id && x.date <= st.date), ex.id).pop();
+    const ref = avant && avant.series.find(s => allure500(s.reps, s.dist));
+    return [actuel.length ? actuel.join(' · ') : 'Saisis le temps et la distance : l’allure aux 500 m se calcule.',
+      ref ? `Dernière fois (${fmtCourt(avant.date)}) : ${texteCardio(ref)}` : ''].filter(Boolean).join('<br>');
   },
 
   /* ---------- Repas ---------- */
@@ -1774,7 +1816,7 @@ const Pages = {
           const pv = prevuExo(ex, seances), der = pv.derniere, pdc = sansCharge(ex.unite);
           return `<button type="button" class="li li-btn" data-exo="${esc(ex.id)}"><span><b>${esc(ex.nom)}</b>
               ${pv.pretAMonter ? `<span class="badge good">Prêt à monter → ${fmtNum(pv.chargeSuggeree)} kg</span>` : ''}<br>
-              <span class="muted small">${der ? `${fmtCourt(der.date)} : ${der.series.map(s => s.reps).join('/')}${pdc ? ` ${uniteReps(ex.unite)}` : der.max != null ? ` @ ${fmtNum(der.max)} kg` : ' reps (charge non saisie)'}` : 'Pas encore fait'}</span></span>
+              <span class="muted small">${der ? ex.unite === 'min' ? `${fmtCourt(der.date)} : ${der.series.map(texteCardio).join(' / ')}` : `${fmtCourt(der.date)} : ${der.series.map(s => s.reps).join('/')}${pdc ? ` ${uniteReps(ex.unite)}` : der.max != null ? ` @ ${fmtNum(der.max)} kg` : ' reps (charge non saisie)'}` : 'Pas encore fait'}</span></span>
             <span class="li-end"><b>${ex.series}×${ex.repsMax}</b>${pdc ? '' : `<span class="muted small">${pv.charge != null ? `${fmtNum(pv.charge)} ${esc(ex.unite)}` : 'charge ?'}</span>`}</span></button>`;
         }).join('')).join('') + `<button type="button" class="btn primary" data-a="go">Commencer ${esc(ps.nom)}</button>`)}
         ${carte('Historique', `<div class="list">${hist.slice(0, 30).map(ligneSeance).join('') || '<p class="muted small">Aucune séance.</p>'}</div>`)}`;
@@ -1796,7 +1838,7 @@ const Pages = {
       ${ex && ex.consigne ? `<p class="muted small">${esc(ex.consigne)}</p>` : ''}
       ${h.length > 1 ? '<div class="chart sm"><canvas></canvas></div>' : ''}
       <table class="tbl"><thead><tr><th>Date</th><th>Séries</th>${pdc ? '' : '<th>Max</th><th>Volume</th><th>1RM est.</th>'}</tr></thead><tbody>
-      ${h.slice().reverse().map(x => `<tr><td>${fmtCourt(x.date)}</td><td>${x.series.map(s => pdc ? s.reps : `${s.reps}×${fmtNum(s.charge)}`).join(' · ')}</td>
+      ${h.slice().reverse().map(x => `<tr><td>${fmtCourt(x.date)}</td><td>${x.series.map(s => ex && ex.unite === 'min' ? texteCardio(s) : pdc ? s.reps : `${s.reps}×${fmtNum(s.charge)}`).join(ex && ex.unite === 'min' ? '<br>' : ' · ')}</td>
         ${pdc ? '' : `<td>${fmtNum(x.max)}</td><td>${fmtNum(x.volume, 0)}</td><td>${fmtNum(x.e1rm)}</td>`}</tr>`).join('') || '<tr><td colspan="5" class="muted">Pas encore d’historique.</td></tr>'}
       </tbody></table><p class="muted small">1RM estimé (formule d’Epley) : la charge qu’on soulèverait une seule fois.</p>`, body => {
       if (h.length > 1 && !pdc) Graphs.creer($('canvas', body), {
@@ -1815,9 +1857,9 @@ const Pages = {
       ${s.montre ? `<p class="small">⌚ ${texteMontre(s.montre)}</p>` : ''}
       ${(s.exos || []).map(e => `<div class="exo"><div class="exo-head"><b>${esc(e.nom)}</b></div>
         <table class="tbl"><thead><tr><th>Série</th><th>Prévu</th><th>Réalisé</th><th>Écart</th></tr></thead><tbody>
-        ${e.series.map((x, j) => { const ec = ecartSerie(x), pdc = sansCharge(e.unite);
-          return `<tr><td>${j + 1}</td><td>${x.prevuReps != null ? `${x.prevuReps}${pdc ? '' : ` × ${fmtNum(x.prevuCharge)}`}` : '–'}</td>
-            <td><b>${x.faite ? `${x.reps}${pdc ? '' : ` × ${fmtNum(x.charge)}`}` : '–'}</b></td><td class="ecart ${ec.type}">${ec.texte}</td></tr>`; }).join('')}
+        ${e.series.map((x, j) => { const ec = ecartSerie(x, e.unite), pdc = sansCharge(e.unite), cardio = e.unite === 'min';
+          return `<tr><td>${j + 1}</td><td>${x.prevuReps != null ? (cardio ? fmtDuree(x.prevuReps) : `${x.prevuReps}${pdc ? '' : ` × ${fmtNum(x.prevuCharge)}`}`) : '–'}</td>
+            <td><b>${x.faite ? (cardio ? texteCardio(x) : `${x.reps}${pdc ? '' : ` × ${fmtNum(x.charge)}`}`) : '–'}</b></td><td class="ecart ${ec.type}">${ec.texte}</td></tr>`; }).join('')}
         </tbody></table></div>`).join('')}
       <div class="actions"><button type="button" class="btn" data-a="modif">Modifier</button></div>`, body => {
       $('[data-a="modif"]', body).addEventListener('click', () => Saisie.seance(s));
