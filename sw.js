@@ -1,6 +1,6 @@
 // Garde une copie de la page (et de Chart.js, des polices) pour l'ouvrir sans réseau. Réseau d'abord, copie en secours.
 // Les appels à api.github.com ne passent jamais par ce cache.
-const CACHE = 'suivi-sport-v3';
+const CACHE = 'suivi-sport-v4';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(
   caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())
