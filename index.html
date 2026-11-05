@@ -192,8 +192,13 @@ main > .card { margin-bottom: 16px; }
 .jr-titre { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 2px; }
 .jr-moment .li { padding: 8px 0; }
 /* Muscu : tableau de bord par exercice */
-.muscu-go { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-.exo-grid { margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.exo-groupe { margin-bottom: 22px; }
+.exo-groupe h2 { margin: 0; }
+details.exo-groupe summary { display: flex; align-items: baseline; gap: 10px; cursor: pointer; list-style: none; }
+details.exo-groupe summary::-webkit-details-marker { display: none; }
+details.exo-groupe summary h2::before { content: '▸ '; color: var(--muted); }
+details.exo-groupe[open] summary h2::before { content: '▾ '; }
+.exo-grid { margin-top: 10px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 .exo-card { display: block; width: 100%; text-align: left; color: inherit; font: inherit; cursor: pointer; }
 .exo-card:hover { border-color: var(--accent); }
 .exo-card-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
@@ -810,6 +815,22 @@ function historiqueExo(seances, exoId) {
 }
 // Prévu pour la prochaine fois : la charge de la dernière séance (sinon celle du programme).
 // « Prêt à monter » : toutes les séries prévues faites au plafond de reps à cette charge.
+// Exercices du tableau de bord muscu, par groupe : chaque séance du programme (sans échauffement), l'échauffement,
+// puis les exercices encore dans l'historique mais retirés du programme. Un exercice n'apparaît qu'une fois.
+function groupesExos(programme, seances) {
+  const vus = new Set(), groupes = [];
+  const ajouter = (titre, cle, exos) => {
+    const liste = exos.filter(ex => !vus.has(ex.id) && vus.add(ex.id));
+    if (liste.length) groupes.push({ titre, cle, exos: liste });
+  };
+  const ps = programme.seances || [];
+  for (const s of ps) ajouter(s.nom, s.id, s.blocs.filter(b => b.nom !== 'Échauffement').flatMap(b => b.exos.map(ex => ({ ...ex, bloc: b.nom }))));
+  ajouter('Échauffement', 'echauffement', ps.flatMap(s => s.blocs.filter(b => b.nom === 'Échauffement').flatMap(b => b.exos.map(ex => ({ ...ex, bloc: b.nom })))));
+  const anciens = new Map();
+  for (const s of seances.filter(x => x.exos).sort((a, b) => a.date.localeCompare(b.date))) for (const e of s.exos) anciens.set(e.id, { id: e.id, nom: e.nom || e.id, unite: e.unite, bloc: 'Retiré du programme' });
+  ajouter('Anciens exercices', 'anciens', [...anciens.values()]);
+  return groupes;
+}
 // Progression d'un exercice entre sa première et sa dernière séance (historiqueExo trié par date)
 function progressionExo(h) {
   if (!h.length) return null;
@@ -1847,21 +1868,10 @@ const Pages = {
 
   /* ---------- Muscu ---------- */
   muscu: {
-    titre: 'Muscu', onglet: null,
-    // Exercices affichés pour l'onglet choisi : ceux d'une séance (sans l'échauffement), ou l'échauffement seul
-    exosOnglet(prog) {
-      const vus = new Set(), out = [];
-      const blocs = this.onglet === 'echauffement'
-        ? prog.seances.flatMap(s => s.blocs.filter(b => b.nom === 'Échauffement'))
-        : (prog.seances.find(s => s.id === this.onglet) || prog.seances[0]).blocs.filter(b => b.nom !== 'Échauffement');
-      for (const b of blocs) for (const ex of b.exos) if (!vus.has(ex.id)) { vus.add(ex.id); out.push({ ...ex, bloc: b.nom }); }
-      return out;
-    },
+    titre: 'Muscu',
     html() {
       const d = Store.data, prog = d.programme, seances = d.seances;
       if (!prog.seances || !prog.seances.length) return `<header class="page-head"><h1>Muscu</h1></header>${carte('', '<p class="muted">Aucun programme (programme.json).</p>')}`;
-      const suivante = prochaineSeance(prog, seances);
-      if (this.onglet !== 'echauffement' && !prog.seances.some(s => s.id === this.onglet)) this.onglet = suivante;
       const nb = seances.filter(s => s.sport === 'muscu').length;
       const carteExo = ex => {
         const h = historiqueExo(seances, ex.id), pv = prevuExo(ex, seances), der = pv.derniere, pr = progressionExo(h);
@@ -1881,27 +1891,29 @@ const Pages = {
         </button>`;
       };
       return `<header class="page-head"><h1>Muscu</h1><p class="muted">Évolution de chaque exercice · ${nb} séance${nb > 1 ? 's' : ''} enregistrée${nb > 1 ? 's' : ''}</p></header>
-        <div class="muscu-go">${prog.seances.map(s => `<button type="button" class="btn${s.id === suivante ? ' primary' : ''}" data-go="${esc(s.id)}">Commencer ${esc(s.nom)}${s.id === suivante ? ' (la suivante)' : ''}</button>`).join('')}</div>
-        ${chips('onglet', [...prog.seances.map(s => ({ v: s.id, l: esc(s.nom) })), { v: 'echauffement', l: 'Échauffement' }], this.onglet)}
-        <div class="grid exo-grid">${this.exosOnglet(prog).map(carteExo).join('')}</div>`;
+        ${groupesExos(prog, seances).map(g => {
+          const grille = `<div class="grid exo-grid">${g.exos.map(carteExo).join('')}</div>`;
+          // L'échauffement et les anciens exercices sont repliés : moins utiles au quotidien
+          return g.cle === 'echauffement' || g.cle === 'anciens'
+            ? `<details class="exo-groupe"><summary><h2>${esc(g.titre)}</h2><span class="muted small">${g.exos.length} exercice${g.exos.length > 1 ? 's' : ''}</span></summary>${grille}</details>`
+            : `<section class="exo-groupe"><h2>${esc(g.titre)}</h2>${grille}</section>`;
+        }).join('')}`;
     },
     apres(root) {
-      brancherChips(root, (n, v) => { this.onglet = v; App.rendre(); });
       root.addEventListener('click', e => {
-        const g = e.target.closest('[data-go]');
-        if (g) return Saisie.seance(null, 'muscu', g.dataset.go);
         const x = e.target.closest('[data-exo]');
         if (x) Pages.detailExo(x.dataset.exo);
       });
       const seances = Store.data.seances;
-      for (const ex of this.exosOnglet(Store.data.programme)) {
+      for (const ex of groupesExos(Store.data.programme, seances).flatMap(g => g.exos)) {
         const cv = $(`[data-graphe="${CSS.escape(ex.id)}"]`, root);
         if (cv) Graphs.creer(cv, grapheExo(ex, historiqueExo(seances, ex.id)));
       }
     },
   },
   detailExo(id) {
-    const ex = (Store.data.programme.seances || []).flatMap(s => s.blocs.flatMap(b => b.exos)).find(e => e.id === id);
+    // Exercice du programme, ou à défaut retiré du programme mais présent dans l'historique
+    const ex = groupesExos(Store.data.programme, Store.data.seances).flatMap(g => g.exos).find(e => e.id === id);
     const h = historiqueExo(Store.data.seances, id), pdc = ex && sansCharge(ex.unite);
     Sheet.ouvrir(ex ? ex.nom : id, `
       ${ex && ex.consigne ? `<p class="muted small">${esc(ex.consigne)}</p>` : ''}
