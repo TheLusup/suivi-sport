@@ -552,8 +552,11 @@ const SEED = {
   plats: [
   {"id": "cantine-plat", "nom": "Cantine : plat + légumes", "cat": "Midi", "kcal": 650, "p": 32, "g": 70, "l": 24, "f": 6},
   {"id": "cantine-complet", "nom": "Cantine : entrée + plat + dessert", "cat": "Midi", "kcal": 950, "p": 38, "g": 105, "l": 38, "f": 8},
-  {"id": "foodcheri-plat", "nom": "FoodChéri : plat", "cat": "Midi", "kcal": 600, "p": 30, "g": 60, "l": 22, "f": 8},
-  {"id": "foodcheri-plat-dessert", "nom": "FoodChéri : plat + dessert", "cat": "Midi", "kcal": 850, "p": 33, "g": 95, "l": 32, "f": 9},
+  {"id": "foodcheri-plat", "nom": "FoodChéri : plat (moyenne)", "cat": "FoodChéri", "sous": "Plat", "kcal": 600, "p": 30, "g": 60, "l": 22, "f": 8},
+  {"id": "fc-cuisse-poulet-curry-riz", "nom": "Cuisse de poulet au curry indien & riz basmati (390 g)", "cat": "FoodChéri", "sous": "Plat", "kcal": 771, "p": 42.1, "g": 55.3, "l": 40.8, "f": 6.7},
+  {"id": "fc-skyr-brebis-abricot", "nom": "Skyr brebis abricot bio (120 g)", "cat": "FoodChéri", "sous": "Dessert", "kcal": 101, "p": 9.1, "g": 13.8, "l": 0.6, "f": 0},
+  {"id": "fc-boule-pain-tradition", "nom": "Boule de pain tradition (50 g)", "cat": "FoodChéri", "sous": "Autre", "kcal": 134, "p": 4, "g": 27.3, "l": 0.5, "f": 1.7},
+  {"id": "foodcheri-plat-dessert", "nom": "FoodChéri : plat + dessert (moyenne)", "cat": "FoodChéri", "sous": "Plat", "kcal": 850, "p": 33, "g": 95, "l": 32, "f": 9},
   {"id": "kebab-frites", "nom": "Kebab frites", "cat": "Dehors", "kcal": 1150, "p": 45, "g": 115, "l": 55, "f": 7},
   {"id": "kebab-seul", "nom": "Kebab sans frites", "cat": "Dehors", "kcal": 720, "p": 38, "g": 65, "l": 32, "f": 4},
   {"id": "burger-frites", "nom": "Burger frites (resto)", "cat": "Dehors", "kcal": 1150, "p": 45, "g": 100, "l": 60, "f": 6},
@@ -1426,10 +1429,16 @@ const Saisie = {
     const liste = body => {
       const q = st.q.toLowerCase();
       let h = '';
-      if (st.onglet === 'plats') {
-        const parCat = {};
-        for (const p of Store.data.plats) if (!q || p.nom.toLowerCase().includes(q)) (parCat[p.cat || 'Autres'] = parCat[p.cat || 'Autres'] || []).push(p);
-        h = Object.entries(parCat).map(([c, ps]) => `<h3>${esc(c)}</h3>` + ps.map(p =>
+      if (st.onglet === 'plats' || st.onglet === 'foodcheri') {
+        const fc = st.onglet === 'foodcheri', parCat = {};
+        if (fc) for (const s of ['Plat', 'Dessert', 'Autre']) parCat[s] = [];   // ordre des rubriques FoodChéri
+        for (const p of Store.data.plats) if ((p.cat === 'FoodChéri') === fc && (!q || p.nom.toLowerCase().includes(q))) {
+          const c = fc ? (['Plat', 'Dessert'].includes(p.sous) ? p.sous : 'Autre') : p.cat || 'Autres';
+          (parCat[c] = parCat[c] || []).push(p);
+        }
+        const rubriques = Object.entries(parCat).filter(([, ps]) => ps.length);
+        if (fc && !q && !rubriques.length) h = '<p class="muted">Aucun plat FoodChéri : envoie un screen du plat à Claude, il l’ajoute ici.</p>';
+        else h = rubriques.map(([c, ps]) => `<h3>${esc(c)}</h3>` + ps.map(p =>
           `<button type="button" class="pick ${st.sel && st.sel.ref === p.id ? 'on' : ''}" data-pick="plat:${esc(p.id)}"><span>${esc(p.nom)}</span><span class="muted">${fmtKcal(p.kcal)} · ${fmtNum(p.p, 0)} g P</span></button>`).join('')).join('');
       } else {
         const m = menuSemaine(), ids = m ? m.recettes.map(r => r.id) : [];
@@ -1443,7 +1452,7 @@ const Saisie = {
       body.innerHTML = `
         <div class="row2"><label>Date<input type="date" name="date" value="${st.date}" max="${today()}"></label>
           <label>Moment<select name="moment">${MOMENTS.map(m => `<option ${m === st.moment ? 'selected' : ''}>${m}</option>`).join('')}</select></label></div>
-        ${chips('onglet', [{ v: 'plats', l: 'Plats types' }, { v: 'batch', l: 'Mes batchs' }, { v: 'libre', l: 'Libre' }], st.onglet)}
+        ${chips('onglet', [{ v: 'plats', l: 'Plats types' }, { v: 'foodcheri', l: 'FoodChéri' }, { v: 'batch', l: 'Mes recettes' }, { v: 'libre', l: 'Libre' }], st.onglet)}
         ${st.onglet === 'libre' ? `
           <label>Nom<input name="nom" placeholder="ex. Pâtes carbo chez des amis"></label>
           <div class="grid5">
