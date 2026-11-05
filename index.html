@@ -185,6 +185,20 @@ main > .card { margin-bottom: 16px; }
 
 .chart { position: relative; height: 260px; }
 .chart.sm { height: 200px; margin-bottom: 12px; }
+.chart.xs { height: 150px; margin-top: 8px; }
+/* Nutrition : journal par repas */
+.journal { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px 16px; }
+.jr-moment { background: var(--surface-2); border-radius: var(--radius-sm); padding: 8px 12px; }
+.jr-titre { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 2px; }
+.jr-moment .li { padding: 8px 0; }
+/* Muscu : tableau de bord par exercice */
+.muscu-go { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.exo-grid { margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.exo-card { display: block; width: 100%; text-align: left; color: inherit; font: inherit; cursor: pointer; }
+.exo-card:hover { border-color: var(--accent); }
+.exo-card-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.exo-card-k { margin: 6px 0 2px; }
+.exo-card p { margin-top: 4px; margin-bottom: 0; }
 
 /* Formulaires */
 label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--text-2); margin: 8px 0; min-width: 0; }
@@ -701,6 +715,16 @@ function macrosRecette(recette, aliments) {
   return { total: totaux([t]), parPortion, manquants };
 }
 // Moment du repas d'après l'heure
+// Ordre d'affichage des repas d'une journée ; « Collation » (valeur enregistrée) s'affiche « Snack »
+const ORDRE_MOMENTS = ['Petit-déjeuner', 'Déjeuner', 'Collation', 'Dîner'];
+const libelleMoment = m => (m === 'Collation' ? 'Snack' : m || 'Autre');
+// Repas d'un jour groupés par moment, dans l'ordre de la journée (moment inconnu à la fin), sans groupe vide
+function repasParMoment(repas) {
+  const rang = m => (ORDRE_MOMENTS.includes(m) ? ORDRE_MOMENTS.indexOf(m) : ORDRE_MOMENTS.length);
+  const groupes = new Map();
+  for (const r of repas) { const m = r.moment || ''; if (!groupes.has(m)) groupes.set(m, []); groupes.get(m).push(r); }
+  return [...groupes].map(([moment, liste]) => ({ moment, repas: liste })).sort((a, b) => rang(a.moment) - rang(b.moment));
+}
 function momentRepas(heure) {
   if (heure < 10.5) return 'Petit-déjeuner';
   if (heure < 15) return 'Déjeuner';
@@ -786,6 +810,12 @@ function historiqueExo(seances, exoId) {
 }
 // Prévu pour la prochaine fois : la charge de la dernière séance (sinon celle du programme).
 // « Prêt à monter » : toutes les séries prévues faites au plafond de reps à cette charge.
+// Progression d'un exercice entre sa première et sa dernière séance (historiqueExo trié par date)
+function progressionExo(h) {
+  if (!h.length) return null;
+  const p = h[0], d = h[h.length - 1];
+  return { seances: h.length, depuis: p.date, deltaCharge: p.max != null && d.max != null ? d.max - p.max : null, deltaReps: d.reps - p.reps };
+}
 function prevuExo(exo, seances) {
   const h = historiqueExo(seances, exo.id), der = h[h.length - 1];
   const charge = der && der.max != null ? der.max : exo.charge;
@@ -1480,7 +1510,7 @@ const Saisie = {
         }
         const rubriques = Object.entries(parCat).filter(([, ps]) => ps.length);
         if (fc && !q && !rubriques.length) h = '<p class="muted">Aucun plat FoodChéri : envoie un screen du plat à Claude, il l’ajoute ici.</p>';
-        else h = rubriques.map(([c, ps]) => `<h3>${esc(c)}</h3>` + ps.map(p =>
+        else h = rubriques.map(([c, ps]) => `<h3>${esc(libelleMoment(c))}</h3>` + ps.map(p =>
           `<button type="button" class="pick ${st.sel && st.sel.ref === p.id ? 'on' : ''}" data-pick="plat:${esc(p.id)}"><span>${esc(p.nom)}</span><span class="muted">${fmtKcal(p.kcal)} · ${fmtNum(p.p, 0)} g P</span></button>`).join('')).join('');
       } else {
         const m = menuSemaine(), ids = m ? m.recettes.map(r => r.id) : [];
@@ -1493,7 +1523,7 @@ const Saisie = {
     const rendre = body => {
       body.innerHTML = `
         <div class="row2"><label>Date<input type="date" name="date" value="${st.date}" max="${today()}"></label>
-          <label>Moment<select name="moment">${MOMENTS.map(m => `<option ${m === st.moment ? 'selected' : ''}>${m}</option>`).join('')}</select></label></div>
+          <label>Moment<select name="moment">${MOMENTS.map(m => `<option value="${m}" ${m === st.moment ? 'selected' : ''}>${libelleMoment(m)}</option>`).join('')}</select></label></div>
         ${chips('onglet', [{ v: 'plats', l: 'Plats types' }, { v: 'foodcheri', l: 'FoodChéri' }, { v: 'batch', l: 'Mes recettes' }, { v: 'libre', l: 'Libre' }], st.onglet)}
         ${st.onglet === 'libre' ? `
           <label>Nom<input name="nom" placeholder="ex. Pâtes carbo chez des amis"></label>
@@ -1635,9 +1665,23 @@ function poidsActuel() {
   return m.length ? m[m.length - 1].moyenne : Store.data.profil.poidsDepart;
 }
 const carte = (titre, corps, extra = '') => `<section class="card ${extra}">${titre ? `<h2>${titre}</h2>` : ''}${corps}</section>`;
-const ligneRepas = r => `<div class="li"><span><b>${esc(r.nom)}</b>${r.qte && r.qte !== 1 ? ` <span class="muted">×${fmtNum(r.qte)}</span>` : ''}<br><span class="muted small">${esc(r.moment)} · ${fmtNum(r.p, 0)} g P · ${fmtNum(r.f, 0)} g fibres</span></span>
+const ligneRepas = (r, avecMoment) => `<div class="li"><span><b>${esc(r.nom)}</b>${r.qte && r.qte !== 1 ? ` <span class="muted">×${fmtNum(r.qte)}</span>` : ''}<br><span class="muted small">${avecMoment !== false ? `${esc(libelleMoment(r.moment))} · ` : ''}${fmtNum(r.p, 0)} g P · ${fmtNum(r.f, 0)} g fibres</span></span>
   <span class="li-end">${fmtKcal(r.kcal)}<button type="button" class="icon-btn sm" data-del-repas="${esc(r.id)}" aria-label="Supprimer ${esc(r.nom)}">✕</button></span></div>`;
 const texteMontre = m => [m.kcal != null && `${fmtNum(m.kcal, 0)} kcal`, m.fcMoy != null && `FC moy ${m.fcMoy}`, m.fcMax != null && `FC max ${m.fcMax}`, m.charge != null && `charge montre ${m.charge}`].filter(Boolean).join(' · ');
+// Graphe d'un exercice : charge max (courbe, axe gauche) et reps totales (barres, axe droit) ; minutes pour le cardio
+function grapheExo(ex, h) {
+  const opt = Graphs.base(), cardio = ex.unite === 'min', avecCharge = !sansCharge(ex.unite) && h.some(x => x.max != null);
+  opt.plugins.legend.labels.font = { size: 10 };
+  opt.scales.y.beginAtZero = !avecCharge;
+  const barres = { type: 'bar', label: cardio ? 'Minutes' : 'Reps totales', data: h.map(x => cardio ? Math.round(x.reps * 10) / 10 : x.reps),
+    backgroundColor: css('--series-3'), borderRadius: 3, maxBarThickness: 18, yAxisID: avecCharge ? 'y1' : 'y', order: 2 };
+  const ds = [barres];
+  if (avecCharge) {
+    ds.unshift({ type: 'line', label: 'Charge max (kg)', data: h.map(x => x.max), borderColor: css('--accent'), backgroundColor: css('--accent'), tension: .25, spanGaps: true, yAxisID: 'y', order: 1 });
+    opt.scales.y1 = { position: 'right', beginAtZero: true, grid: { display: false }, ticks: { color: css('--muted') }, border: { display: false } };
+  }
+  return { type: 'bar', data: { labels: h.map(x => fmtCourt(x.date)), datasets: ds }, options: opt };
+}
 function ligneSeance(s) {
   const sp = sportDe(s.sport), ps = s.programme && (Store.data.programme.seances || []).find(x => x.id === s.programme);
   return `<button type="button" class="li li-btn" data-seance="${esc(s.id)}"><span>${sp.icone} <b>${esc(ps ? ps.nom : sp.nom)}</b><br><span class="muted small">${fmtCourt(s.date)} · ${s.duree != null ? fmtNum(s.duree, 0) : '?'} min${s.rpe ? ` · effort ${fmtNum(s.rpe, 0)}/10` : ''}${s.distanceKm ? ` · ${fmtNum(s.distanceKm)} km` : ''}${s.montre && s.montre.fcMoy ? ` · ❤ ${s.montre.fcMoy}` : ''}</span></span>
@@ -1804,31 +1848,56 @@ const Pages = {
   /* ---------- Muscu ---------- */
   muscu: {
     titre: 'Muscu', onglet: null,
+    // Exercices affichés pour l'onglet choisi : ceux d'une séance (sans l'échauffement), ou l'échauffement seul
+    exosOnglet(prog) {
+      const vus = new Set(), out = [];
+      const blocs = this.onglet === 'echauffement'
+        ? prog.seances.flatMap(s => s.blocs.filter(b => b.nom === 'Échauffement'))
+        : (prog.seances.find(s => s.id === this.onglet) || prog.seances[0]).blocs.filter(b => b.nom !== 'Échauffement');
+      for (const b of blocs) for (const ex of b.exos) if (!vus.has(ex.id)) { vus.add(ex.id); out.push({ ...ex, bloc: b.nom }); }
+      return out;
+    },
     html() {
       const d = Store.data, prog = d.programme, seances = d.seances;
       if (!prog.seances || !prog.seances.length) return `<header class="page-head"><h1>Muscu</h1></header>${carte('', '<p class="muted">Aucun programme (programme.json).</p>')}`;
-      if (!prog.seances.some(s => s.id === this.onglet)) this.onglet = prochaineSeance(prog, seances);
-      const ps = prog.seances.find(s => s.id === this.onglet);
-      const hist = seances.filter(s => s.sport === 'muscu').sort(parDate).reverse();
-      return `<header class="page-head"><h1>Muscu</h1><p class="muted">${hist.length} séance${hist.length > 1 ? 's' : ''} enregistrée${hist.length > 1 ? 's' : ''}</p></header>
-        ${chips('onglet', prog.seances.map(s => ({ v: s.id, l: esc(s.nom) })), this.onglet)}
-        ${carte(`${esc(ps.nom)} · prévu la prochaine fois`, ps.blocs.map(b => `<h3>${esc(b.nom)}</h3>` + b.exos.map(ex => {
-          const pv = prevuExo(ex, seances), der = pv.derniere, pdc = sansCharge(ex.unite);
-          return `<button type="button" class="li li-btn" data-exo="${esc(ex.id)}"><span><b>${esc(ex.nom)}</b>
-              ${pv.pretAMonter ? `<span class="badge good">Prêt à monter → ${fmtNum(pv.chargeSuggeree)} kg</span>` : ''}<br>
-              <span class="muted small">${der ? ex.unite === 'min' ? `${fmtCourt(der.date)} : ${der.series.map(texteCardio).join(' / ')}` : `${fmtCourt(der.date)} : ${der.series.map(s => s.reps).join('/')}${pdc ? ` ${uniteReps(ex.unite)}` : der.max != null ? ` @ ${fmtNum(der.max)} kg` : ' reps (charge non saisie)'}` : 'Pas encore fait'}</span></span>
-            <span class="li-end"><b>${ex.series}×${ex.repsMax}</b>${pdc ? '' : `<span class="muted small">${pv.charge != null ? `${fmtNum(pv.charge)} ${esc(ex.unite)}` : 'charge ?'}</span>`}</span></button>`;
-        }).join('')).join('') + `<button type="button" class="btn primary" data-a="go">Commencer ${esc(ps.nom)}</button>`)}
-        ${carte('Historique', `<div class="list">${hist.slice(0, 30).map(ligneSeance).join('') || '<p class="muted small">Aucune séance.</p>'}</div>`)}`;
+      const suivante = prochaineSeance(prog, seances);
+      if (this.onglet !== 'echauffement' && !prog.seances.some(s => s.id === this.onglet)) this.onglet = suivante;
+      const nb = seances.filter(s => s.sport === 'muscu').length;
+      const carteExo = ex => {
+        const h = historiqueExo(seances, ex.id), pv = prevuExo(ex, seances), der = pv.derniere, pr = progressionExo(h);
+        const pdc = sansCharge(ex.unite), cardio = ex.unite === 'min';
+        const dernier = !der ? `<span class="muted">Pas encore fait · prévu ${ex.series}×${cardio ? fmtDuree(ex.repsMax) : ex.repsMax}${!pdc && pv.charge != null ? ` @ ${fmtNum(pv.charge)} kg` : ''}</span>`
+          : cardio ? `<b>${der.series.map(texteCardio).join(' / ')}</b>`
+          : `<b>${der.max != null ? `${fmtNum(der.max)} kg` : ''}</b> <span class="muted">${der.series.map(s => s.reps).join('/')} ${pdc ? 'reps' : ''}</span>`;
+        const evo = pr && pr.seances > 1 ? [
+          pr.deltaCharge ? `<span class="${pr.deltaCharge > 0 ? 'good' : 'warn'}">${pr.deltaCharge > 0 ? '+' : '−'}${fmtNum(Math.abs(pr.deltaCharge))} kg</span>` : '',
+          !cardio && pr.deltaReps ? `<span class="${pr.deltaReps > 0 ? 'good' : 'warn'}">${pr.deltaReps > 0 ? '+' : '−'}${Math.abs(pr.deltaReps)} reps</span>` : '',
+        ].filter(Boolean).join(' · ') || 'stable' : '';
+        return `<button type="button" class="card exo-card" data-exo="${esc(ex.id)}">
+          <div class="exo-card-h"><b>${esc(ex.nom)}</b>${pv.pretAMonter ? `<span class="badge good">Prêt à monter → ${fmtNum(pv.chargeSuggeree)} kg</span>` : ''}</div>
+          <p class="small exo-card-k">${dernier}</p>
+          <p class="muted small">${pr ? `${pr.seances} séance${pr.seances > 1 ? 's' : ''}${evo ? ` · ${evo} depuis le ${fmtCourt(pr.depuis)}` : ''}` : esc(ex.bloc)}</p>
+          ${h.length > 1 ? `<div class="chart xs"><canvas data-graphe="${esc(ex.id)}"></canvas></div>` : der ? '<p class="muted small">Le graphe apparaît dès la 2e séance.</p>' : ''}
+        </button>`;
+      };
+      return `<header class="page-head"><h1>Muscu</h1><p class="muted">Évolution de chaque exercice · ${nb} séance${nb > 1 ? 's' : ''} enregistrée${nb > 1 ? 's' : ''}</p></header>
+        <div class="muscu-go">${prog.seances.map(s => `<button type="button" class="btn${s.id === suivante ? ' primary' : ''}" data-go="${esc(s.id)}">Commencer ${esc(s.nom)}${s.id === suivante ? ' (la suivante)' : ''}</button>`).join('')}</div>
+        ${chips('onglet', [...prog.seances.map(s => ({ v: s.id, l: esc(s.nom) })), { v: 'echauffement', l: 'Échauffement' }], this.onglet)}
+        <div class="grid exo-grid">${this.exosOnglet(prog).map(carteExo).join('')}</div>`;
     },
     apres(root) {
       brancherChips(root, (n, v) => { this.onglet = v; App.rendre(); });
       root.addEventListener('click', e => {
-        if (e.target.closest('[data-a="go"]')) return Saisie.seance(null, 'muscu', this.onglet);
+        const g = e.target.closest('[data-go]');
+        if (g) return Saisie.seance(null, 'muscu', g.dataset.go);
         const x = e.target.closest('[data-exo]');
         if (x) Pages.detailExo(x.dataset.exo);
       });
-      brancherListes(root);
+      const seances = Store.data.seances;
+      for (const ex of this.exosOnglet(Store.data.programme)) {
+        const cv = $(`[data-graphe="${CSS.escape(ex.id)}"]`, root);
+        if (cv) Graphs.creer(cv, grapheExo(ex, historiqueExo(seances, ex.id)));
+      }
     },
   },
   detailExo(id) {
@@ -1925,7 +1994,9 @@ const Pages = {
             <div><span class="small">Glucides <b>${fmtNum(moy('g'), 0)}</b> g · Lipides <b>${fmtNum(moy('l'), 0)}</b> g</span></div></div>` : '<p class="muted">Aucun repas saisi cette semaine.</p>')}
         ${carte('Calories sur 14 jours', '<div class="chart"><canvas id="ch-kcal"></canvas></div>')}
         ${carte('Journal', jours.map(j => { const rs = d.repas.filter(r => r.date === j).sort(parDate); if (!rs.length) return '';
-          return `<h3>${fmtDate(j, { weekday: 'long', day: 'numeric', month: 'short' })} <span class="muted small">${fmtKcal(totaux(rs).kcal)}</span></h3><div class="list">${rs.map(ligneRepas).join('')}</div>`; }).join('') || '<p class="muted small">Rien sur 7 jours.</p>', 'wide')}
+          return `<h3>${fmtDate(j, { weekday: 'long', day: 'numeric', month: 'short' })} <span class="muted small">${fmtKcal(totaux(rs).kcal)}</span></h3>
+            <div class="journal">${repasParMoment(rs).map(g => `<div class="jr-moment"><p class="jr-titre"><b>${esc(libelleMoment(g.moment))}</b><span class="muted small">${fmtKcal(totaux(g.repas).kcal)} · ${fmtNum(totaux(g.repas).p, 0)} g P</span></p>
+              <div class="list">${g.repas.map(r => ligneRepas(r, false)).join('')}</div></div>`).join('')}</div>`; }).join('') || '<p class="muted small">Rien sur 7 jours.</p>', 'wide')}
         </div>`;
     },
     apres(root) {
