@@ -1994,7 +1994,10 @@ const Pages = {
       const groupes = groupesExos(prog, seances), td = tendanceExos(groupes, seances);
       const nbT = td.progres.length + td.stable.length + td.baisse.length;
       const tuile = (n, lib, cls) => `<div class="td-tuile ${cls}"><b>${n}</b><span>${lib}</span></div>`;
-      const tendance = !nbT ? '' : `<section class="card tendance">
+      const tendance = !nbT ? `<section class="card tendance">
+          <div class="td-tete"><h2>Tendance</h2><span class="muted small">dernière séance vs précédente</span></div>
+          <p class="muted small" style="margin:10px 0 0">Elle apparaîtra dès qu'un exercice aura été fait 2 fois (ta prochaine séance du même programme).</p>
+        </section>` : `<section class="card tendance">
           <div class="td-tete"><h2>Tendance</h2><span class="muted small">dernière séance vs précédente</span></div>
           <div class="td-tuiles">${tuile(td.progres.length, 'en progrès', 'good')}${tuile(td.stable.length, 'stable', '')}${tuile(td.baisse.length, 'en baisse', td.baisse.length ? 'warn' : '')}</div>
           <p class="td-alerte small">${td.baisse.length
