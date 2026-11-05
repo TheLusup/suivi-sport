@@ -194,6 +194,8 @@ textarea { resize: vertical; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .grid5 input { padding: 10px 6px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 520px) { .grid4 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 420px) { .grid5 { grid-template-columns: repeat(3, 1fr); } }
 .check-line { flex-direction: row; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; color: var(--text); margin: 4px 0; }
 .check-line input { width: 20px; height: 20px; flex: none; accent-color: var(--accent); }
@@ -578,11 +580,17 @@ const SEED = {
   {"id": "soda", "nom": "Soda 33 cl", "cat": "Boissons", "kcal": 140, "p": 0, "g": 35, "l": 0, "f": 0}
 ],
   programme: {
-  "echauffement": "≈ 10 min : ski erg, rameur, tractions, pompes, dips",
   "seances": [
     {
       "id": "upper-a", "nom": "Upper A",
       "blocs": [
+        {"nom": "Échauffement", "exos": [
+          {"id": "ech-ski-erg", "nom": "Ski erg", "series": 1, "repsMin": 2, "repsMax": 2, "charge": null, "unite": "min", "consigne": "≈ 10 min d'échauffement au total. Durées et reps à ajuster."},
+          {"id": "ech-rameur", "nom": "Rameur", "series": 1, "repsMin": 2, "repsMax": 2, "charge": null, "unite": "min", "consigne": ""},
+          {"id": "ech-tractions", "nom": "Tractions", "series": 1, "repsMin": 5, "repsMax": 5, "charge": null, "unite": "poids du corps", "consigne": ""},
+          {"id": "ech-pompes", "nom": "Pompes", "series": 1, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "poids du corps", "consigne": ""},
+          {"id": "ech-dips", "nom": "Dips", "series": 1, "repsMin": 8, "repsMax": 8, "charge": null, "unite": "poids du corps", "consigne": ""}
+        ]},
         {"nom": "Superset 1", "exos": [
           {"id": "dc-halteres", "nom": "Développé couché haltères", "series": 3, "repsMin": 10, "repsMax": 10, "charge": 17.5, "unite": "kg/haltère", "pas": 2.5, "consigne": "Strapping. Viser 3×10 avant de monter."},
           {"id": "tirage-vertical-large", "nom": "Tirage vertical large", "series": 3, "repsMin": 8, "repsMax": 10, "charge": 66, "unite": "kg", "pas": 2.5, "consigne": "Garder la charge jusqu'à 3×10. Sangles si le grip lâche."}
@@ -600,6 +608,13 @@ const SEED = {
     {
       "id": "upper-b", "nom": "Upper B",
       "blocs": [
+        {"nom": "Échauffement", "exos": [
+          {"id": "ech-ski-erg", "nom": "Ski erg", "series": 1, "repsMin": 2, "repsMax": 2, "charge": null, "unite": "min", "consigne": "≈ 10 min d'échauffement au total. Durées et reps à ajuster."},
+          {"id": "ech-rameur", "nom": "Rameur", "series": 1, "repsMin": 2, "repsMax": 2, "charge": null, "unite": "min", "consigne": ""},
+          {"id": "ech-tractions", "nom": "Tractions", "series": 1, "repsMin": 5, "repsMax": 5, "charge": null, "unite": "poids du corps", "consigne": ""},
+          {"id": "ech-pompes", "nom": "Pompes", "series": 1, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "poids du corps", "consigne": ""},
+          {"id": "ech-dips", "nom": "Dips", "series": 1, "repsMin": 8, "repsMax": 8, "charge": null, "unite": "poids du corps", "consigne": ""}
+        ]},
         {"nom": "Superset 1", "exos": [
           {"id": "rowing-horizontal", "nom": "Rowing horizontal (sled pull)", "series": 3, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "kg", "pas": 2.5, "consigne": "Lent, squeeze 1 s. Sangles."},
           {"id": "dev-militaire-halteres", "nom": "Développé militaire haltères", "series": 3, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "kg/haltère", "pas": 2.5, "consigne": "Strapping."}
@@ -790,6 +805,29 @@ function ecartSerie(s) {
   return { type: 'ok', texte: '=' };
 }
 // Séance du programme à faire ensuite : celle qui suit la dernière faite
+// Résumé d'activité recopié depuis la montre : clé, libellé, exemple, bornes plausibles
+const MONTRE = [
+  { k: 'kcal', l: 'Calories', ph: 'kcal', min: 0, max: 5000 },
+  { k: 'fcMoy', l: 'FC moyenne', ph: 'bpm', min: 30, max: 230 },
+  { k: 'fcMax', l: 'FC max', ph: 'bpm', min: 30, max: 230 },
+  { k: 'charge', l: 'Charge montre', ph: 'ex. 85', min: 0, max: 1000 },
+];
+// Garde les champs remplis, arrondis ; refuse une valeur hors bornes ou une FC moyenne > FC max
+function nettoyerMontre(m) {
+  const valeurs = {};
+  for (const d of MONTRE) {
+    const v = m && m[d.k];
+    if (v == null) continue;
+    if (!(v >= d.min && v <= d.max)) return { erreur: `${d.l} : valeur entre ${d.min} et ${d.max}` };
+    valeurs[d.k] = Math.round(v);
+  }
+  if (valeurs.fcMoy != null && valeurs.fcMax != null && valeurs.fcMoy > valeurs.fcMax) return { erreur: 'La FC moyenne dépasse la FC max' };
+  return { valeurs: Object.keys(valeurs).length ? valeurs : null };
+}
+
+// Exercices sans charge : poids du corps (reps) ou cardio d'échauffement (minutes)
+const sansCharge = u => u === 'poids du corps' || u === 'min';
+const uniteReps = u => (u === 'min' ? 'min' : 'reps');
 function prochaineSeance(programme, seances) {
   const ids = programme.seances.map(s => s.id);
   const der = seances.filter(s => s.programme && ids.includes(s.programme)).sort((a, b) => a.date.localeCompare(b.date) || (a.cree || 0) - (b.cree || 0)).pop();
@@ -1283,6 +1321,9 @@ const Saisie = {
         ${chips('rpe', Array.from({ length: 10 }, (_, i) => ({ v: i + 1, l: String(i + 1) })), st.rpe)}
         <p class="muted small rpe-label">${st.rpe ? RPE_LABELS[st.rpe] : '1 = très facile · 10 = maximal'}</p>
         ${sp.distance ? `<label>Distance (km)<input type="text" name="distanceKm" inputmode="decimal" value="${st.distanceKm ?? ''}"></label>` : ''}
+        <h3>Montre</h3>
+        <p class="muted small">Facultatif : recopie le résumé de l'activité (la durée se met plus haut).</p>
+        <div class="grid4">${MONTRE.map(m => `<label>${m.l}<input type="number" inputmode="numeric" name="montre.${m.k}" value="${(st.montre || {})[m.k] ?? ''}" placeholder="${m.ph}"></label>`).join('')}</div>
         <label>Note<textarea name="note" rows="2" placeholder="facultatif">${esc(st.note)}</textarea></label>
         <div class="actions">${edition ? '<button type="button" class="btn danger" data-a="suppr">Supprimer</button>' : ''}
           <button type="button" class="btn primary" data-a="ok">Enregistrer</button></div>`;
@@ -1300,6 +1341,7 @@ const Saisie = {
         else if (t.name === 'duree') st.duree = num(t.value);
         else if (t.name === 'distanceKm') st.distanceKm = num(t.value);
         else if (t.name === 'note') st.note = t.value;
+        else if (t.name && t.name.startsWith('montre.')) st.montre = { ...st.montre, [t.name.slice(7)]: num(t.value) };
         else if (t.dataset.k) {
           const ex = st.exos[+t.dataset.e], s = ex.series[+t.dataset.s];
           s[t.dataset.k] = num(t.value);
@@ -1343,7 +1385,10 @@ const Saisie = {
           if (confirm('Supprimer cette séance ?')) { Store.remove('seances', st.id); Sheet.fermer(); toast('Séance supprimée'); }
         } else if (a === 'ok') {
           if (!/^\d{4}-\d{2}-\d{2}$/.test(st.date || '')) return toast('Indique la date');
+          const montre = nettoyerMontre(st.montre);
+          if (montre.erreur) return toast(montre.erreur);
           const s = { ...st };
+          if (montre.valeurs) s.montre = montre.valeurs; else delete s.montre;
           if (s.exos) s.exos = s.exos.map(({ id, nom, unite, series }) => ({ id, nom, unite, series }));
           Store.upsert('seances', s);
           if (!edition && !autreJour) LS.del(CLES.brouillon);
@@ -1357,14 +1402,14 @@ const Saisie = {
     let bloc = null, h = prog.echauffement && st.programme ? `<p class="note">Échauffement : ${esc(prog.echauffement)}</p>` : '';
     st.exos.forEach((ex, i) => {
       if (ex.bloc && ex.bloc !== bloc) { bloc = ex.bloc; h += `<h3>${esc(bloc)}</h3>`; }
-      const pdc = ex.unite === 'poids du corps';
+      const pdc = sansCharge(ex.unite), ur = uniteReps(ex.unite);
       h += `<div class="exo"><div class="exo-head"><b>${esc(ex.nom)}</b><span class="muted small">${esc(ex.unite || '')}</span>
           ${ex.pret ? `<span class="badge good">Prêt à monter → ${fmtNum(ex.pret)} kg</span>` : ''}</div>
         ${ex.consigne ? `<p class="muted small">${esc(ex.consigne)}</p>` : ''}
         ${ex.series.map((s, j) => `<div class="serie ${s.faite ? 'done' : ''}">
           <span class="sn">S${j + 1}</span>
-          <span class="prevu">${s.prevuReps != null ? `${s.prevuReps}${pdc ? ' reps' : ` × ${s.prevuCharge != null ? fmtNum(s.prevuCharge) : '?'}`}` : '—'}</span>
-          <input type="number" inputmode="numeric" data-e="${i}" data-s="${j}" data-k="reps" value="${s.reps ?? ''}" placeholder="reps" aria-label="Répétitions série ${j + 1}">
+          <span class="prevu">${s.prevuReps != null ? `${s.prevuReps}${pdc ? ` ${ur}` : ` ×${s.prevuCharge != null ? fmtNum(s.prevuCharge) : '?'}`}` : '—'}</span>
+          <input type="number" inputmode="numeric" data-e="${i}" data-s="${j}" data-k="reps" value="${s.reps ?? ''}" placeholder="${ur}" aria-label="${ur === 'min' ? 'Minutes' : 'Répétitions'} série ${j + 1}">
           ${pdc ? '<span></span><span></span>' : `<span class="x">×</span><input type="text" inputmode="decimal" data-e="${i}" data-s="${j}" data-k="charge" value="${s.charge ?? ''}" placeholder="kg" aria-label="Charge série ${j + 1}">`}
           <button type="button" class="check" data-a="check" data-e="${i}" data-s="${j}" aria-label="Série ${j + 1} faite">✓</button></div>`).join('')}
         <button type="button" class="link small" data-a="serie+" data-e="${i}">+ série</button></div>`;
@@ -1541,9 +1586,10 @@ function poidsActuel() {
 const carte = (titre, corps, extra = '') => `<section class="card ${extra}">${titre ? `<h2>${titre}</h2>` : ''}${corps}</section>`;
 const ligneRepas = r => `<div class="li"><span><b>${esc(r.nom)}</b>${r.qte && r.qte !== 1 ? ` <span class="muted">×${fmtNum(r.qte)}</span>` : ''}<br><span class="muted small">${esc(r.moment)} · ${fmtNum(r.p, 0)} g P · ${fmtNum(r.f, 0)} g fibres</span></span>
   <span class="li-end">${fmtKcal(r.kcal)}<button type="button" class="icon-btn sm" data-del-repas="${esc(r.id)}" aria-label="Supprimer ${esc(r.nom)}">✕</button></span></div>`;
+const texteMontre = m => [m.kcal != null && `${fmtNum(m.kcal, 0)} kcal`, m.fcMoy != null && `FC moy ${m.fcMoy}`, m.fcMax != null && `FC max ${m.fcMax}`, m.charge != null && `charge montre ${m.charge}`].filter(Boolean).join(' · ');
 function ligneSeance(s) {
   const sp = sportDe(s.sport), ps = s.programme && (Store.data.programme.seances || []).find(x => x.id === s.programme);
-  return `<button type="button" class="li li-btn" data-seance="${esc(s.id)}"><span>${sp.icone} <b>${esc(ps ? ps.nom : sp.nom)}</b><br><span class="muted small">${fmtCourt(s.date)} · ${s.duree != null ? fmtNum(s.duree, 0) : '?'} min${s.rpe ? ` · effort ${fmtNum(s.rpe, 0)}/10` : ''}${s.distanceKm ? ` · ${fmtNum(s.distanceKm)} km` : ''}</span></span>
+  return `<button type="button" class="li li-btn" data-seance="${esc(s.id)}"><span>${sp.icone} <b>${esc(ps ? ps.nom : sp.nom)}</b><br><span class="muted small">${fmtCourt(s.date)} · ${s.duree != null ? fmtNum(s.duree, 0) : '?'} min${s.rpe ? ` · effort ${fmtNum(s.rpe, 0)}/10` : ''}${s.distanceKm ? ` · ${fmtNum(s.distanceKm)} km` : ''}${s.montre && s.montre.fcMoy ? ` · ❤ ${s.montre.fcMoy}` : ''}</span></span>
     <span class="li-end">${chargeSeance(s) ? `<span class="badge">${chargeSeance(s)}</span>` : '<span class="muted small">–</span>'}</span></button>`;
 }
 function brancherListes(root) {
@@ -1716,10 +1762,10 @@ const Pages = {
       return `<header class="page-head"><h1>Muscu</h1><p class="muted">${hist.length} séance${hist.length > 1 ? 's' : ''} enregistrée${hist.length > 1 ? 's' : ''}</p></header>
         ${chips('onglet', prog.seances.map(s => ({ v: s.id, l: esc(s.nom) })), this.onglet)}
         ${carte(`${esc(ps.nom)} · prévu la prochaine fois`, ps.blocs.map(b => `<h3>${esc(b.nom)}</h3>` + b.exos.map(ex => {
-          const pv = prevuExo(ex, seances), der = pv.derniere, pdc = ex.unite === 'poids du corps';
+          const pv = prevuExo(ex, seances), der = pv.derniere, pdc = sansCharge(ex.unite);
           return `<button type="button" class="li li-btn" data-exo="${esc(ex.id)}"><span><b>${esc(ex.nom)}</b>
               ${pv.pretAMonter ? `<span class="badge good">Prêt à monter → ${fmtNum(pv.chargeSuggeree)} kg</span>` : ''}<br>
-              <span class="muted small">${der ? `${fmtCourt(der.date)} : ${der.series.map(s => s.reps).join('/')}${pdc ? ' reps' : der.max != null ? ` @ ${fmtNum(der.max)} kg` : ' reps (charge non saisie)'}` : 'Pas encore fait'}</span></span>
+              <span class="muted small">${der ? `${fmtCourt(der.date)} : ${der.series.map(s => s.reps).join('/')}${pdc ? ` ${uniteReps(ex.unite)}` : der.max != null ? ` @ ${fmtNum(der.max)} kg` : ' reps (charge non saisie)'}` : 'Pas encore fait'}</span></span>
             <span class="li-end"><b>${ex.series}×${ex.repsMax}</b>${pdc ? '' : `<span class="muted small">${pv.charge != null ? `${fmtNum(pv.charge)} ${esc(ex.unite)}` : 'charge ?'}</span>`}</span></button>`;
         }).join('')).join('') + `<button type="button" class="btn primary" data-a="go">Commencer ${esc(ps.nom)}</button>`)}
         ${carte('Historique', `<div class="list">${hist.slice(0, 30).map(ligneSeance).join('') || '<p class="muted small">Aucune séance.</p>'}</div>`)}`;
@@ -1736,7 +1782,7 @@ const Pages = {
   },
   detailExo(id) {
     const ex = (Store.data.programme.seances || []).flatMap(s => s.blocs.flatMap(b => b.exos)).find(e => e.id === id);
-    const h = historiqueExo(Store.data.seances, id), pdc = ex && ex.unite === 'poids du corps';
+    const h = historiqueExo(Store.data.seances, id), pdc = ex && sansCharge(ex.unite);
     Sheet.ouvrir(ex ? ex.nom : id, `
       ${ex && ex.consigne ? `<p class="muted small">${esc(ex.consigne)}</p>` : ''}
       ${h.length > 1 ? '<div class="chart sm"><canvas></canvas></div>' : ''}
@@ -1757,9 +1803,10 @@ const Pages = {
     const ps = (Store.data.programme.seances || []).find(x => x.id === s.programme);
     Sheet.ouvrir(`${ps ? ps.nom : 'Muscu'} · ${fmtCourt(s.date)}`, `
       <p class="muted small">${s.duree ?? '?'} min · effort ${s.rpe ?? '?'}/10 · charge ${chargeSeance(s) || '–'}${s.note ? ` · ${esc(s.note)}` : ''}</p>
+      ${s.montre ? `<p class="small">⌚ ${texteMontre(s.montre)}</p>` : ''}
       ${(s.exos || []).map(e => `<div class="exo"><div class="exo-head"><b>${esc(e.nom)}</b></div>
         <table class="tbl"><thead><tr><th>Série</th><th>Prévu</th><th>Réalisé</th><th>Écart</th></tr></thead><tbody>
-        ${e.series.map((x, j) => { const ec = ecartSerie(x), pdc = e.unite === 'poids du corps';
+        ${e.series.map((x, j) => { const ec = ecartSerie(x), pdc = sansCharge(e.unite);
           return `<tr><td>${j + 1}</td><td>${x.prevuReps != null ? `${x.prevuReps}${pdc ? '' : ` × ${fmtNum(x.prevuCharge)}`}` : '–'}</td>
             <td><b>${x.faite ? `${x.reps}${pdc ? '' : ` × ${fmtNum(x.charge)}`}` : '–'}</b></td><td class="ecart ${ec.type}">${ec.texte}</td></tr>`; }).join('')}
         </tbody></table></div>`).join('')}
