@@ -192,6 +192,11 @@ main > .card { margin-bottom: 16px; }
 .jr-titre { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 2px; }
 .jr-moment .li { padding: 8px 0; }
 /* Muscu : tableau de bord par exercice */
+/* Séance : changer un exercice pour cette séance */
+.exo-liens { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 2px; }
+.exo-edit { border: 1px dashed var(--accent); border-radius: var(--radius-sm); padding: 10px 12px; margin: 10px 0; }
+.exo-edit .actions { margin-top: 6px; }
+.exo-plus { width: 100%; margin: 10px 0 4px; border-style: dashed; }
 .exo-groupe { margin-bottom: 22px; }
 .exo-groupe h2 { margin: 0; }
 details.exo-groupe summary { display: flex; align-items: baseline; gap: 10px; cursor: pointer; list-style: none; }
@@ -816,7 +821,7 @@ function historiqueExo(seances, exoId) {
 // Prévu pour la prochaine fois : la charge de la dernière séance (sinon celle du programme).
 // « Prêt à monter » : toutes les séries prévues faites au plafond de reps à cette charge.
 // Exercices du tableau de bord muscu, par groupe : chaque séance du programme (sans échauffement), l'échauffement,
-// puis les exercices encore dans l'historique mais retirés du programme. Un exercice n'apparaît qu'une fois.
+// puis les autres exercices de l'historique (retirés du programme ou ajoutés pendant une séance). Un exercice n'apparaît qu'une fois.
 function groupesExos(programme, seances) {
   const vus = new Set(), groupes = [];
   const ajouter = (titre, cle, exos) => {
@@ -827,9 +832,19 @@ function groupesExos(programme, seances) {
   for (const s of ps) ajouter(s.nom, s.id, s.blocs.filter(b => b.nom !== 'Échauffement').flatMap(b => b.exos.map(ex => ({ ...ex, bloc: b.nom }))));
   ajouter('Échauffement', 'echauffement', ps.flatMap(s => s.blocs.filter(b => b.nom === 'Échauffement').flatMap(b => b.exos.map(ex => ({ ...ex, bloc: b.nom })))));
   const anciens = new Map();
-  for (const s of seances.filter(x => x.exos).sort((a, b) => a.date.localeCompare(b.date))) for (const e of s.exos) anciens.set(e.id, { id: e.id, nom: e.nom || e.id, unite: e.unite, bloc: 'Retiré du programme' });
-  ajouter('Anciens exercices', 'anciens', [...anciens.values()]);
+  for (const s of seances.filter(x => x.exos).sort((a, b) => a.date.localeCompare(b.date))) for (const e of s.exos) anciens.set(e.id, { id: e.id, nom: e.nom || e.id, unite: e.unite, bloc: 'Hors programme' });
+  ajouter('Autres exercices', 'anciens', [...anciens.values()]);
   return groupes;
+}
+// Nom → identifiant stable, sans accents ni casse (« Développé Couché » → « developpe-couche »)
+const slugExo = nom => String(nom || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+// Exercice choisi par son nom pendant une séance : un exercice connu (programme ou historique) garde son id, donc son
+// historique ; sinon nouvel id « perso-<nom> », le même à chaque fois, pour que ses séances s'additionnent
+function exoParNom(nom, catalogue, unite) {
+  const n = slugExo(nom);
+  if (!n) return null;
+  const connu = catalogue.find(e => slugExo(e.nom) === n || e.id === n);
+  return connu ? { ...connu } : { id: 'perso-' + n, nom: String(nom).trim(), unite: unite || 'kg' };
 }
 // Progression d'un exercice entre sa première et sa dernière séance (historiqueExo trié par date)
 function progressionExo(h) {
@@ -1356,6 +1371,19 @@ const Saisie = {
       };
     }));
   },
+  // Exercice ajouté ou remplacé pendant la séance : prévu = programme s'il y figure, sinon ce qui a été fait la dernière fois
+  exoSeance(def, bloc, nbSeries) {
+    const pv = prevuExo({ series: nbSeries, repsMax: null, ...def }, Store.data.seances), der = pv.derniere;
+    const n = nbSeries || def.series || (der ? der.series.length : 3);
+    return {
+      id: def.id, nom: def.nom, bloc, unite: def.unite, consigne: def.consigne, pret: pv.chargeSuggeree,
+      series: Array.from({ length: n }, (_, j) => {
+        const r = pv.reps ?? (der && der.series[Math.min(j, der.series.length - 1)].reps) ?? null;
+        return { prevuReps: r, prevuCharge: pv.charge, reps: r, charge: pv.charge, faite: false };
+      }),
+    };
+  },
+  catalogueExos() { return groupesExos(Store.data.programme, Store.data.seances).flatMap(g => g.exos); },
   nouvelleSeance(sport, programmeId, date) {
     const sp = sportDe(sport);
     const st = { id: uid(), date: date || today(), sport, duree: sp.duree, rpe: null, note: '', cree: Date.now() };
@@ -1375,6 +1403,7 @@ const Saisie = {
     if (!st) st = this.nouvelleSeance(sportInitial || 'muscu', programmeId, date);
     // Une séance saisie après coup (autre jour, depuis le calendrier) ne touche pas au brouillon de la séance en cours
     const sauverBrouillon = () => { if (!edition && !autreJour) LS.set(CLES.brouillon, st); };
+    let modifExo = null; // { mode: 'remplacer' | 'ajouter', i } : panneau ouvert pour changer un exercice de cette séance
 
     const rendre = body => {
       const sp = sportDe(st.sport), prog = Store.data.programme;
@@ -1386,7 +1415,7 @@ const Saisie = {
             ${prog.seances.map(s => `<option value="${esc(s.id)}" ${s.id === st.programme ? 'selected' : ''}>${esc(s.nom)}</option>`).join('')}
             <option value="" ${!st.programme ? 'selected' : ''}>Libre (sans programme)</option></select></label>` : ''}
         </div>
-        ${st.exos ? this.htmlExos(st, prog) : ''}
+        ${st.exos ? this.htmlExos(st, prog, modifExo) : ''}
         <h3>Durée et effort</h3>
         <div class="stepper"><button type="button" data-a="duree" data-d="-5">−5</button>
           <label><input type="number" name="duree" inputmode="numeric" min="0" value="${st.duree ?? ''}"> min</label>
@@ -1415,6 +1444,11 @@ const Saisie = {
         else if (t.name === 'duree') st.duree = num(t.value);
         else if (t.name === 'distanceKm') st.distanceKm = num(t.value);
         else if (t.name === 'note') st.note = t.value;
+        else if (t.name === 'exo-nom') { // exercice connu : son unité est reprise
+          const c = this.catalogueExos().find(x => slugExo(x.nom) === slugExo(t.value)), u = $('[name="exo-unite"]', body);
+          if (c && c.unite && u) u.value = c.unite;
+          return;
+        }
         else if (t.name && t.name.startsWith('montre.')) st.montre = { ...st.montre, [t.name.slice(7)]: num(t.value) };
         else if (t.dataset.k) {
           const ex = st.exos[+t.dataset.e], s = ex.series[+t.dataset.s];
@@ -1438,7 +1472,8 @@ const Saisie = {
         if (t.dataset.k === 'reps' && st.exos && st.exos[+t.dataset.e].unite === 'min') { const s = st.exos[+t.dataset.e].series[+t.dataset.s]; if (s.reps != null) t.value = fmtDuree(s.reps); }
         if (e.target.name === 'programme') {
           const ps = Store.data.programme.seances.find(s => s.id === e.target.value);
-          st.programme = ps ? ps.id : undefined; st.exos = ps ? this.exosDepuisProgramme(ps) : undefined;
+          st.programme = ps ? ps.id : undefined; st.exos = ps ? this.exosDepuisProgramme(ps) : []; // libre : on ajoute ses exercices
+          modifExo = null;
           sauverBrouillon(); rendre(body);
         }
       });
@@ -1461,6 +1496,27 @@ const Saisie = {
           const ex = st.exos[+b.dataset.e], der = ex.series[ex.series.length - 1] || {};
           ex.series.push({ prevuReps: null, prevuCharge: null, reps: der.reps ?? null, charge: der.charge ?? null, faite: false });
           sauverBrouillon(); rendre(body);
+        } else if (a === 'exo-remplacer' || a === 'exo-ajouter') {
+          modifExo = { mode: a === 'exo-ajouter' ? 'ajouter' : 'remplacer', i: +b.dataset.e };
+          rendre(body);
+          const inp = $('[name="exo-nom"]', body); if (inp) { inp.scrollIntoView({ block: 'center' }); inp.focus(); }
+        } else if (a === 'exo-annuler') {
+          modifExo = null; rendre(body);
+        } else if (a === 'exo-valider') {
+          const nom = $('[name="exo-nom"]', body).value, def = exoParNom(nom, this.catalogueExos(), $('[name="exo-unite"]', body).value);
+          if (!def) return toast("Indique le nom de l'exercice");
+          if (st.exos.some((x, j) => x.id === def.id && !(modifExo.mode === 'remplacer' && j === modifExo.i))) return toast(`${def.nom} est déjà dans la séance`);
+          if (modifExo.mode === 'remplacer') {
+            const ancien = st.exos[modifExo.i];
+            if (ancien.series.some(s => s.faite) && !confirm(`Des séries de « ${ancien.nom} » sont déjà cochées. Les remplacer ?`)) return;
+            st.exos[modifExo.i] = this.exoSeance(def, ancien.bloc, ancien.series.length);
+          } else st.exos.push(this.exoSeance(def, 'Ajouté', null));
+          toast(modifExo.mode === 'remplacer' ? `Remplacé par ${def.nom} (cette séance seulement)` : `${def.nom} ajouté`);
+          modifExo = null; sauverBrouillon(); rendre(body);
+        } else if (a === 'exo-retirer') {
+          const ex = st.exos[+b.dataset.e];
+          if (ex.series.some(s => s.faite) ? !confirm(`Retirer « ${ex.nom} » et ses séries cochées ?`) : false) return;
+          st.exos.splice(+b.dataset.e, 1); modifExo = null; sauverBrouillon(); rendre(body);
         } else if (a === 'duree') {
           st.duree = Math.max(0, (st.duree || 0) + Number(b.dataset.d)); $('[name="duree"]', body).value = st.duree; sauverBrouillon();
         } else if (a === 'jeter') {
@@ -1482,7 +1538,19 @@ const Saisie = {
       });
     });
   },
-  htmlExos(st, prog) {
+  // Panneau pour remplacer un exercice ou en ajouter un (cette séance seulement) ; suggestions = exercices connus
+  htmlModifExo(modif, st) {
+    const cat = this.catalogueExos(), actuel = modif.mode === 'remplacer' ? st.exos[modif.i] : null;
+    return `<div class="exo-edit">
+      <p class="small"><b>${actuel ? `Remplacer « ${esc(actuel.nom)} »` : 'Ajouter un exercice'}</b> <span class="muted">· cette séance seulement, le programme ne change pas</span></p>
+      <label>Exercice<input name="exo-nom" list="exos-connus" autocomplete="off" placeholder="ex. Rowing barre"></label>
+      <datalist id="exos-connus">${cat.map(e => `<option value="${esc(e.nom)}"></option>`).join('')}</datalist>
+      <label>Unité (exercice nouveau)<select name="exo-unite">${['kg', 'kg/haltère', 'poids du corps', 'min'].map(u => `<option ${u === ((actuel && actuel.unite) || 'kg') ? 'selected' : ''}>${u}</option>`).join('')}</select></label>
+      <p class="muted small">Un exercice déjà fait garde son historique et son graphe.</p>
+      <div class="actions"><button type="button" class="btn" data-a="exo-annuler">Annuler</button>
+        <button type="button" class="btn primary" data-a="exo-valider">${actuel ? 'Remplacer' : 'Ajouter'}</button></div></div>`;
+  },
+  htmlExos(st, prog, modif) {
     let bloc = null, h = prog.echauffement && st.programme ? `<p class="note">Échauffement : ${esc(prog.echauffement)}</p>` : '';
     st.exos.forEach((ex, i) => {
       if (ex.bloc && ex.bloc !== bloc) { bloc = ex.bloc; h += `<h3>${esc(bloc)}</h3>`; }
@@ -1499,8 +1567,13 @@ const Saisie = {
           ${pdc ? '<span></span><span></span>' : `<span class="x">×</span><input type="text" inputmode="decimal" data-e="${i}" data-s="${j}" data-k="charge" value="${s.charge ?? ''}" placeholder="kg" aria-label="Charge série ${j + 1}">`}`}
           <button type="button" class="check" data-a="check" data-e="${i}" data-s="${j}" aria-label="Série ${j + 1} faite">✓</button></div>`).join('')}
         ${cardio ? `<p class="muted small allure" data-allure="${i}">${this.texteAllure(st, i)}</p>` : ''}
-        <button type="button" class="link small" data-a="serie+" data-e="${i}">+ série</button></div>`;
+        <div class="exo-liens"><button type="button" class="link small" data-a="serie+" data-e="${i}">+ série</button>
+          <button type="button" class="link small" data-a="exo-remplacer" data-e="${i}">⇄ Remplacer</button>
+          <button type="button" class="link small muted" data-a="exo-retirer" data-e="${i}">✕ Retirer</button></div>
+        ${modif && modif.mode === 'remplacer' && modif.i === i ? this.htmlModifExo(modif, st) : ''}</div>`;
     });
+    h += modif && modif.mode === 'ajouter' ? this.htmlModifExo(modif, st)
+      : `<button type="button" class="btn exo-plus" data-a="exo-ajouter">+ exercice</button>`;
     return h;
   },
   // Allure de chaque série saisie (temps + distance), et celle de la dernière fois pour comparer
