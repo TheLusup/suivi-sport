@@ -967,17 +967,24 @@ const SEED = {
       "id": "renfo", "nom": "Renfo", "rotation": false,
       "blocs": [
         {"nom": "Échauffement", "exos": [
-          {"id": "ech-rameur", "nom": "Rameur", "series": 1, "repsMin": 3, "repsMax": 3, "charge": null, "unite": "min", "consigne": "≈ 5 min d'échauffement. Séance complète ≈ 30 min : 45 s de repos entre deux exercices d'un superset, 1 min 30 entre les tours."},
-          {"id": "ech-squats", "nom": "Squats poids du corps", "series": 1, "repsMin": 15, "repsMax": 15, "charge": null, "unite": "poids du corps", "consigne": ""},
-          {"id": "ech-pont-fessier", "nom": "Pont fessier", "series": 1, "repsMin": 15, "repsMax": 15, "charge": null, "unite": "poids du corps", "consigne": ""}
+          {"id": "ech-chat-vache", "nom": "Chat-vache", "series": 1, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "poids du corps", "consigne": "À la maison, sans matériel (un tapis). ≈ 30 min, rythme tranquille : on respire, pas de chrono serré."},
+          {"id": "ech-rotations-thoraciques", "nom": "Rotations thoraciques au sol", "series": 1, "repsMin": 8, "repsMax": 8, "charge": null, "unite": "poids du corps", "consigne": "Par côté, allongé sur le flanc, genoux pliés."},
+          {"id": "ech-squat-tenu", "nom": "Squat profond tenu", "series": 1, "repsMin": 30, "repsMax": 30, "charge": null, "unite": "s", "consigne": "Talons au sol, coudes poussent les genoux."}
         ]},
-        {"nom": "Superset 1", "exos": [
-          {"id": "goblet-squat", "nom": "Goblet squat", "series": 3, "repsMin": 10, "repsMax": 12, "charge": null, "unite": "kg", "pas": 2, "consigne": "Un haltère tenu contre la poitrine. Descendre sous la parallèle, dos droit. 3×12 avant de monter."},
-          {"id": "fentes-arriere", "nom": "Fentes arrière haltères", "series": 3, "repsMin": 8, "repsMax": 10, "charge": null, "unite": "kg/haltère", "pas": 2, "consigne": "Reps par jambe. Genou avant au-dessus de la cheville."}
+        {"nom": "Gainage", "exos": [
+          {"id": "planche", "nom": "Planche", "series": 3, "repsMin": 30, "repsMax": 45, "charge": null, "unite": "s", "consigne": "En circuit avec les 2 suivants, 1 min de repos entre les tours. Corps aligné, fessiers serrés. 3 × 45 s tenues → passe à 60 s."},
+          {"id": "planche-laterale", "nom": "Planche latérale", "series": 3, "repsMin": 30, "repsMax": 30, "charge": null, "unite": "s", "consigne": "Par côté. Hanches hautes."},
+          {"id": "bird-dog", "nom": "Bird dog", "series": 3, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "poids du corps", "consigne": "Par côté, lent, dos immobile."}
         ]},
-        {"nom": "Superset 2", "exos": [
-          {"id": "sdt-roumain-halteres", "nom": "Soulevé de terre roumain haltères", "series": 3, "repsMin": 10, "repsMax": 12, "charge": null, "unite": "kg/haltère", "pas": 2, "consigne": "Hanches en arrière, dos plat, haltères le long des cuisses. Étirement des ischios."},
+        {"nom": "Abdos", "exos": [
+          {"id": "dead-bug", "nom": "Dead bug", "series": 3, "repsMin": 10, "repsMax": 10, "charge": null, "unite": "poids du corps", "consigne": "En superset avec les relevés de jambes, 45 s de repos. Contrôle lombaire."},
           {"id": "releves-jambes", "nom": "Relevés de jambes allongé", "series": 3, "repsMin": 10, "repsMax": 12, "charge": null, "unite": "poids du corps", "consigne": "Lombaires collées au sol, descente lente."}
+        ]},
+        {"nom": "Étirements", "exos": [
+          {"id": "etir-ischios", "nom": "Étirement ischios", "series": 1, "repsMin": 45, "repsMax": 45, "charge": null, "unite": "s", "consigne": "Par jambe. Sans à-coups, respiration lente."},
+          {"id": "etir-psoas", "nom": "Étirement psoas (fente basse)", "series": 1, "repsMin": 45, "repsMax": 45, "charge": null, "unite": "s", "consigne": "Par côté. Bassin en rétroversion."},
+          {"id": "etir-pigeon", "nom": "Pigeon (fessiers)", "series": 1, "repsMin": 45, "repsMax": 45, "charge": null, "unite": "s", "consigne": "Par côté."},
+          {"id": "etir-enfant", "nom": "Posture de l'enfant", "series": 1, "repsMin": 60, "repsMax": 60, "charge": null, "unite": "s", "consigne": "Bras tendus devant, on relâche le dos."}
         ]}
       ]
     }
@@ -1186,7 +1193,7 @@ function progressionExo(h) {
 function tendanceExos(groupes, seances) {
   const out = { progres: [], stable: [], baisse: [] };
   for (const g of groupes.filter(g => g.cle !== 'echauffement' && g.cle !== 'anciens')) for (const ex of g.exos) {
-    if (ex.unite === 'min') continue;
+    if (ex.unite === 'min' || ex.bloc === 'Étirements') continue;
     const h = historiqueExo(seances, ex.id);
     if (h.length < 2) continue;
     const a = h[h.length - 2], d = h[h.length - 1];
@@ -1194,7 +1201,7 @@ function tendanceExos(groupes, seances) {
     const da = a.aide != null && d.aide != null ? r1(d.aide - a.aide) : 0;   // aide en baisse = progrès
     const sens = dc ? Math.sign(dc) : da ? -Math.sign(da) : Math.sign(dr);
     const texte = dc ? `${dc > 0 ? '+' : '−'}${fmtNum(Math.abs(dc))} kg` : da ? `aide ${da > 0 ? '+' : '−'}${fmtNum(Math.abs(da))} kg`
-      : dr ? `${dr > 0 ? '+' : '−'}${Math.abs(dr)} rep${Math.abs(dr) > 1 ? 's' : ''}` : 'stable';
+      : dr ? `${dr > 0 ? '+' : '−'}${Math.abs(dr)}${ex.unite === 's' ? ' s' : ` rep${Math.abs(dr) > 1 ? 's' : ''}`}` : 'stable';
     out[sens > 0 ? 'progres' : sens < 0 ? 'baisse' : 'stable'].push({ id: ex.id, nom: ex.nom, groupe: g.titre, texte });
   }
   return out;
@@ -1219,7 +1226,7 @@ function ecartSerie(s, unite) {
   const dc = (s.charge || 0) - (s.prevuCharge || 0), dr = s.reps - s.prevuReps;
   if (unite === 'min') return Math.abs(dr) < 1 / 120 ? { type: 'ok', texte: '=' } : { type: dr > 0 ? 'plus' : 'moins', texte: `${dr > 0 ? '+' : '−'}${fmtDuree(Math.abs(dr))}` };
   if (s.prevuCharge != null && s.charge != null && Math.abs(dc) >= 0.01) return { type: dc > 0 ? 'plus' : 'moins', texte: `${dc > 0 ? '+' : '−'}${fmtNum(Math.abs(dc))} kg` };
-  if (dr) return { type: dr > 0 ? 'plus' : 'moins', texte: `${dr > 0 ? '+' : '−'}${Math.abs(dr)} rep${Math.abs(dr) > 1 ? 's' : ''}` };
+  if (dr) return { type: dr > 0 ? 'plus' : 'moins', texte: `${dr > 0 ? '+' : '−'}${Math.abs(dr)}${unite === 's' ? ' s' : ` rep${Math.abs(dr) > 1 ? 's' : ''}`}` };
   return { type: 'ok', texte: '=' };
 }
 // Séance du programme à faire ensuite : celle qui suit la dernière faite
@@ -1244,8 +1251,9 @@ function nettoyerMontre(m) {
 }
 
 // Exercices sans charge : poids du corps (reps) ou cardio d'échauffement (minutes)
-const sansCharge = u => u === 'poids du corps' || u === 'min';
-const uniteReps = u => (u === 'min' ? 'min' : 'reps');
+// « s » : exercice tenu (planche, étirement) ; les « reps » sont des secondes
+const sansCharge = u => u === 'poids du corps' || u === 'min' || u === 's';
+const uniteReps = u => (u === 'min' ? 'min' : u === 's' ? 's' : 'reps');
 // Cardio (SkiErg, rameur) : temps saisi « 2:30 » ou « 2 » (minutes), gardé en minutes décimales ; allure en temps aux 500 m
 function lireDuree(txt) {
   const s = String(txt ?? '').trim().replace(',', '.');
@@ -1905,7 +1913,7 @@ const Saisie = {
       <p class="small"><b>${actuel ? `Remplacer « ${esc(actuel.nom)} »` : 'Ajouter un exercice'}</b> <span class="muted">· cette séance seulement, le programme ne change pas</span></p>
       <label>Exercice<input name="exo-nom" list="exos-connus" autocomplete="off" placeholder="ex. Rowing barre"></label>
       <datalist id="exos-connus">${cat.map(e => `<option value="${esc(e.nom)}"></option>`).join('')}</datalist>
-      <label>Unité (exercice nouveau)<select name="exo-unite">${['kg', 'kg/haltère', 'poids du corps', 'min'].map(u => `<option ${u === ((actuel && actuel.unite) || 'kg') ? 'selected' : ''}>${u}</option>`).join('')}</select></label>
+      <label>Unité (exercice nouveau)<select name="exo-unite">${['kg', 'kg/haltère', 'poids du corps', 's', 'min'].map(u => `<option ${u === ((actuel && actuel.unite) || 'kg') ? 'selected' : ''}>${u}</option>`).join('')}</select></label>
       <p class="muted small">Un exercice déjà fait garde son historique et son graphe.</p>
       <div class="actions"><button type="button" class="btn" data-a="exo-annuler">Annuler</button>
         <button type="button" class="btn primary" data-a="exo-valider">${actuel ? 'Remplacer' : 'Ajouter'}</button></div></div>`;
@@ -2128,7 +2136,7 @@ function grapheExo(ex, h) {
   const avecCharge = (!sansCharge(ex.unite) && h.some(x => x.max != null)) || avecAide;
   opt.plugins.legend.labels.font = { size: 10 };
   opt.scales.y.beginAtZero = !avecCharge;
-  const barres = { type: 'bar', label: cardio ? 'Minutes' : 'Reps totales', data: h.map(x => cardio ? Math.round(x.reps * 10) / 10 : x.reps),
+  const barres = { type: 'bar', label: cardio ? 'Minutes' : ex.unite === 's' ? 'Secondes au total' : 'Reps totales', data: h.map(x => cardio ? Math.round(x.reps * 10) / 10 : x.reps),
     backgroundColor: css('--series-3'), borderRadius: 3, maxBarThickness: 18, yAxisID: avecCharge ? 'y1' : 'y', order: 2 };
   const ds = [barres];
   if (avecCharge) {
@@ -2312,9 +2320,9 @@ const Pages = {
       const carteExo = ex => {
         const h = historiqueExo(seances, ex.id), pv = prevuExo(ex, seances), der = pv.derniere, pr = progressionExo(h);
         const pdc = sansCharge(ex.unite), cardio = ex.unite === 'min';
-        const dernier = !der ? `<span class="muted">Pas encore fait · prévu ${ex.series}×${cardio ? fmtDuree(ex.repsMax) : ex.repsMax}${!pdc && pv.charge != null ? ` @ ${fmtNum(pv.charge)} kg` : ''}</span>`
+        const dernier = !der ? `<span class="muted">Pas encore fait · prévu ${ex.series}×${cardio ? fmtDuree(ex.repsMax) : ex.repsMax}${ex.unite === 's' ? ' s' : ''}${!pdc && pv.charge != null ? ` @ ${fmtNum(pv.charge)} kg` : ''}</span>`
           : cardio ? `<b>${der.series.map(texteCardio).join(' / ')}</b>`
-          : `<b>${der.max != null ? `${fmtNum(der.max)} kg` : ''}</b> <span class="muted">${der.series.map(s => s.reps).join('/')} ${pdc ? 'reps' : ''}</span>${der.aide != null ? ` <b>· aide ${fmtNum(der.aide)} kg</b>` : ''}`;
+          : `<b>${der.max != null ? `${fmtNum(der.max)} kg` : ''}</b> <span class="muted">${der.series.map(s => s.reps).join('/')} ${pdc ? uniteReps(ex.unite) : ''}</span>${der.aide != null ? ` <b>· aide ${fmtNum(der.aide)} kg</b>` : ''}`;
         const evo = pr && pr.seances > 1 ? [
           pr.deltaCharge ? `<span class="${pr.deltaCharge > 0 ? 'good' : 'warn'}">${pr.deltaCharge > 0 ? '+' : '−'}${fmtNum(Math.abs(pr.deltaCharge))} kg</span>` : '',
           pr.deltaAide ? `<span class="${pr.deltaAide < 0 ? 'good' : 'warn'}">aide ${pr.deltaAide > 0 ? '+' : '−'}${fmtNum(Math.abs(pr.deltaAide))} kg</span>` : '',
