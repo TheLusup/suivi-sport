@@ -587,37 +587,331 @@ const SEED = {
   }
 ],
   plats: [
-  {"id": "cantine-plat", "nom": "Cantine : plat + légumes", "cat": "Midi", "kcal": 650, "p": 32, "g": 70, "l": 24, "f": 6},
-  {"id": "cantine-complet", "nom": "Cantine : entrée + plat + dessert", "cat": "Midi", "kcal": 950, "p": 38, "g": 105, "l": 38, "f": 8},
-  {"id": "foodcheri-plat", "nom": "FoodChéri : plat (moyenne)", "cat": "FoodChéri", "sous": "Plat", "kcal": 600, "p": 30, "g": 60, "l": 22, "f": 8},
-  {"id": "fc-cuisse-poulet-curry-riz", "nom": "Cuisse de poulet au curry indien & riz basmati (390 g)", "cat": "FoodChéri", "sous": "Plat", "kcal": 771, "p": 42.1, "g": 55.3, "l": 40.8, "f": 6.7},
-  {"id": "fc-skyr-brebis-abricot", "nom": "Skyr brebis abricot bio (120 g)", "cat": "FoodChéri", "sous": "Dessert", "kcal": 101, "p": 9.1, "g": 13.8, "l": 0.6, "f": 0},
-  {"id": "fc-boule-pain-tradition", "nom": "Boule de pain tradition (50 g)", "cat": "FoodChéri", "sous": "Autre", "kcal": 134, "p": 4, "g": 27.3, "l": 0.5, "f": 1.7},
-  {"id": "foodcheri-plat-dessert", "nom": "FoodChéri : plat + dessert (moyenne)", "cat": "FoodChéri", "sous": "Plat", "kcal": 850, "p": 33, "g": 95, "l": 32, "f": 9},
-  {"id": "kebab-frites", "nom": "Kebab frites", "cat": "Dehors", "kcal": 1150, "p": 45, "g": 115, "l": 55, "f": 7},
-  {"id": "kebab-seul", "nom": "Kebab sans frites", "cat": "Dehors", "kcal": 720, "p": 38, "g": 65, "l": 32, "f": 4},
-  {"id": "burger-frites", "nom": "Burger frites (resto)", "cat": "Dehors", "kcal": 1150, "p": 45, "g": 100, "l": 60, "f": 6},
-  {"id": "pizza", "nom": "Pizza entière", "cat": "Dehors", "kcal": 1000, "p": 42, "g": 120, "l": 38, "f": 6},
-  {"id": "sushis", "nom": "Sushis / makis (12 pièces) + soupe", "cat": "Dehors", "kcal": 650, "p": 28, "g": 100, "l": 14, "f": 3},
-  {"id": "poke-bowl", "nom": "Poke bowl", "cat": "Dehors", "kcal": 650, "p": 30, "g": 80, "l": 20, "f": 6},
-  {"id": "bo-bun", "nom": "Bo bun", "cat": "Dehors", "kcal": 650, "p": 30, "g": 75, "l": 22, "f": 5},
-  {"id": "salade-resto", "nom": "Salade composée (resto)", "cat": "Dehors", "kcal": 550, "p": 25, "g": 35, "l": 32, "f": 6},
-  {"id": "sandwich", "nom": "Sandwich jambon-beurre", "cat": "Dehors", "kcal": 450, "p": 20, "g": 50, "l": 18, "f": 3},
-  {"id": "resto-plat", "nom": "Resto : plat seul", "cat": "Dehors", "kcal": 800, "p": 38, "g": 70, "l": 38, "f": 5},
-  {"id": "resto-complet", "nom": "Resto : entrée/dessert + plat", "cat": "Dehors", "kcal": 1200, "p": 45, "g": 115, "l": 58, "f": 7},
-  {"id": "pdj-skyr-avoine", "nom": "Skyr + flocons d'avoine + fruit", "cat": "Petit-déjeuner", "kcal": 380, "p": 25, "g": 55, "l": 6, "f": 7},
-  {"id": "pdj-oeufs-pain", "nom": "2 œufs + 2 tranches de pain complet", "cat": "Petit-déjeuner", "kcal": 340, "p": 20, "g": 35, "l": 12, "f": 5},
-  {"id": "pdj-tartines", "nom": "Tartines beurre-confiture + café", "cat": "Petit-déjeuner", "kcal": 350, "p": 8, "g": 55, "l": 11, "f": 3},
-  {"id": "viennoiserie", "nom": "Croissant ou pain au chocolat", "cat": "Collation", "kcal": 280, "p": 5, "g": 30, "l": 16, "f": 1.5},
-  {"id": "shaker-whey", "nom": "Shaker protéiné (eau)", "cat": "Collation", "kcal": 120, "p": 24, "g": 3, "l": 1.5, "f": 0},
-  {"id": "fruit", "nom": "Fruit", "cat": "Collation", "kcal": 80, "p": 1, "g": 18, "l": 0.3, "f": 2.5},
-  {"id": "amandes", "nom": "Poignée d'amandes (30 g)", "cat": "Collation", "kcal": 180, "p": 6, "g": 3, "l": 15, "f": 3.5},
-  {"id": "skyr-pot", "nom": "Pot de skyr (150 g)", "cat": "Collation", "kcal": 90, "p": 15, "g": 6, "l": 0.3, "f": 0},
-  {"id": "barre-choco", "nom": "Barre chocolatée", "cat": "Collation", "kcal": 250, "p": 3, "g": 32, "l": 12, "f": 1},
-  {"id": "biere", "nom": "Bière 50 cl", "cat": "Boissons", "kcal": 210, "p": 2, "g": 17, "l": 0, "f": 0},
-  {"id": "vin", "nom": "Verre de vin (12 cl)", "cat": "Boissons", "kcal": 100, "p": 0, "g": 3, "l": 0, "f": 0},
-  {"id": "cocktail", "nom": "Cocktail", "cat": "Boissons", "kcal": 220, "p": 0, "g": 25, "l": 0, "f": 0},
-  {"id": "soda", "nom": "Soda 33 cl", "cat": "Boissons", "kcal": 140, "p": 0, "g": 35, "l": 0, "f": 0}
+    {
+        "id":  "cantine-plat",
+        "nom":  "Cantine : plat + légumes",
+        "cat":  "Midi",
+        "kcal":  650,
+        "p":  32,
+        "g":  70,
+        "l":  24,
+        "f":  6
+    },
+    {
+        "id":  "cantine-complet",
+        "nom":  "Cantine : entrée + plat + dessert",
+        "cat":  "Midi",
+        "kcal":  950,
+        "p":  38,
+        "g":  105,
+        "l":  38,
+        "f":  8
+    },
+    {
+        "id":  "foodcheri-plat",
+        "nom":  "FoodChéri : plat (moyenne)",
+        "cat":  "FoodChéri",
+        "sous":  "Plat",
+        "kcal":  600,
+        "p":  30,
+        "g":  60,
+        "l":  22,
+        "f":  8
+    },
+    {
+        "id":  "fc-cuisse-poulet-curry-riz",
+        "nom":  "Cuisse de poulet au curry indien \u0026 riz basmati (390 g)",
+        "cat":  "FoodChéri",
+        "sous":  "Plat",
+        "kcal":  771,
+        "p":  42.1,
+        "g":  55.3,
+        "l":  40.8,
+        "f":  6.7
+    },
+    {
+        "id":  "fc-skyr-brebis-abricot",
+        "nom":  "Skyr brebis abricot bio (120 g)",
+        "cat":  "FoodChéri",
+        "sous":  "Dessert",
+        "kcal":  101,
+        "p":  9.1,
+        "g":  13.8,
+        "l":  0.6,
+        "f":  0
+    },
+    {
+        "id":  "fc-boule-pain-tradition",
+        "nom":  "Boule de pain tradition (50 g)",
+        "cat":  "FoodChéri",
+        "sous":  "Autre",
+        "kcal":  134,
+        "p":  4,
+        "g":  27.3,
+        "l":  0.5,
+        "f":  1.7
+    },
+    {
+        "id":  "foodcheri-plat-dessert",
+        "nom":  "FoodChéri : plat + dessert (moyenne)",
+        "cat":  "FoodChéri",
+        "sous":  "Plat",
+        "kcal":  850,
+        "p":  33,
+        "g":  95,
+        "l":  32,
+        "f":  9
+    },
+    {
+        "id":  "kebab-frites",
+        "nom":  "Kebab frites",
+        "cat":  "Dehors",
+        "kcal":  1150,
+        "p":  45,
+        "g":  115,
+        "l":  55,
+        "f":  7
+    },
+    {
+        "id":  "kebab-seul",
+        "nom":  "Kebab sans frites",
+        "cat":  "Dehors",
+        "kcal":  720,
+        "p":  38,
+        "g":  65,
+        "l":  32,
+        "f":  4
+    },
+    {
+        "id":  "burger-frites",
+        "nom":  "Burger frites (resto)",
+        "cat":  "Dehors",
+        "kcal":  1150,
+        "p":  45,
+        "g":  100,
+        "l":  60,
+        "f":  6
+    },
+    {
+        "id":  "pizza",
+        "nom":  "Pizza entière",
+        "cat":  "Dehors",
+        "kcal":  1000,
+        "p":  42,
+        "g":  120,
+        "l":  38,
+        "f":  6
+    },
+    {
+        "id":  "sushis",
+        "nom":  "Sushis / makis (12 pièces) + soupe",
+        "cat":  "Dehors",
+        "kcal":  650,
+        "p":  28,
+        "g":  100,
+        "l":  14,
+        "f":  3
+    },
+    {
+        "id":  "poke-bowl",
+        "nom":  "Poke bowl",
+        "cat":  "Dehors",
+        "kcal":  650,
+        "p":  30,
+        "g":  80,
+        "l":  20,
+        "f":  6
+    },
+    {
+        "id":  "bo-bun",
+        "nom":  "Bo bun",
+        "cat":  "Dehors",
+        "kcal":  650,
+        "p":  30,
+        "g":  75,
+        "l":  22,
+        "f":  5
+    },
+    {
+        "id":  "salade-resto",
+        "nom":  "Salade composée (resto)",
+        "cat":  "Dehors",
+        "kcal":  550,
+        "p":  25,
+        "g":  35,
+        "l":  32,
+        "f":  6
+    },
+    {
+        "id":  "sandwich",
+        "nom":  "Sandwich jambon-beurre",
+        "cat":  "Dehors",
+        "kcal":  450,
+        "p":  20,
+        "g":  50,
+        "l":  18,
+        "f":  3
+    },
+    {
+        "id":  "resto-plat",
+        "nom":  "Resto : plat seul",
+        "cat":  "Dehors",
+        "kcal":  800,
+        "p":  38,
+        "g":  70,
+        "l":  38,
+        "f":  5
+    },
+    {
+        "id":  "resto-complet",
+        "nom":  "Resto : entrée/dessert + plat",
+        "cat":  "Dehors",
+        "kcal":  1200,
+        "p":  45,
+        "g":  115,
+        "l":  58,
+        "f":  7
+    },
+    {
+        "id":  "pdj-skyr-avoine",
+        "nom":  "Skyr + flocons d\u0027avoine + fruit",
+        "cat":  "Petit-déjeuner",
+        "kcal":  380,
+        "p":  25,
+        "g":  55,
+        "l":  6,
+        "f":  7
+    },
+    {
+        "id":  "pdj-oeufs-pain",
+        "nom":  "2 œufs + 2 tranches de pain complet",
+        "cat":  "Petit-déjeuner",
+        "kcal":  340,
+        "p":  20,
+        "g":  35,
+        "l":  12,
+        "f":  5
+    },
+    {
+        "id":  "pdj-tartines",
+        "nom":  "Tartines beurre-confiture + café",
+        "cat":  "Petit-déjeuner",
+        "kcal":  350,
+        "p":  8,
+        "g":  55,
+        "l":  11,
+        "f":  3
+    },
+    {
+        "id":  "viennoiserie",
+        "nom":  "Croissant ou pain au chocolat",
+        "cat":  "Collation",
+        "kcal":  280,
+        "p":  5,
+        "g":  30,
+        "l":  16,
+        "f":  1.5
+    },
+    {
+        "id":  "shaker-whey",
+        "nom":  "Shaker protéiné (eau)",
+        "cat":  "Collation",
+        "kcal":  120,
+        "p":  24,
+        "g":  3,
+        "l":  1.5,
+        "f":  0
+    },
+    {
+        "id":  "fruit",
+        "nom":  "Fruit",
+        "cat":  "Collation",
+        "kcal":  80,
+        "p":  1,
+        "g":  18,
+        "l":  0.3,
+        "f":  2.5
+    },
+    {
+        "id":  "amandes",
+        "nom":  "Poignée d\u0027amandes (30 g)",
+        "cat":  "Collation",
+        "kcal":  180,
+        "p":  6,
+        "g":  3,
+        "l":  15,
+        "f":  3.5
+    },
+    {
+        "id":  "skyr-pot",
+        "nom":  "Pot de skyr (150 g)",
+        "cat":  "Collation",
+        "kcal":  90,
+        "p":  15,
+        "g":  6,
+        "l":  0.3,
+        "f":  0
+    },
+    {
+        "id":  "barre-choco",
+        "nom":  "Barre chocolatée",
+        "cat":  "Collation",
+        "kcal":  250,
+        "p":  3,
+        "g":  32,
+        "l":  12,
+        "f":  1
+    },
+    {
+        "id":  "biere",
+        "nom":  "Bière 50 cl",
+        "cat":  "Boissons",
+        "kcal":  210,
+        "p":  2,
+        "g":  17,
+        "l":  0,
+        "f":  0
+    },
+    {
+        "id":  "vin",
+        "nom":  "Verre de vin (12 cl)",
+        "cat":  "Boissons",
+        "kcal":  100,
+        "p":  0,
+        "g":  3,
+        "l":  0,
+        "f":  0
+    },
+    {
+        "id":  "cocktail",
+        "nom":  "Cocktail",
+        "cat":  "Boissons",
+        "kcal":  220,
+        "p":  0,
+        "g":  25,
+        "l":  0,
+        "f":  0
+    },
+    {
+        "id":  "soda",
+        "nom":  "Soda 33 cl",
+        "cat":  "Boissons",
+        "kcal":  140,
+        "p":  0,
+        "g":  35,
+        "l":  0,
+        "f":  0
+    },
+    {
+        "id":  "perso-pain-complet-miel-banane",
+        "nom":  "Pain complet ×2 + miel + banane",
+        "cat":  "Petit-déjeuner",
+        "kcal":  356,
+        "p":  8.2,
+        "g":  73.9,
+        "l":  3.5,
+        "f":  7.4
+    }
 ],
   programme: {
   "seances": [
@@ -666,6 +960,24 @@ const SEED = {
         {"nom": "Superset 3", "exos": [
           {"id": "face-pulls", "nom": "Face pulls corde", "series": 3, "repsMin": 15, "repsMax": 15, "charge": null, "unite": "kg", "pas": 2.5, "consigne": ""},
           {"id": "curl-marteau", "nom": "Curl marteau", "series": 3, "repsMin": 10, "repsMax": 12, "charge": 12, "unite": "kg/haltère", "pas": 2, "consigne": ""}
+        ]}
+      ]
+    },
+    {
+      "id": "renfo", "nom": "Renfo", "rotation": false,
+      "blocs": [
+        {"nom": "Échauffement", "exos": [
+          {"id": "ech-rameur", "nom": "Rameur", "series": 1, "repsMin": 3, "repsMax": 3, "charge": null, "unite": "min", "consigne": "≈ 5 min d'échauffement. Séance complète ≈ 30 min : 45 s de repos entre deux exercices d'un superset, 1 min 30 entre les tours."},
+          {"id": "ech-squats", "nom": "Squats poids du corps", "series": 1, "repsMin": 15, "repsMax": 15, "charge": null, "unite": "poids du corps", "consigne": ""},
+          {"id": "ech-pont-fessier", "nom": "Pont fessier", "series": 1, "repsMin": 15, "repsMax": 15, "charge": null, "unite": "poids du corps", "consigne": ""}
+        ]},
+        {"nom": "Superset 1", "exos": [
+          {"id": "goblet-squat", "nom": "Goblet squat", "series": 3, "repsMin": 10, "repsMax": 12, "charge": null, "unite": "kg", "pas": 2, "consigne": "Un haltère tenu contre la poitrine. Descendre sous la parallèle, dos droit. 3×12 avant de monter."},
+          {"id": "fentes-arriere", "nom": "Fentes arrière haltères", "series": 3, "repsMin": 8, "repsMax": 10, "charge": null, "unite": "kg/haltère", "pas": 2, "consigne": "Reps par jambe. Genou avant au-dessus de la cheville."}
+        ]},
+        {"nom": "Superset 2", "exos": [
+          {"id": "sdt-roumain-halteres", "nom": "Soulevé de terre roumain haltères", "series": 3, "repsMin": 10, "repsMax": 12, "charge": null, "unite": "kg/haltère", "pas": 2, "consigne": "Hanches en arrière, dos plat, haltères le long des cuisses. Étirement des ischios."},
+          {"id": "releves-jambes", "nom": "Relevés de jambes allongé", "series": 3, "repsMin": 10, "repsMax": 12, "charge": null, "unite": "poids du corps", "consigne": "Lombaires collées au sol, descente lente."}
         ]}
       ]
     }
@@ -953,8 +1265,17 @@ const allure500 = (min, distM) => (min > 0 && distM > 0 ? (min * 60 * 500) / dis
 const fmtAllure = sec => (sec > 0 ? `${fmtDuree(sec / 60)} /500 m` : '');
 // « 2:30 · 600 m · 2:05 /500 m » (distance et allure seulement si la distance est saisie)
 const texteCardio = s => [fmtDuree(s.reps), s.dist > 0 ? `${fmtNum(s.dist, 0)} m` : '', fmtAllure(allure500(s.reps, s.dist))].filter(Boolean).join(' · ');
+// Séances en alternance (A / B…) : une séance marquée "rotation": false (ex. Renfo) est choisie à la main et ne décale pas l'alternance
+const idsRotation = programme => (programme.seances || []).filter(s => s.rotation !== false).map(s => s.id);
+// Séance à proposer le jour J : celle planifiée ce jour-là (si pas encore faite), sinon la suivante de l'alternance
+function seanceDuJour(programme, seances, planning, date) {
+  const ids = (programme.seances || []).map(s => s.id);
+  const faite = seances.some(s => s.date === date && s.sport === 'muscu');
+  const p = !faite && (planning || []).find(x => x.date === date && x.sport === 'muscu' && ids.includes(x.programme));
+  return p ? p.programme : prochaineSeance(programme, seances);
+}
 function prochaineSeance(programme, seances) {
-  const ids = programme.seances.map(s => s.id);
+  const ids = idsRotation(programme);
   const der = seances.filter(s => s.programme && ids.includes(s.programme)).sort((a, b) => a.date.localeCompare(b.date) || (a.cree || 0) - (b.cree || 0)).pop();
   return der ? ids[(ids.indexOf(der.programme) + 1) % ids.length] : ids[0];
 }
@@ -978,7 +1299,7 @@ function statutPrevu(p, seances, date) {
 }
 // Séance du programme à prévoir à une date : celle qui suit la dernière muscu faite ou prévue avant cette date
 function programmePourDate(programme, seances, planning, date) {
-  const ids = (programme.seances || []).map(s => s.id);
+  const ids = idsRotation(programme);
   if (!ids.length) return null;
   const avant = [...seances, ...planning].filter(x => x.sport === 'muscu' && x.programme && ids.includes(x.programme) && x.date < date)
     .sort((a, b) => a.date.localeCompare(b.date) || (a.cree || 0) - (b.cree || 0));
@@ -1427,7 +1748,7 @@ const Saisie = {
     const st = { id: uid(), date: date || today(), sport, duree: sp.duree, rpe: null, note: '', cree: Date.now() };
     if (sport === 'muscu') {
       const prog = Store.data.programme;
-      const pid = programmeId || (prog.seances && prog.seances.length ? prochaineSeance(prog, Store.data.seances) : null);
+      const pid = programmeId || (prog.seances && prog.seances.length ? seanceDuJour(prog, Store.data.seances, Store.data.planning, st.date) : null);
       const ps = pid && prog.seances.find(s => s.id === pid);
       if (ps) { st.programme = ps.id; st.exos = this.exosDepuisProgramme(ps); }
     }
@@ -1839,7 +2160,7 @@ const Pages = {
     html() {
       const D = today(), d = Store.data, c = cibles(d.profil, poidsActuel(), D);
       const rj = d.repas.filter(r => r.date === D).sort(parDate), t = totaux(rj);
-      const prog = d.programme, pid = prog.seances && prog.seances.length ? prochaineSeance(prog, d.seances) : null;
+      const prog = d.programme, pid = prog.seances && prog.seances.length ? seanceDuJour(prog, d.seances, d.planning, D) : null;
       const ps = pid && prog.seances.find(s => s.id === pid), brouillon = LS.get(CLES.brouillon);
       const lundi = debutSemaine(D), semaine = d.seances.filter(s => s.date >= lundi && s.date <= D).sort(parDate);
       const rac = ratioAiguChronique(d.seances, D), chargeSem = semaine.reduce((a, s) => a + chargeSeance(s), 0);
