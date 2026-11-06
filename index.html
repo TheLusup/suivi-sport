@@ -337,19 +337,36 @@ h2 { font-family: var(--display); font-weight: 800; font-size: 12px; letter-spac
 .seances-types .chip.plus { background: var(--rouge); color: #fff; border: 0; }
 .badge.good { background: rgba(19, 201, 143, .16); }
 
-/* Navigation bleu nuit dans les deux thèmes */
-.tabs a { color: rgba(255, 255, 255, .6); }
-.tabs a.on { color: #fff; background: rgba(255, 255, 255, .12); }
-.tabs a.on svg { fill: #fff; }
+/* Navigation bleu nuit dans les deux thèmes : chaque onglet a sa couleur (--c), l'actif s'allume dans une bulle */
+.tabs a, .t-plus { color: rgba(255, 255, 255, .62); background: none; border: 0; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; border-radius: 14px; text-decoration: none; }
+.tabs a.on, .t-plus.on { color: #fff; background: none; }
+.t-i { display: grid; place-items: center; width: 46px; height: 32px; border-radius: 12px; font-style: normal; transition: background-color .25s, transform .25s; }
+.tabs a svg, .t-plus svg { width: 22px; height: 22px; fill: currentColor; }
+.tabs a.on svg, .t-plus.on svg { fill: #fff; }
+.tabs a.on .t-i, .t-plus.on .t-i { background: var(--c); box-shadow: 0 6px 16px -6px var(--c); }
+.t-plus.on .t-i { background: rgba(255, 255, 255, .22); box-shadow: none; }
+.tabs a:not(.on):hover .t-i, .t-plus:not(.on):hover .t-i { background: rgba(255, 255, 255, .08); }
+.t-plus { display: none; }
 .brand { background: var(--rouge); color: #fff; }
 .sidebar { border: 0; }
-.fab { background: var(--rouge); color: #fff; font-family: var(--display); font-weight: 900; box-shadow: 0 12px 24px -8px rgba(255, 31, 75, .7); }
+.fab { background: var(--rouge); color: #fff; font-family: var(--display); font-weight: 900; box-shadow: 0 12px 24px -8px rgba(255, 31, 75, .7); transition: transform .25s cubic-bezier(.3, 1.6, .5, 1); }
+.fab:hover { transform: rotate(90deg); }
 @media (max-width: 760px) {
-  .sidebar { inset: auto 10px calc(10px + env(safe-area-inset-bottom)) 10px; padding: 6px; border-radius: 24px; box-shadow: 0 14px 30px -12px rgba(7, 26, 82, .6); }
-  .tabs a { border-radius: 16px; }
-  main { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
-  .fab { bottom: calc(92px + env(safe-area-inset-bottom)); }
+  .sidebar { inset: auto 10px calc(10px + env(safe-area-inset-bottom)) 10px; padding: 6px 4px; border-radius: 26px; box-shadow: 0 14px 30px -12px rgba(7, 26, 82, .6); }
+  .tabs a.r-plus { display: none; }
+  .tabs a, .t-plus { flex: 1; min-width: 0; padding: 4px 1px; font-size: 10.5px; }
+  .t-plus { display: flex; }
+  main { padding-bottom: calc(116px + env(safe-area-inset-bottom)); }
+  .fab { bottom: calc(96px + env(safe-area-inset-bottom)); }
 }
+
+/* Panneau « Plus » */
+.plus-liste { display: grid; gap: 8px; padding-bottom: 6px; }
+.plus-l { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; background: var(--surface-2); color: var(--text); text-decoration: none; border: 0; font: inherit; text-align: left; cursor: pointer; width: 100%; }
+.plus-l > span:nth-child(2) { flex: 1; }
+.plus-l .t-i { width: 44px; height: 44px; border-radius: 14px; background: var(--c); color: #fff; font-size: 20px; flex: none; }
+.plus-l .t-i svg { width: 22px; height: 22px; fill: #fff; }
+.plus-l.on { outline: 2px solid var(--c); }
 
 /* Accès rapides : tuiles blanches, icône dans une pastille */
 .quick button { border: 0; box-shadow: 0 10px 24px -14px rgba(10, 60, 255, .55); font-size: 14px; }
@@ -393,6 +410,33 @@ h2 { font-family: var(--display); font-weight: 800; font-size: 12px; letter-spac
 .card.tendance .td-alerte { background: rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .8); }
 .card.tendance .td-alerte i { background: var(--rouge); }
 .card.tendance .td-alerte .lien { color: #fff; text-decoration-color: var(--rouge); text-decoration-thickness: 2px; }
+
+/* ---------- Mouvement : entrée des pages, jauges, retours tactiles (coupé si « réduire les animations ») ---------- */
+@keyframes monte { from { opacity: 0; transform: translateY(16px) scale(.985); } }
+@keyframes remplit { from { transform: scaleX(0); } }
+@keyframes bulle { 0% { transform: scale(.6); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes fondu { from { opacity: 0; } }
+@keyframes glisse { from { transform: translateY(48px); opacity: .4; } }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 16px); } }
+@keyframes flotte { 50% { transform: translateY(-7px); } }
+.entree .anim { animation: monte .55s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i, 0) * 55ms); }
+.entree .bar span { transform-origin: left; animation: remplit 1s cubic-bezier(.2, .8, .2, 1) both .3s; }
+.entree .td-tuile { animation: bulle .5s cubic-bezier(.3, 1.4, .5, 1) both; }
+.entree .td-tuile:nth-child(1) { animation-delay: .3s; } .entree .td-tuile:nth-child(2) { animation-delay: .38s; } .entree .td-tuile:nth-child(3) { animation-delay: .46s; }
+.tabs a.on .t-i, .t-plus.on .t-i { animation: bulle .4s cubic-bezier(.3, 1.4, .5, 1); }
+.card.hero::after { animation: flotte 4s ease-in-out infinite; }
+.sheet-back { animation: fondu .2s ease-out; }
+.sheet { animation: glisse .35s cubic-bezier(.2, .9, .25, 1); }
+.toast { animation: toast-in .3s cubic-bezier(.2, .9, .25, 1); }
+.serie.done .check { animation: bulle .35s cubic-bezier(.3, 1.6, .5, 1); }
+.btn, .chip, .quick button, .li-btn, .exo-card, .plus-l, .icon-btn, .tabs a, .t-plus, .cal-j { transition: transform .15s ease, background-color .2s, border-color .2s; }
+.btn:active, .chip:active, .quick button:active, .plus-l:active, .icon-btn:active, .tabs a:active, .t-plus:active, .cal-j:active { transform: scale(.94); }
+.li-btn:active, .exo-card:active { transform: scale(.98); }
+.fab:active { transform: scale(.9); }
+@media (hover: hover) { .quick button:hover, .exo-card:hover { transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
 
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous"></script>
@@ -3075,20 +3119,61 @@ const Pages = {
   <script>
 /* Démarrage, navigation par onglets (#route), thème, état de synchronisation. */
 
+// coul : couleur de l'onglet actif ; plus : rangé dans « Plus » sur téléphone ; desc : sous-titre dans ce panneau
 const ROUTES = [
-  { id: 'accueil', page: 'accueil', nom: "Aujourd'hui", court: 'Jour', icone: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1z"/>' },
-  { id: 'calendrier', page: 'calendrier', nom: 'Calendrier', court: 'Agenda', icone: '<path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2zM5 9v10h14V9zm2 2h3v3H7z"/>' },
-  { id: 'muscu', page: 'muscu', nom: 'Muscu', icone: '<path d="M2 10h2V8h2v8H4v-2H2zm4-4h3v12H6zm3 5h6v2H9zm6-5h3v12h-3zm3 2h2v2h2v4h-2v2h-2z"/>' },
-  { id: 'charge', page: 'charge', nom: 'Charge', icone: '<rect x="4" y="11" width="4" height="9" rx="1.5"/><rect x="10" y="4" width="4" height="16" rx="1.5"/><rect x="16" y="8" width="4" height="12" rx="1.5"/>' },
-  { id: 'nutrition', page: 'nutrition', nom: 'Nutrition', icone: '<path d="M12 21c-4.5 0-8-3.5-8-8 0-3.3 2-5.6 4.6-5.6 1.3 0 2.4.5 3.4 1.3 1-.8 2.1-1.3 3.4-1.3C18 7.4 20 9.7 20 13c0 4.5-3.5 8-8 8zM12 7c0-2.2 1.3-4 3.5-4.5.2 2.2-1.2 4-3.5 4.5z"/>' },
-  { id: 'menus', page: 'menus', nom: 'Menus', icone: '<path d="M4 4h16v3H4zm1 5h14l-1.2 10.2A2 2 0 0 1 15.8 21H8.2a2 2 0 0 1-2-1.8z"/>' },
-  { id: 'parametres', page: 'parametres', nom: 'Réglages', icone: '<path d="M12 2.5 20 6v5.5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/>' },
+  { id: 'accueil', page: 'accueil', nom: "Aujourd'hui", court: 'Jour', coul: '#0a3cff', icone: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1z"/>' },
+  { id: 'calendrier', page: 'calendrier', nom: 'Calendrier', court: 'Agenda', coul: '#7a5cff', icone: '<path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2zM5 9v10h14V9zm2 2h3v3H7z"/>' },
+  { id: 'muscu', page: 'muscu', nom: 'Muscu', coul: '#ff1f4b', icone: '<path d="M2 10h2V8h2v8H4v-2H2zm4-4h3v12H6zm3 5h6v2H9zm6-5h3v12h-3zm3 2h2v2h2v4h-2v2h-2z"/>' },
+  { id: 'charge', page: 'charge', nom: 'Forme', coul: '#00a6c8', plus: true, desc: "Charge d'entraînement, récupération", icone: '<rect x="4" y="11" width="4" height="9" rx="1.5"/><rect x="10" y="4" width="4" height="16" rx="1.5"/><rect x="16" y="8" width="4" height="12" rx="1.5"/>' },
+  { id: 'nutrition', page: 'nutrition', nom: 'Nutrition', court: 'Nutri', coul: '#13a978', icone: '<path d="M12 21c-4.5 0-8-3.5-8-8 0-3.3 2-5.6 4.6-5.6 1.3 0 2.4.5 3.4 1.3 1-.8 2.1-1.3 3.4-1.3C18 7.4 20 9.7 20 13c0 4.5-3.5 8-8 8zM12 7c0-2.2 1.3-4 3.5-4.5.2 2.2-1.2 4-3.5 4.5z"/>' },
+  { id: 'menus', page: 'menus', nom: 'Menus', coul: '#ff8a00', plus: true, desc: 'Recettes et liste de courses', icone: '<path d="M4 4h16v3H4zm1 5h14l-1.2 10.2A2 2 0 0 1 15.8 21H8.2a2 2 0 0 1-2-1.8z"/>' },
+  { id: 'parametres', page: 'parametres', nom: 'Réglages', coul: '#5b6b9e', plus: true, desc: 'Profil, objectifs, synchronisation', icone: '<path d="M12 2.5 20 6v5.5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/>' },
 ];
 
 const App = {
   route() { const h = location.hash.slice(1); return ROUTES.some(r => r.id === h) ? h : 'accueil'; },
   nav() {
-    $('#nav').innerHTML = ROUTES.map(r => `<a href="#${r.id}" data-route="${r.id}"><svg viewBox="0 0 24 24" aria-hidden="true">${r.icone}</svg><span class="t-l">${r.nom}</span><span class="t-c">${r.court || r.nom}</span></a>`).join('');
+    const ic = svg => `<i class="t-i"><svg viewBox="0 0 24 24" aria-hidden="true">${svg}</svg></i>`;
+    $('#nav').innerHTML = ROUTES.map(r => `<a href="#${r.id}" data-route="${r.id}"${r.plus ? ' class="r-plus"' : ''} style="--c:${r.coul}">${ic(r.icone)}<span class="t-l">${r.nom}</span><span class="t-c">${r.court || r.nom}</span></a>`).join('')
+      + `<button type="button" class="t-plus" data-plus style="--c:#071a52" aria-label="Plus : ${ROUTES.filter(r => r.plus).map(r => r.nom).join(', ')}">${ic('<circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/>')}<span class="t-c">Plus</span></button>`;
+    $('#nav [data-plus]').addEventListener('click', () => this.plus());
+  },
+  // Téléphone : pages secondaires + thème, dans un panneau
+  plus() {
+    const id = this.route(), nuit = document.documentElement.dataset.theme === 'dark';
+    const ligne = (attr, coul, ic, nom, desc, on) => `<${attr} class="plus-l${on ? ' on' : ''}" style="--c:${coul}"><i class="t-i">${ic}</i><span><b>${nom}</b><br><span class="muted small">${desc}</span></span><span class="muted" aria-hidden="true">›</span>`;
+    Sheet.ouvrir('Plus', `<nav class="plus-liste">${ROUTES.filter(r => r.plus).map(r => ligne(`a href="#${r.id}"`, r.coul, `<svg viewBox="0 0 24 24" aria-hidden="true">${r.icone}</svg>`, r.nom, r.desc, r.id === id) + '</a>').join('')}
+      ${ligne('button type="button" data-theme-btn', '#7a5cff', '◐', nuit ? 'Thème clair' : 'Thème nuit', nuit ? 'Repasser en bleu et blanc' : 'Bleu marine, plus doux le soir', false)}</button></nav>`, body => {
+      body.addEventListener('click', e => {
+        if (e.target.closest('[data-theme-btn]')) { this.basculerTheme(); Sheet.fermer(); }
+        else if (e.target.closest('a')) Sheet.fermer();
+      });
+    });
+  },
+  basculerTheme() { this.theme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'); this.vue = null; this.rendre(); },
+  // Chiffres clés qui défilent jusqu'à leur valeur (texte final remis tel quel)
+  compter(root) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    $$('.kpi b', root).forEach(b => {
+      const txt = b.textContent, m = txt.trim().match(/^(-?)(\d[\d\s  ]*)(?:,(\d+))?$/);
+      if (!m) return;
+      const dec = m[3] ? m[3].length : 0, fin = Number(m[1] + m[2].replace(/\D/g, '') + (dec ? '.' + m[3] : ''));
+      if (!fin) return;
+      const t0 = performance.now(), duree = 700;
+      const pas = t => {
+        const k = Math.min(1, (t - t0) / duree), e = 1 - Math.pow(1 - k, 3);
+        b.textContent = k < 1 ? (fin * e).toLocaleString('fr-FR', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : txt;
+        if (k < 1) requestAnimationFrame(pas);
+      };
+      requestAnimationFrame(pas);
+    });
+  },
+  // Entrée en cascade des blocs, seulement quand on change de page (pas à chaque mise à jour des données)
+  animer(view) {
+    const blocs = [...view.children].flatMap(c => c.classList.contains('grid') ? [...c.children] : [c]);
+    blocs.forEach((b, i) => { b.classList.add('anim'); b.style.setProperty('--i', Math.min(i, 10)); });
+    view.classList.add('entree');
+    this.compter(view);
   },
   pill() {
     const e = Store.etat, n = Store.enAttente(), p = $('#sync');
@@ -3101,11 +3186,14 @@ const App = {
   rendre() {
     const id = this.route(), page = Pages[ROUTES.find(r => r.id === id).page];
     $$('#nav a').forEach(a => a.classList.toggle('on', a.dataset.route === id));
+    $('#nav [data-plus]').classList.toggle('on', !!ROUTES.find(r => r.id === id).plus);
     Graphs.detruire();
     const ancien = $('#view'), view = ancien.cloneNode(false); // remplace le nœud pour repartir sans écouteurs
+    view.className = '';
     ancien.replaceWith(view);
     try { view.innerHTML = page.html(); page.apres && page.apres(view); }
     catch (err) { console.error(err); view.innerHTML = `<section class="card"><h2>Erreur d’affichage</h2><p>${esc(err.message)}</p></section>`; }
+    if (this.vue !== id) { this.vue = id; this.animer(view); }
     document.title = `${page.titre} · Suivi sport`;
     this.pill();
   },
@@ -3128,7 +3216,7 @@ const App = {
     this.nav();
     window.addEventListener('hashchange', () => { Sheet.fermer(); this.rendre(); window.scrollTo(0, 0); });
     $('#btn-add').addEventListener('click', () => Saisie.menu());
-    $('#btn-theme').addEventListener('click', () => { this.theme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'); this.rendre(); });
+    $('#btn-theme').addEventListener('click', () => this.basculerTheme());
     $('#btn-refresh').addEventListener('click', () => this.charger());
     Store.surChangement(() => {
       // Ne pas effacer un formulaire en cours de saisie dans la page
