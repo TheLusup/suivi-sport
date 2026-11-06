@@ -197,6 +197,29 @@ main > .card { margin-bottom: 16px; }
 .exo-edit { border: 1px dashed var(--accent); border-radius: var(--radius-sm); padding: 10px 12px; margin: 10px 0; }
 .exo-edit .actions { margin-top: 6px; }
 .exo-plus { width: 100%; margin: 10px 0 4px; border-style: dashed; }
+/* Mes séances (Muscu) et créateur de séance */
+.seances-types { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 18px; }
+.seances-types .chip.plus { border-style: dashed; color: var(--accent); }
+label.check { display: flex; flex-direction: row; align-items: center; gap: 10px; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--text); }
+label.check input { width: 20px; height: 20px; flex: none; padding: 0; accent-color: var(--accent); }
+.ed-bloc { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin: 12px 0; background: var(--surface-2); }
+.ed-bloc h3 { margin: 0; }
+.ed-bloc-h { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.ed-bloc-h input { flex: 1; font-weight: 700; }
+.ed-btns { display: inline-flex; gap: 4px; margin-left: auto; }
+.ed-btns .icon-btn:disabled { opacity: .3; }
+.ed-exo { border-top: 1px solid var(--border); padding: 8px 0; }
+.ed-exo-h { display: flex; align-items: center; gap: 8px; }
+.ed-exo-h b { flex: 0 1 auto; }
+.ed-exo-v { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
+.ed-exo-v label { font-size: 11px; color: var(--muted); }
+.ed-exo-v input { padding: 8px 4px; text-align: center; }
+.ed-choix { border: 1px dashed var(--accent); border-radius: var(--radius-sm); padding: 10px; margin-top: 8px; background: var(--surface); }
+.ed-liste { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.ed-liste .chip:disabled { opacity: .35; }
+.ed-perso { display: grid; grid-template-columns: minmax(0, 1fr) 96px auto; gap: 6px; margin-bottom: 6px; }
+.ed-perso select { padding: 10px 6px; }
+.err { color: var(--critical-text); min-height: 1em; }
 .tendance { margin-bottom: 22px; }
 .td-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .td-tete h2 { margin: 0; font-size: 16px; }
@@ -989,7 +1012,87 @@ const SEED = {
       ]
     }
   ]
-}
+},
+  exercices: [
+  {"groupe": "Pectoraux", "exos": [
+    {"id": "dc-halteres", "nom": "Développé couché haltères", "unite": "kg/haltère", "series": 3, "repsMin": 10, "repsMax": 10, "pas": 2.5},
+    {"id": "dc-incline-halteres", "nom": "Développé incliné haltères", "unite": "kg/haltère", "series": 3, "repsMin": 10, "repsMax": 10, "pas": 2.5},
+    {"id": "dc-barre", "nom": "Développé couché barre", "unite": "kg", "series": 3, "repsMin": 8, "repsMax": 10, "pas": 2.5},
+    {"id": "ecarte-poulie", "nom": "Écarté poulie vis-à-vis", "unite": "kg", "series": 3, "repsMin": 12, "repsMax": 15, "pas": 2.5},
+    {"id": "pec-deck", "nom": "Pec deck", "unite": "kg", "series": 3, "repsMin": 12, "repsMax": 15, "pas": 2.5},
+    {"id": "ech-pompes", "nom": "Pompes", "unite": "poids du corps", "series": 3, "repsMin": 10, "repsMax": 15},
+    {"id": "ech-dips", "nom": "Dips", "unite": "poids du corps", "series": 3, "repsMin": 8, "repsMax": 12}
+  ]},
+  {"groupe": "Dos", "exos": [
+    {"id": "tirage-vertical-large", "nom": "Tirage vertical large", "unite": "kg", "series": 3, "repsMin": 8, "repsMax": 10, "pas": 2.5},
+    {"id": "tirage-vertical-serre", "nom": "Tirage vertical serré", "unite": "kg", "series": 3, "repsMin": 8, "repsMax": 10, "pas": 2.5},
+    {"id": "rowing-horizontal", "nom": "Rowing horizontal (sled pull)", "unite": "kg", "series": 3, "repsMin": 10, "repsMax": 10, "pas": 2.5},
+    {"id": "rowing-haltere", "nom": "Rowing haltère un bras", "unite": "kg/haltère", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 2},
+    {"id": "ech-tractions", "nom": "Tractions", "unite": "poids du corps", "series": 3, "repsMin": 5, "repsMax": 8, "assiste": true, "aide": 40, "consigne": "Assistées à l'élastique : note l'aide en kg (vert ≈ 40 kg)."},
+    {"id": "pull-over-poulie", "nom": "Pull-over poulie", "unite": "kg", "series": 3, "repsMin": 12, "repsMax": 15, "pas": 2.5},
+    {"id": "face-pulls", "nom": "Face pulls corde", "unite": "kg", "series": 3, "repsMin": 15, "repsMax": 15, "pas": 2.5}
+  ]},
+  {"groupe": "Épaules", "exos": [
+    {"id": "dev-militaire-halteres", "nom": "Développé militaire haltères", "unite": "kg/haltère", "series": 3, "repsMin": 10, "repsMax": 10, "pas": 2.5},
+    {"id": "dev-arnold", "nom": "Développé Arnold", "unite": "kg/haltère", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 2},
+    {"id": "elevations-laterales", "nom": "Élévations latérales", "unite": "kg/haltère", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 1},
+    {"id": "oiseau", "nom": "Oiseau (arrière d'épaule)", "unite": "kg/haltère", "series": 3, "repsMin": 12, "repsMax": 15, "pas": 1}
+  ]},
+  {"groupe": "Bras", "exos": [
+    {"id": "curl-halteres", "nom": "Curl haltères", "unite": "kg/haltère", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 2},
+    {"id": "curl-marteau", "nom": "Curl marteau", "unite": "kg/haltère", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 2},
+    {"id": "curl-barre-ez", "nom": "Curl barre EZ", "unite": "kg", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 2.5},
+    {"id": "triceps-corde", "nom": "Triceps corde poulie", "unite": "kg", "series": 3, "repsMin": 12, "repsMax": 12, "pas": 2.5},
+    {"id": "extension-triceps-haltere", "nom": "Extension triceps haltère au-dessus de la tête", "unite": "kg", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 2},
+    {"id": "dips-banc", "nom": "Dips sur banc", "unite": "poids du corps", "series": 3, "repsMin": 12, "repsMax": 15}
+  ]},
+  {"groupe": "Jambes et fessiers", "exos": [
+    {"id": "goblet-squat", "nom": "Goblet squat", "unite": "kg", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 2},
+    {"id": "squat-barre", "nom": "Squat barre", "unite": "kg", "series": 3, "repsMin": 6, "repsMax": 8, "pas": 5},
+    {"id": "presse-cuisses", "nom": "Presse à cuisses", "unite": "kg", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 5},
+    {"id": "fentes-arriere", "nom": "Fentes arrière haltères", "unite": "kg/haltère", "series": 3, "repsMin": 8, "repsMax": 10, "pas": 2, "consigne": "Reps par jambe."},
+    {"id": "fentes-bulgares", "nom": "Fentes bulgares", "unite": "kg/haltère", "series": 3, "repsMin": 8, "repsMax": 10, "pas": 2, "consigne": "Reps par jambe."},
+    {"id": "sdt-roumain-halteres", "nom": "Soulevé de terre roumain haltères", "unite": "kg/haltère", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 2},
+    {"id": "souleve-de-terre", "nom": "Soulevé de terre", "unite": "kg", "series": 3, "repsMin": 5, "repsMax": 6, "pas": 5},
+    {"id": "hip-thrust", "nom": "Hip thrust", "unite": "kg", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 5},
+    {"id": "leg-curl", "nom": "Leg curl", "unite": "kg", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 2.5},
+    {"id": "leg-extension", "nom": "Leg extension", "unite": "kg", "series": 3, "repsMin": 12, "repsMax": 15, "pas": 2.5},
+    {"id": "mollets-debout", "nom": "Mollets debout", "unite": "kg", "series": 3, "repsMin": 12, "repsMax": 15, "pas": 2.5},
+    {"id": "squats-poids-du-corps", "nom": "Squats poids du corps", "unite": "poids du corps", "series": 3, "repsMin": 15, "repsMax": 20},
+    {"id": "pont-fessier", "nom": "Pont fessier", "unite": "poids du corps", "series": 3, "repsMin": 15, "repsMax": 15}
+  ]},
+  {"groupe": "Gainage et abdos", "exos": [
+    {"id": "planche", "nom": "Planche", "unite": "s", "series": 3, "repsMin": 30, "repsMax": 45},
+    {"id": "planche-laterale", "nom": "Planche latérale", "unite": "s", "series": 3, "repsMin": 30, "repsMax": 30, "consigne": "Par côté."},
+    {"id": "dead-bug", "nom": "Dead bug", "unite": "poids du corps", "series": 3, "repsMin": 10, "repsMax": 10},
+    {"id": "bird-dog", "nom": "Bird dog", "unite": "poids du corps", "series": 3, "repsMin": 10, "repsMax": 10, "consigne": "Par côté."},
+    {"id": "releves-jambes", "nom": "Relevés de jambes allongé", "unite": "poids du corps", "series": 3, "repsMin": 10, "repsMax": 12},
+    {"id": "crunch", "nom": "Crunchs", "unite": "poids du corps", "series": 3, "repsMin": 15, "repsMax": 20},
+    {"id": "hollow-hold", "nom": "Hollow hold", "unite": "s", "series": 3, "repsMin": 20, "repsMax": 30},
+    {"id": "mountain-climbers", "nom": "Mountain climbers", "unite": "poids du corps", "series": 3, "repsMin": 20, "repsMax": 30},
+    {"id": "russian-twist", "nom": "Russian twist", "unite": "poids du corps", "series": 3, "repsMin": 16, "repsMax": 20},
+    {"id": "roue-abdominale", "nom": "Roue abdominale", "unite": "poids du corps", "series": 3, "repsMin": 8, "repsMax": 10},
+    {"id": "pallof-press", "nom": "Pallof press", "unite": "kg", "series": 3, "repsMin": 10, "repsMax": 12, "pas": 2.5, "consigne": "Par côté."}
+  ]},
+  {"groupe": "Mobilité et étirements", "exos": [
+    {"id": "ech-chat-vache", "nom": "Chat-vache", "unite": "poids du corps", "series": 1, "repsMin": 10, "repsMax": 10},
+    {"id": "ech-rotations-thoraciques", "nom": "Rotations thoraciques au sol", "unite": "poids du corps", "series": 1, "repsMin": 8, "repsMax": 8, "consigne": "Par côté."},
+    {"id": "ech-squat-tenu", "nom": "Squat profond tenu", "unite": "s", "series": 1, "repsMin": 30, "repsMax": 30},
+    {"id": "etir-ischios", "nom": "Étirement ischios", "unite": "s", "series": 1, "repsMin": 45, "repsMax": 45, "consigne": "Par jambe."},
+    {"id": "etir-psoas", "nom": "Étirement psoas (fente basse)", "unite": "s", "series": 1, "repsMin": 45, "repsMax": 45, "consigne": "Par côté."},
+    {"id": "etir-pigeon", "nom": "Pigeon (fessiers)", "unite": "s", "series": 1, "repsMin": 45, "repsMax": 45, "consigne": "Par côté."},
+    {"id": "etir-quadriceps", "nom": "Étirement quadriceps", "unite": "s", "series": 1, "repsMin": 45, "repsMax": 45, "consigne": "Par jambe."},
+    {"id": "etir-pectoraux", "nom": "Étirement pectoraux (cadre de porte)", "unite": "s", "series": 1, "repsMin": 45, "repsMax": 45},
+    {"id": "etir-enfant", "nom": "Posture de l'enfant", "unite": "s", "series": 1, "repsMin": 60, "repsMax": 60}
+  ]},
+  {"groupe": "Cardio", "exos": [
+    {"id": "ech-ski-erg", "nom": "Ski erg", "unite": "min", "series": 1, "repsMin": 2, "repsMax": 2},
+    {"id": "ech-rameur", "nom": "Rameur", "unite": "min", "series": 1, "repsMin": 3, "repsMax": 3},
+    {"id": "velo-salle", "nom": "Vélo d'appartement", "unite": "min", "series": 1, "repsMin": 5, "repsMax": 5},
+    {"id": "corde-a-sauter", "nom": "Corde à sauter", "unite": "min", "series": 3, "repsMin": 1, "repsMax": 1},
+    {"id": "burpees", "nom": "Burpees", "unite": "poids du corps", "series": 3, "repsMin": 10, "repsMax": 10}
+  ]}
+]
 };
 
 </script>
@@ -1181,6 +1284,72 @@ function exoParNom(nom, catalogue, unite) {
   const connu = catalogue.find(e => slugExo(e.nom) === n || e.id === n);
   return connu ? { ...connu } : { id: 'perso-' + n, nom: String(nom).trim(), unite: unite || 'kg' };
 }
+/* ---------- Séances types créées dans la page (seances-types.json) ---------- */
+const UNITES_EXO = ['kg', 'kg/haltère', 'poids du corps', 's', 'min'];
+// Programme affiché = programme intégré (ou programme.json) + séances créées ou modifiées dans la page.
+// Même id : la version de la page remplace l'autre (à sa place) ; « supprime » la retire. Idempotent : refusionner ne change rien.
+function fusionProgramme(base, types) {
+  const seances = ((base && base.seances) || []).slice();
+  for (const t of (types || []).slice().sort((a, b) => (a.cree || 0) - (b.cree || 0))) {
+    const i = seances.findIndex(s => s.id === t.id);
+    if (t.supprime) { if (i >= 0) seances.splice(i, 1); }
+    else if (i >= 0) seances[i] = t; else seances.push(t);
+  }
+  return { ...(base || {}), seances };
+}
+// Id d'une nouvelle séance : « perso-<nom> », suffixé s'il est déjà pris par une autre séance affichée
+function idSeanceType(nom, seances, idActuel) {
+  const base = 'perso-' + (slugExo(nom) || 'seance');
+  let id = base, n = 2;
+  while (seances.some(s => s.id === id && s.id !== idActuel)) id = `${base}-${n++}`;
+  return id;
+}
+// Brouillon de l'éditeur → séance prête à enregistrer, ou { erreur } (message pour l'utilisateur)
+function nettoyerSeanceType(st, seances, maintenant = Date.now()) {
+  const nom = String(st.nom || '').trim();
+  if (!nom) return { erreur: 'Donne un nom à la séance.' };
+  if (nom.length > 40) return { erreur: 'Nom de séance trop long (40 caractères au plus).' };
+  if (seances.some(s => s.id !== st.id && String(s.nom || '').trim().toLowerCase() === nom.toLowerCase())) return { erreur: `Une séance « ${nom} » existe déjà.` };
+  const vus = new Set(), blocs = [];
+  for (const b of st.blocs || []) {
+    const exos = [];
+    for (const e of b.exos || []) {
+      const libelle = (String(e.nom || '').trim() || String(e.id || '')).slice(0, 60);
+      if (!e.id) return { erreur: `Exercice sans identifiant (${libelle}).` };
+      if (vus.has(e.id)) return { erreur: `« ${libelle} » est deux fois dans la séance : garde-le une seule fois.` };
+      vus.add(e.id);
+      const unite = UNITES_EXO.includes(e.unite) ? e.unite : 'kg';
+      const series = Number(e.series), rMin = Number(e.repsMin), rMax = Number(e.repsMax);
+      if (!Number.isInteger(series) || series < 1 || series > 10) return { erreur: `${libelle} : entre 1 et 10 séries.` };
+      if (!(rMin > 0) || !(rMax > 0) || rMax > 600) return { erreur: `${libelle} : ${uniteReps(unite)} à renseigner (entre 1 et 600).` };
+      if (rMin > rMax) return { erreur: `${libelle} : le minimum (${rMin}) dépasse le maximum (${rMax}).` };
+      if (unite !== 'min' && (!Number.isInteger(rMin) || !Number.isInteger(rMax))) return { erreur: `${libelle} : ${uniteReps(unite)} en nombre entier.` };
+      const charge = e.charge == null || e.charge === '' ? null : Number(e.charge);
+      if (charge != null && !(charge >= 0 && charge <= 500)) return { erreur: `${libelle} : charge entre 0 et 500 kg.` };
+      const pdc = sansCharge(unite);
+      exos.push({
+        id: e.id, nom: libelle, series, repsMin: rMin, repsMax: rMax, charge: pdc ? null : charge, unite,
+        ...(!pdc && Number(e.pas) > 0 && Number(e.pas) <= 20 ? { pas: Number(e.pas) } : {}),
+        ...(e.assiste ? { assiste: true, aide: Number(e.aide) > 0 && Number(e.aide) <= 200 ? Number(e.aide) : null } : {}),
+        consigne: String(e.consigne || '').trim(),
+      });
+    }
+    if (!exos.length) continue; // bloc vide : ignoré
+    const ech = b.nom === 'Échauffement';
+    blocs.push({ nom: ech ? 'Échauffement' : String(b.nom || '').trim().slice(0, 40) || `Bloc ${blocs.filter(x => x.nom !== 'Échauffement').length + 1}`, exos });
+  }
+  if (!blocs.length) return { erreur: 'Ajoute au moins un exercice.' };
+  return { seance: {
+    id: st.id || idSeanceType(nom, seances), nom, ...(st.rotation ? {} : { rotation: false }), blocs,
+    cree: st.cree || maintenant, modifie: maintenant,
+  } };
+}
+// Exercice du catalogue (ou de l'historique) → ligne de l'éditeur, avec les valeurs par défaut
+function exoEditeur(def) {
+  return { id: def.id, nom: def.nom, unite: def.unite || 'kg', series: def.series || 3, repsMin: def.repsMin || def.repsMax || 10, repsMax: def.repsMax || def.repsMin || 10,
+    charge: def.charge ?? null, ...(def.pas ? { pas: def.pas } : {}), ...(def.assiste ? { assiste: true, aide: def.aide ?? null } : {}), consigne: def.consigne || '' };
+}
+
 // Progression d'un exercice entre sa première et sa dernière séance (historiqueExo trié par date)
 function progressionExo(h) {
   if (!h.length) return null;
@@ -1398,6 +1567,7 @@ const FICHIERS = {
   recettes: { f: 'recettes.json', type: 'liste' },
   aliments: { f: 'aliments.json', type: 'liste' },
   plats: { f: 'plats.json', type: 'liste' },
+  seancesTypes: { f: 'seances-types.json', type: 'liste' }, // séances créées ou modifiées dans la page (fusionnées au programme)
 };
 // Valeurs quand le fichier n'existe pas (encore) : bibliothèques intégrées à la page (seed.js), le reste vide
 const PROFIL_DEFAUT = { naissance: '1995-01-01', tailleCm: 175, sexe: 'H', poidsDepart: 80, poidsObjectif: 75, nap: 1.45, deficit: 400, proteinesParKg: 1.8, fibresCible: 30, personnesBatch: 2, soireesBatch: 5 };
@@ -1508,6 +1678,7 @@ const Store = {
       const local = LS.get(CLES.local, {}) || {};
       for (const n of noms) this.data[n] = local[n] ?? defaut(n);
       this.etat = { sync: 'local', message: 'Mode local : données dans ce navigateur uniquement.' };
+      this.fusionner();
       return;
     }
     const cache = LS.get(CLES.cache, null) || {};
@@ -1543,11 +1714,18 @@ const Store = {
     }
     // Les saisies pas encore envoyées restent visibles
     for (const op of LS.get(CLES.file, []) || []) this.data[op.f] = appliquer(this.data[op.f], op);
+    this.fusionner();
     if (this.cfg.token) this.envoyer();
+  },
+  // Programme affiché = programme chargé + séances types de la page. La base est gardée pour « Initialiser le dépôt ».
+  fusionner() {
+    this.programmeBase = this.data.programme;
+    this.data.programme = fusionProgramme(this.programmeBase, this.data.seancesTypes);
   },
 
   modifier(op) {
     this.data[op.f] = appliquer(this.data[op.f], op);
+    if (op.f === 'seancesTypes') this.data.programme = fusionProgramme(this.programmeBase, this.data.seancesTypes);
     if (this.etat.sync === 'local') {
       const local = LS.get(CLES.local, {}) || {};
       local[op.f] = this.data[op.f];
@@ -1556,7 +1734,7 @@ const Store = {
       const file = LS.get(CLES.file, []) || [];
       file.push({ ...op, q: uid() });
       LS.set(CLES.file, file);
-      LS.set(CLES.cache, this.data);
+      LS.set(CLES.cache, { ...this.data, programme: this.programmeBase }); // le cache garde le programme non fusionné
       this.envoyer();
     }
     this.notifier();
@@ -1750,7 +1928,119 @@ const Saisie = {
   },
   // Exercice assisté : aide prévue = celle de la dernière fois (sinon celle du programme)
   aideSerie(pv) { return pv.aide != null ? { prevuAide: pv.aide, aide: pv.aide } : {}; },
-  catalogueExos() { return groupesExos(Store.data.programme, Store.data.seances).flatMap(g => g.exos); },
+  // Exercices connus : programme et historique, puis catalogue intégré (un nom du catalogue garde son id, donc un seul historique)
+  catalogueExos() {
+    const l = groupesExos(Store.data.programme, Store.data.seances).flatMap(g => g.exos), ids = new Set(l.map(e => e.id));
+    const cat = ((typeof SEED !== 'undefined' && SEED.exercices) || []).flatMap(g => g.exos).filter(e => !ids.has(e.id));
+    return [...l, ...cat];
+  },
+
+  /* ---------- Créateur de séances types ---------- */
+  // Groupes proposés : catalogue intégré par groupe musculaire, puis « Mes exercices » (programme et historique hors catalogue)
+  groupesCatalogue() {
+    const cat = (typeof SEED !== 'undefined' && SEED.exercices) || [], ids = new Set(cat.flatMap(g => g.exos.map(e => e.id)));
+    const miens = groupesExos(Store.data.programme, Store.data.seances).flatMap(g => g.exos).filter(e => !ids.has(e.id)).sort((a, b) => a.nom.localeCompare(b.nom));
+    return miens.length ? [...cat, { groupe: 'Mes exercices', exos: miens }] : cat;
+  },
+  editeurSeance(id) {
+    const existante = id && (Store.data.programme.seances || []).find(s => s.id === id);
+    let st = existante ? JSON.parse(JSON.stringify({ ...existante, rotation: existante.rotation !== false }))
+      : { nom: '', rotation: false, blocs: [{ nom: 'Échauffement', exos: [] }, { nom: 'Bloc 1', exos: [] }] };
+    if (!st.blocs.some(b => b.nom === 'Échauffement')) st.blocs.unshift({ nom: 'Échauffement', exos: [] });
+    const groupes = this.groupesCatalogue(), tous = groupes.flatMap(g => g.exos);
+    let choix = null; // { b: bloc où l'on ajoute, groupe affiché }
+    const LIB = { s: 'Secondes', min: 'Minutes' };
+    const fl = (a, b, j, n, lab) => `<button type="button" class="icon-btn sm" data-a="${a}" data-b="${b}"${j != null ? ` data-e="${j}"` : ''} ${n ? '' : 'disabled'} aria-label="${lab}">${{ haut: '↑', bas: '↓', suppr: '✕' }[a.split('-').pop()]}</button>`;
+    const htmlExo = (e, i, j, nb) => `<div class="ed-exo">
+        <div class="ed-exo-h"><b>${esc(e.nom)}</b><span class="muted small">${esc(e.unite)}</span>
+          <span class="ed-btns">${fl('exo-haut', i, j, j > 0, 'Monter')}${fl('exo-bas', i, j, j < nb - 1, 'Descendre')}${fl('exo-suppr', i, j, true, 'Retirer')}</span></div>
+        <div class="ed-exo-v"><label>Séries<input type="number" inputmode="numeric" min="1" max="10" data-b="${i}" data-e="${j}" data-k="series" value="${e.series ?? ''}"></label>
+          <label>${LIB[e.unite] || 'Reps'} min<input type="number" inputmode="numeric" data-b="${i}" data-e="${j}" data-k="repsMin" value="${e.repsMin ?? ''}"></label>
+          <label>max<input type="number" inputmode="numeric" data-b="${i}" data-e="${j}" data-k="repsMax" value="${e.repsMax ?? ''}"></label>
+          ${sansCharge(e.unite) ? '<span></span>' : `<label>Charge kg<input type="text" inputmode="decimal" data-b="${i}" data-e="${j}" data-k="charge" value="${e.charge ?? ''}" placeholder="?"></label>`}</div></div>`;
+    const htmlChoix = i => {
+      const g = groupes.find(x => x.groupe === choix.groupe) || groupes[0], dans = new Set(st.blocs.flatMap(b => b.exos.map(e => e.id)));
+      return `<div class="ed-choix">
+        ${chips('groupe', groupes.map(x => ({ v: x.groupe, l: esc(x.groupe) })), g ? g.groupe : '')}
+        <div class="ed-liste">${g ? g.exos.map(e => `<button type="button" class="chip" data-a="choisir" data-id="${esc(e.id)}" ${dans.has(e.id) ? 'disabled title="Déjà dans la séance"' : ''}>${esc(e.nom)}</button>`).join('') : ''}</div>
+        <div class="ed-perso"><input name="perso-nom" maxlength="60" placeholder="Autre exercice (nom)" list="ed-noms"><select name="perso-unite">${UNITES_EXO.map(u => `<option>${u}</option>`).join('')}</select>
+          <button type="button" class="btn sm" data-a="perso">Ajouter</button></div>
+        <datalist id="ed-noms">${tous.map(e => `<option value="${esc(e.nom)}">`).join('')}</datalist>
+        <button type="button" class="link small muted" data-a="choix-fermer">Fermer la liste</button></div>`;
+    };
+    const rendre = body => {
+      body.innerHTML = `
+        <label>Nom de la séance<input name="nom" maxlength="40" value="${esc(st.nom)}" placeholder="ex. Full body maison"></label>
+        <label class="check"><input type="checkbox" name="rotation" ${st.rotation ? 'checked' : ''}> Dans l'alternance (comme Upper A / Upper B)</label>
+        <p class="muted small">Sinon, elle se choisit à la main ou via le calendrier. Un bloc = un superset de 2 exercices (1 ou 3, c'est possible aussi).</p>
+        ${st.blocs.map((b, i) => {
+          const ech = b.nom === 'Échauffement', nb = st.blocs.length;
+          return `<div class="ed-bloc">
+            <div class="ed-bloc-h">${ech ? '<h3>Échauffement</h3>' : `<input name="bloc-nom" data-b="${i}" value="${esc(b.nom)}" aria-label="Nom du bloc">
+              <span class="ed-btns">${fl('bloc-haut', i, null, i > 1, 'Monter le bloc')}${fl('bloc-bas', i, null, i < nb - 1, 'Descendre le bloc')}${fl('bloc-suppr', i, null, true, 'Supprimer le bloc')}</span>`}</div>
+            ${b.exos.map((e, j) => htmlExo(e, i, j, b.exos.length)).join('') || `<p class="muted small">${ech ? 'Facultatif.' : 'Vide : ajoute 2 exercices pour un superset.'}</p>`}
+            ${choix && choix.b === i ? htmlChoix(i) : `<button type="button" class="link small" data-a="exo+" data-b="${i}">+ ${!ech && b.exos.length === 1 ? '2e exercice du superset' : 'exercice'}</button>`}
+          </div>`;
+        }).join('')}
+        <button type="button" class="btn exo-plus" data-a="bloc+">+ bloc</button>
+        <p class="err small" data-err></p>
+        <div class="actions">${existante ? '<button type="button" class="btn danger" data-a="suppr">Supprimer</button>' : ''}
+          <button type="button" class="btn primary" data-a="ok">Enregistrer</button></div>`;
+      brancherChips(body, (nom, v) => { if (nom === 'groupe') { choix.groupe = v; rendre(body); } });
+    };
+    const erreur = (body, msg) => { const p = $('[data-err]', body); p.textContent = msg; p.scrollIntoView({ block: 'center' }); };
+    const ajouter = (body, def) => {
+      if (st.blocs.some(b => b.exos.some(e => e.id === def.id))) return erreur(body, `« ${def.nom} » est déjà dans la séance.`);
+      st.blocs[choix.b].exos.push(exoEditeur(def)); choix = null; rendre(body);
+    };
+    const echanger = (l, a, b) => { if (b >= 0 && b < l.length) [l[a], l[b]] = [l[b], l[a]]; };
+
+    Sheet.ouvrir(existante ? `Modifier ${existante.nom}` : 'Créer une séance', '', body => {
+      rendre(body);
+      body.addEventListener('input', e => {
+        const t = e.target;
+        if (t.name === 'nom') st.nom = t.value;
+        else if (t.name === 'bloc-nom') st.blocs[+t.dataset.b].nom = t.value;
+        else if (t.dataset.k) { const x = st.blocs[+t.dataset.b].exos[+t.dataset.e]; x[t.dataset.k] = t.value.trim() === '' ? null : num(t.value); }
+      });
+      body.addEventListener('change', e => { if (e.target.name === 'rotation') st.rotation = e.target.checked; });
+      body.addEventListener('click', e => {
+        const b = e.target.closest('[data-a]');
+        if (!b || b.disabled) return;
+        const a = b.dataset.a, i = +b.dataset.b, j = +b.dataset.e;
+        if (a === 'exo+') { choix = { b: i, groupe: (choix && choix.groupe) || (groupes[0] && groupes[0].groupe) }; rendre(body); $('.ed-choix', body).scrollIntoView({ block: 'nearest' }); }
+        else if (a === 'choix-fermer') { choix = null; rendre(body); }
+        else if (a === 'choisir') { const def = tous.find(x => x.id === b.dataset.id); if (def) ajouter(body, def); }
+        else if (a === 'perso') {
+          const nom = $('[name="perso-nom"]', body).value, def = exoParNom(nom, tous, $('[name="perso-unite"]', body).value);
+          if (!def) return erreur(body, 'Écris le nom de l’exercice.');
+          ajouter(body, def);
+        }
+        else if (a === 'exo-haut' || a === 'exo-bas') { echanger(st.blocs[i].exos, j, a === 'exo-haut' ? j - 1 : j + 1); rendre(body); }
+        else if (a === 'exo-suppr') { st.blocs[i].exos.splice(j, 1); rendre(body); }
+        else if (a === 'bloc+') { st.blocs.push({ nom: `Bloc ${st.blocs.filter(x => x.nom !== 'Échauffement').length + 1}`, exos: [] }); choix = { b: st.blocs.length - 1, groupe: (choix && choix.groupe) || (groupes[0] && groupes[0].groupe) }; rendre(body); $('.ed-choix', body).scrollIntoView({ block: 'nearest' }); }
+        else if (a === 'bloc-haut' || a === 'bloc-bas') { echanger(st.blocs, i, a === 'bloc-haut' ? i - 1 : i + 1); choix = null; rendre(body); }
+        else if (a === 'bloc-suppr') {
+          if (st.blocs[i].exos.length && !confirm(`Supprimer « ${st.blocs[i].nom} » et ses exercices ?`)) return;
+          st.blocs.splice(i, 1); choix = null; rendre(body);
+        }
+        else if (a === 'suppr') {
+          if (!confirm(`Supprimer la séance « ${existante.nom} » ? Les séances déjà faites et l'historique des exercices sont conservés.`)) return;
+          Store.upsert('seancesTypes', { id: existante.id, supprime: true, cree: existante.cree || Date.now(), modifie: Date.now() });
+          Sheet.fermer(); toast('Séance supprimée');
+        }
+        else if (a === 'ok') {
+          // Séance intégrée supprimée puis recréée sous le même nom : elle reprend son id (historique, planning et alternance restent liés)
+          const visibles = Store.data.programme.seances || [], nomBas = String(st.nom || '').trim().toLowerCase();
+          const ancienne = !existante && ((Store.programmeBase && Store.programmeBase.seances) || []).find(s => String(s.nom || '').toLowerCase() === nomBas && !visibles.some(v => v.id === s.id));
+          const r = nettoyerSeanceType({ ...st, id: existante ? existante.id : ancienne ? ancienne.id : undefined }, visibles);
+          if (r.erreur) return erreur(body, r.erreur);
+          Store.upsert('seancesTypes', r.seance);
+          Sheet.fermer(); toast(`Séance « ${r.seance.nom} » enregistrée`);
+        }
+      });
+    });
+  },
   nouvelleSeance(sport, programmeId, date) {
     const sp = sportDe(sport);
     const st = { id: uid(), date: date || today(), sport, duree: sp.duree, rpe: null, note: '', cree: Date.now() };
@@ -1774,6 +2064,8 @@ const Saisie = {
 
     const rendre = body => {
       const sp = sportDe(st.sport), prog = Store.data.programme;
+      // Séance type supprimée entre-temps (brouillon, planning) : on garde ses exercices en « Libre »
+      if (st.programme && !(prog.seances || []).some(s => s.id === st.programme)) st.programme = undefined;
       body.innerHTML = `
         ${brouillon ? `<p class="note">Séance en cours reprise (brouillon gardé sur ce téléphone). <button type="button" class="link" data-a="jeter">Recommencer</button></p>` : ''}
         ${edition ? '' : chips('sport', SPORTS.map(s => ({ v: s.id, l: `${s.icone} ${s.nom}` })), st.sport)}
@@ -2315,7 +2607,9 @@ const Pages = {
     titre: 'Muscu',
     html() {
       const d = Store.data, prog = d.programme, seances = d.seances;
-      if (!prog.seances || !prog.seances.length) return `<header class="page-head"><h1>Muscu</h1></header>${carte('', '<p class="muted">Aucun programme (programme.json).</p>')}`;
+      const typesHtml = `<div class="seances-types" aria-label="Mes séances">${(prog.seances || []).map(s => `<button type="button" class="chip" data-edit-seance="${esc(s.id)}">${esc(s.nom)} <span aria-hidden="true">✎</span></button>`).join('')}
+        <button type="button" class="chip plus" data-edit-seance="">+ Créer une séance</button></div>`;
+      if (!prog.seances || !prog.seances.length) return `<header class="page-head"><h1>Muscu</h1></header>${typesHtml}${carte('', '<p class="muted">Aucune séance : crée la première.</p>')}`;
       const nb = seances.filter(s => s.sport === 'muscu').length;
       const carteExo = ex => {
         const h = historiqueExo(seances, ex.id), pv = prevuExo(ex, seances), der = pv.derniere, pr = progressionExo(h);
@@ -2349,6 +2643,7 @@ const Pages = {
             : '<span class="muted">Rien en baisse depuis la séance précédente.</span>'}</p>
         </section>`;
       return `<header class="page-head"><h1>Muscu</h1><p class="muted">Évolution de chaque exercice · ${nb} séance${nb > 1 ? 's' : ''} enregistrée${nb > 1 ? 's' : ''}</p></header>
+        ${typesHtml}
         ${tendance}
         ${groupes.map(g => {
           const grille = `<div class="grid exo-grid">${g.exos.map(carteExo).join('')}</div>`;
@@ -2360,6 +2655,8 @@ const Pages = {
     },
     apres(root) {
       root.addEventListener('click', e => {
+        const s = e.target.closest('[data-edit-seance]');
+        if (s) return Saisie.editeurSeance(s.dataset.editSeance || null);
         const x = e.target.closest('[data-exo]');
         if (x) Pages.detailExo(x.dataset.exo);
       });
@@ -2674,7 +2971,7 @@ const Pages = {
           try {
             for (const [n, f] of Object.entries(FICHIERS)) {
               if (await ghGet(cfg, f.f)) continue;
-              await ghPut(cfg, f.f, Store.data[n], null, `Création de ${f.f}`);
+              await ghPut(cfg, f.f, n === 'programme' ? Store.programmeBase ?? Store.data[n] : Store.data[n], null, `Création de ${f.f}`);
               crees.push(f.f);
             }
             if (crees.length) { Config.ecrire(cfg); await App.charger(); toast(`${crees.length} fichier(s) créé(s) dans le dépôt`); }
@@ -2686,7 +2983,7 @@ const Pages = {
           for (const k of ['tailleCm', 'poidsDepart', 'poidsObjectif', 'nap', 'deficit', 'proteinesParKg', 'fibresCible']) { const n = num(v(k)); if (n != null) p[k] = n; }
           Store.set('profil', p); App.rendre(); toast('Profil enregistré');
         } else if (b.dataset.a === 'export') {
-          const blob = new Blob([JSON.stringify(Store.data, null, 1)], { type: 'application/json' });
+          const blob = new Blob([JSON.stringify({ ...Store.data, programme: Store.programmeBase ?? Store.data.programme }, null, 1)], { type: 'application/json' });
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob); a.download = `suivi-sport-${today()}.json`; a.click();
           setTimeout(() => URL.revokeObjectURL(a.href), 1000);
