@@ -205,8 +205,6 @@ main > .card { margin-bottom: 16px; }
 .exo-edit .actions { margin-top: 6px; }
 .exo-plus { width: 100%; margin: 10px 0 4px; border-style: dashed; }
 /* Mes séances (Muscu) et créateur de séance */
-.seances-types { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 18px; }
-.seances-types .chip.plus { border-style: dashed; color: var(--accent); }
 label.check { display: flex; flex-direction: row; align-items: center; gap: 10px; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--text); }
 label.check input { width: 20px; height: 20px; flex: none; padding: 0; accent-color: var(--accent); }
 .ed-bloc { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin: 12px 0; background: var(--surface-2); }
@@ -334,7 +332,6 @@ h2 { font-family: var(--display); font-weight: 800; font-size: 12px; letter-spac
 .chip { background: var(--surface); border-color: transparent; box-shadow: var(--shadow); color: var(--text); }
 .chip.on { background: var(--nuit); color: #fff; }
 :root[data-theme="dark"] .chip.on { background: var(--accent); }
-.seances-types .chip.plus { background: var(--rouge); color: #fff; border: 0; }
 .badge.good { background: rgba(19, 201, 143, .16); }
 
 /* Navigation bleu nuit dans les deux thèmes : chaque onglet a sa couleur (--c), l'actif s'allume dans une bulle */
@@ -410,6 +407,29 @@ h2 { font-family: var(--display); font-weight: 800; font-size: 12px; letter-spac
 .card.tendance .td-alerte { background: rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .8); }
 .card.tendance .td-alerte i { background: var(--rouge); }
 .card.tendance .td-alerte .lien { color: #fff; text-decoration-color: var(--rouge); text-decoration-thickness: 2px; }
+
+/* Muscu : sous-onglets et cartes « Mes séances » */
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 0 16px; max-width: 420px; border-radius: 99px; background: var(--surface); box-shadow: var(--shadow); }
+.seg button { font: inherit; font-family: var(--display); font-weight: 800; font-size: 14px; padding: 10px 8px; border: 0; border-radius: 99px; background: none; color: var(--muted); cursor: pointer; transition: background-color .25s, color .25s, transform .15s; }
+.seg button.on { background: var(--nuit); color: #fff; box-shadow: 0 6px 14px -8px var(--nuit); }
+:root[data-theme="dark"] .seg button.on { background: var(--accent); }
+.seg button:active { transform: scale(.96); }
+.st-creer { width: 100%; max-width: 420px; margin-bottom: 14px; background: var(--rouge); color: #fff; border: 0; box-shadow: 0 10px 22px -12px rgba(255, 31, 75, .8); font-size: 15px; padding: 13px 18px; }
+.st-tete { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.st-nom { font-family: var(--display); font-weight: 900; font-size: 24px; letter-spacing: -.02em; color: var(--text); margin: 0 0 2px; text-transform: uppercase; }
+.st-tete > div:first-child { min-width: 0; }
+.st-tete .small { white-space: nowrap; }
+.st-badges { flex: none; max-width: 50%; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+.badge.jour { background: var(--rouge); color: #fff; }
+.st-carte.st-jour { box-shadow: 0 0 0 2px var(--rouge), var(--shadow); }
+.st-bloc { border-top: 1px solid var(--border); padding: 8px 0 6px; }
+.st-bn { font-family: var(--display); font-weight: 800; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.st-ss { font-family: Inter, sans-serif; letter-spacing: 0; text-transform: none; font-weight: 700; font-size: 11px; color: var(--rouge); background: rgba(255, 31, 75, .1); padding: 1px 7px; border-radius: 99px; margin-left: 4px; }
+.st-exo { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; padding: 3px 0; }
+.st-exo span:first-child { font-weight: 600; min-width: 0; }
+.st-exo .muted { flex: none; font-size: 13px; text-align: right; }
+.st-carte .actions { margin-top: 10px; }
+.st-carte .actions .btn { flex: 1; }
 
 /* ---------- Mouvement : entrée des pages, jauges, retours tactiles (coupé si « réduire les animations ») ---------- */
 @keyframes monte { from { opacity: 0; transform: translateY(16px) scale(.985); } }
@@ -1566,6 +1586,16 @@ const fmtAllure = sec => (sec > 0 ? `${fmtDuree(sec / 60)} /500 m` : '');
 const texteCardio = s => [fmtDuree(s.reps), s.dist > 0 ? `${fmtNum(s.dist, 0)} m` : '', fmtAllure(allure500(s.reps, s.dist))].filter(Boolean).join(' · ');
 // Séances en alternance (A / B…) : une séance marquée "rotation": false (ex. Renfo) est choisie à la main et ne décale pas l'alternance
 const idsRotation = programme => (programme.seances || []).filter(s => s.rotation !== false).map(s => s.id);
+// Durée estimée d'une séance type, en minutes arrondies à 5 : effort (≈ 3 s par rep) + repos/transition par série
+function dureeEstimee(st) {
+  let sec = 0;
+  for (const b of st.blocs || []) for (const e of b.exos || []) {
+    const r = e.repsMax || e.repsMin || 0;
+    const effort = e.unite === 'min' ? r * 60 : e.unite === 's' ? r : r * 3;
+    sec += (e.series || 1) * (effort + (sansCharge(e.unite) ? 45 : 75));
+  }
+  return Math.max(5, Math.round(sec / 300) * 5);
+}
 // Séance à proposer le jour J : celle planifiée ce jour-là (si pas encore faite), sinon la suivante de l'alternance
 function seanceDuJour(programme, seances, planning, date) {
   const ids = (programme.seances || []).map(s => s.id);
@@ -2726,13 +2756,17 @@ const Pages = {
 
   /* ---------- Muscu ---------- */
   muscu: {
-    titre: 'Muscu',
+    titre: 'Muscu', vue: 'progression',
+    // Deux sous-onglets : la progression par exercice, et les séances types (voir, lancer, créer, modifier)
     html() {
-      const d = Store.data, prog = d.programme, seances = d.seances;
-      const typesHtml = `<div class="seances-types" aria-label="Mes séances">${(prog.seances || []).map(s => `<button type="button" class="chip" data-edit-seance="${esc(s.id)}">${esc(s.nom)} <span aria-hidden="true">✎</span></button>`).join('')}
-        <button type="button" class="chip plus" data-edit-seance="">+ Créer une séance</button></div>`;
-      if (!prog.seances || !prog.seances.length) return `<header class="page-head"><h1>Muscu</h1></header>${typesHtml}${carte('', '<p class="muted">Aucune séance : crée la première.</p>')}`;
-      const nb = seances.filter(s => s.sport === 'muscu').length;
+      const d = Store.data, prog = d.programme, seances = d.seances, liste = prog.seances || [];
+      const nb = seances.filter(s => s.sport === 'muscu').length, vue = liste.length ? this.vue : 'seances';
+      const onglets = `<div class="seg" role="tablist" aria-label="Affichage">${[['progression', '📈 Progression'], ['seances', '📋 Mes séances']]
+        .map(([k, l]) => `<button type="button" role="tab" aria-selected="${vue === k}" class="${vue === k ? 'on' : ''}" data-vue="${k}">${l}</button>`).join('')}</div>`;
+      const tete = `<header class="page-head"><h1>Muscu</h1><p class="muted">${vue === 'seances'
+        ? `${liste.length} séance${liste.length > 1 ? 's' : ''} type · lance-les ou modifie-les ici`
+        : `Évolution de chaque exercice · ${nb} séance${nb > 1 ? 's' : ''} enregistrée${nb > 1 ? 's' : ''}`}</p></header>${onglets}`;
+      if (vue === 'seances') return tete + this.mesSeances();
       const carteExo = ex => {
         const h = historiqueExo(seances, ex.id), pv = prevuExo(ex, seances), der = pv.derniere, pr = progressionExo(h);
         const pdc = sansCharge(ex.unite), cardio = ex.unite === 'min';
@@ -2764,8 +2798,7 @@ const Pages = {
             ? `<i></i>À surveiller : ${td.baisse.map(x => `<button type="button" class="lien" data-exo="${esc(x.id)}">${esc(x.nom)}</button> ${esc(x.texte)} <span class="muted">(${esc(x.groupe)})</span>`).join(' · ')}`
             : '<span class="muted">Rien en baisse depuis la séance précédente.</span>'}</p>
         </section>`;
-      return `<header class="page-head"><h1>Muscu</h1><p class="muted">Évolution de chaque exercice · ${nb} séance${nb > 1 ? 's' : ''} enregistrée${nb > 1 ? 's' : ''}</p></header>
-        ${typesHtml}
+      return `${tete}
         ${tendance}
         ${groupes.map(g => {
           const grille = `<div class="grid exo-grid">${g.exos.map(carteExo).join('')}</div>`;
@@ -2775,8 +2808,35 @@ const Pages = {
             : `<section class="exo-groupe"><h2>${esc(g.titre)}</h2>${grille}</section>`;
         }).join('')}`;
     },
+    mesSeances() {
+      const d = Store.data, liste = d.programme.seances || [], rot = idsRotation(d.programme);
+      const duJour = liste.length ? seanceDuJour(d.programme, d.seances, d.planning, today()) : null;
+      // Prescription d'un exercice : séries × reps (ou durée), charge ou aide prévue d'après l'historique
+      const presc = e => {
+        const pv = prevuExo(e, d.seances), reps = e.repsMin && e.repsMin !== e.repsMax ? `${e.repsMin}-${e.repsMax}` : e.repsMax;
+        const vol = e.unite === 'min' ? fmtDuree(e.repsMax) : `${reps}${e.unite === 's' ? ' s' : ''}`;
+        const ch = !sansCharge(e.unite) && pv.charge != null ? ` · ${fmtNum(pv.charge)} kg` : pv.aide != null ? ` · aide ${fmtNum(pv.aide)} kg` : '';
+        return `${e.series > 1 ? `${e.series} × ` : ''}${vol}${ch}`;
+      };
+      const carteSt = st => {
+        const exos = st.blocs.flatMap(b => b.exos), dansRot = rot.includes(st.id), id = esc(st.id);
+        return `<section class="card st-carte${st.id === duJour ? ' st-jour' : ''}">
+          <div class="st-tete"><div><h3 class="st-nom">${esc(st.nom)}</h3><span class="muted small">${exos.length} exercice${exos.length > 1 ? 's' : ''} · ≈ ${dureeEstimee(st)} min</span></div>
+            <div class="st-badges">${st.id === duJour ? '<span class="badge jour">Aujourd’hui</span>' : ''}<span class="badge${dansRot ? ' good' : ''}">${dansRot ? 'Alternance' : 'À la demande'}</span></div></div>
+          ${st.blocs.filter(b => b.exos.length).map(b => `<div class="st-bloc"><div class="st-bn">${esc(b.nom)}${b.exos.length === 2 && !/superset|échauffement|étirement/i.test(b.nom) ? ' <span class="st-ss">superset</span>' : ''}</div>
+            ${b.exos.map(e => `<div class="st-exo"><span>${esc(e.nom)}</span><span class="muted">${presc(e)}</span></div>`).join('')}</div>`).join('')}
+          <div class="actions"><button type="button" class="btn" data-edit-seance="${id}">✎ Modifier</button><button type="button" class="btn primary" data-go="${id}">▶ Commencer</button></div>
+        </section>`;
+      };
+      return `<button type="button" class="btn st-creer" data-edit-seance="">＋ Créer une séance</button>
+        ${liste.length ? `<div class="grid st-grille">${liste.map(carteSt).join('')}</div>` : carte('', '<p class="muted">Aucune séance : crée la première.</p>')}`;
+    },
     apres(root) {
       root.addEventListener('click', e => {
+        const v = e.target.closest('[data-vue]');
+        if (v) { if (this.vue !== v.dataset.vue) { this.vue = v.dataset.vue; App.vue = null; App.rendre(); } return; }
+        const g = e.target.closest('[data-go]');
+        if (g) return Saisie.seance(null, 'muscu', g.dataset.go);
         const s = e.target.closest('[data-edit-seance]');
         if (s) return Saisie.editeurSeance(s.dataset.editSeance || null);
         const x = e.target.closest('[data-exo]');
