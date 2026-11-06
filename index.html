@@ -2757,7 +2757,7 @@ const Pages = {
   /* ---------- Muscu ---------- */
   muscu: {
     titre: 'Muscu', vue: 'progression',
-    // Deux sous-onglets : la progression par exercice, et les séances types (voir, lancer, créer, modifier). Vue choisie gardée jusqu'au rechargement.
+    // Deux sous-onglets : la progression par exercice, et les séances types (voir, lancer, créer, modifier). Vue choisie gardée jusqu'au rechargement de la page.
     html() {
       const d = Store.data, prog = d.programme, seances = d.seances, liste = prog.seances || [];
       const nb = seances.filter(s => s.sport === 'muscu').length, vue = liste.length ? this.vue : 'seances';
