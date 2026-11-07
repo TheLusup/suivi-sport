@@ -1397,18 +1397,20 @@ function totaux(items) {
 // Repères du jour hors protéines et fibres : lipides 35 % des kcal, glucides = le reste, AGS ≤ 10 % des kcal (OMS), sel ≤ 5 g (OMS)
 function reperesNutri(c) {
   const l = Math.round(c.kcal * 0.35 / 9);
-  return { l, g: Math.max(0, Math.round((c.kcal - 4 * c.p - 9 * l) / 4)), ags: Math.round(c.kcal * 0.10 / 9), sel: 5 };
+  return { l, g: Math.max(0, Math.round((c.kcal - 4 * c.p - 9 * l) / 4)), ags: Math.floor(c.kcal * 0.10 / 9), sel: 5 };
 }
 // Macros d'une recette à partir des grammes de chaque aliment (valeurs pour 100 g)
 function macrosRecette(recette, aliments) {
-  const t = { kcal: 0, p: 0, g: 0, l: 0, f: 0, ags: 0, sel: 0 }, manquants = [];
+  const t = { kcal: 0, p: 0, g: 0, l: 0, f: 0, ags: 0, sel: 0 }, manquants = [], inconnu = new Set();
   for (const ing of recette.ingredients) {
     const a = aliments[ing.a];
     if (!a) { manquants.push(ing.a); continue; }
-    for (const k of [...MACROS, ...NUTRIS]) t[k] += (a[k] || 0) * ing.g / 100;
+    for (const k of MACROS) t[k] += (a[k] || 0) * ing.g / 100;
+    // Un ingrédient (en quantité non nulle) sans AGS ou sans sel rend la valeur de la recette inconnue plutôt que fausse
+    for (const k of NUTRIS) { if (a[k] == null) { if (ing.g > 0) inconnu.add(k); } else t[k] += a[k] * ing.g / 100; }
   }
   const parPortion = {};
-  for (const k of [...MACROS, ...NUTRIS]) parPortion[k] = k === 'kcal' ? Math.round(t[k] / recette.portions) : k === 'sel' ? Math.round(t[k] / recette.portions * 100) / 100 : r1(t[k] / recette.portions);
+  for (const k of [...MACROS, ...NUTRIS]) parPortion[k] = inconnu.has(k) ? null : k === 'kcal' ? Math.round(t[k] / recette.portions) : k === 'sel' ? Math.round(t[k] / recette.portions * 100) / 100 : r1(t[k] / recette.portions);
   return { total: totaux([t]), parPortion, manquants };
 }
 // Moment du repas d'après l'heure
@@ -2597,6 +2599,9 @@ const Saisie = {
           const v = n => num($(`[name="${n}"]`, body).value);
           const nom = $('[name="nom"]', body).value.trim();
           if (!nom || v('kcal') == null) return toast('Nom et kcal nécessaires');
+          if (['p', 'g', 'l', 'f', 'ags', 'sel'].some(n => v(n) != null && v(n) < 0)) return toast('Pas de valeur négative');
+          if (v('ags') != null && v('ags') > (v('l') ?? 0)) return toast('Les gras saturés ne peuvent pas dépasser les lipides');
+          if (v('sel') != null && v('sel') > 30) return toast('Sel : en grammes (ex. 2,5)');
           item = { nom, kcal: Math.round(v('kcal')), p: v('p') ?? 0, g: v('g') ?? 0, l: v('l') ?? 0, f: v('f') ?? 0, source: 'libre', qte: 1 };
           // Gras saturés et sel facultatifs : absents = non renseignés (pas 0)
           if (v('ags') != null) item.ags = r1(v('ags'));
@@ -2706,7 +2711,11 @@ function barresNutri(t, c) {
   return `<div class="nutri">${lignes.map(([nom, k, cible, pre]) => `<div><span class="small">${nom} <b>${fmtNum(t[k], k === 'sel' || k === 'ags' ? 1 : 0)}</b> / ${pre}${cible} g</span>${barre(t[k], cible, { classe: k })}</div>`).join('')}</div>
     ${t.manque ? `<p class="muted small">Gras saturés et sel : ${t.manque} repas sans ces valeurs (comptés à 0).</p>` : ''}`;
 }
-const resumeNutri = m => `P ${fmtNum(m.p, 0)} · G ${fmtNum(m.g, 0)} · L ${fmtNum(m.l, 0)} · F ${fmtNum(m.f, 0)}${m.sel != null ? ` · sel ${fmtNum(m.sel, 1)}` : ''}`;
+// Résumé d'un repas ou d'un total ; gras saturés et sel masqués s'ils ne sont connus pour aucun repas (nb = nombre de repas du total)
+const resumeNutri = (m, nb = 1) => {
+  const connus = m.manque == null ? m.sel != null && m.ags != null : m.manque < nb;
+  return `P ${fmtNum(m.p, 0)} · G ${fmtNum(m.g, 0)} · L ${fmtNum(m.l, 0)} · F ${fmtNum(m.f, 0)}${connus ? ` · sat. ${fmtNum(m.ags, 1)} · sel ${fmtNum(m.sel, 1)}` : ''}`;
+};
 const ligneRepas = (r, avecMoment) => `<div class="li"><span><b>${esc(r.nom)}</b>${r.qte && r.qte !== 1 ? ` <span class="muted">×${fmtNum(r.qte)}</span>` : ''}<br><span class="muted small">${avecMoment !== false ? `${esc(libelleMoment(r.moment))} · ` : ''}${resumeNutri(r)}</span></span>
   <span class="li-end">${fmtKcal(r.kcal)}<button type="button" class="icon-btn sm" data-del-repas="${esc(r.id)}" aria-label="Supprimer ${esc(r.nom)}">✕</button></span></div>`;
 const texteMontre = m => [m.kcal != null && `${fmtNum(m.kcal, 0)} kcal`, m.fcMoy != null && `FC moy ${m.fcMoy}`, m.fcMax != null && `FC max ${m.fcMax}`, m.charge != null && `charge montre ${m.charge}`].filter(Boolean).join(' · ');
@@ -3082,14 +3091,14 @@ const Pages = {
           <button type="button" class="icon-btn" data-sem="1" aria-label="Semaine suivante" ${enCours ? 'disabled' : ''}>›</button>
           ${enCours ? '' : '<button type="button" class="chip" data-sem="0">Cette semaine</button>'}</div>
         ${carte('Moyenne par jour', renseignes.length ? `
-          <p class="muted small">${renseignes.length} jour${renseignes.length > 1 ? 's' : ''} renseigné${renseignes.length > 1 ? 's' : ''} sur ${jours.length} (les jours vides ne comptent pas)</p>
+          <p class="muted small">${renseignes.length} jour${renseignes.length > 1 ? 's' : ''} renseigné${renseignes.length > 1 ? 's' : ''} sur ${jours.length} (les jours vides ne comptent pas${enCours && renseignes.includes(D) ? ', aujourd’hui compris même incomplet' : ''})${enCours ? '' : ' · comparé à tes cibles actuelles'}</p>
           <div class="kpi"><b>${fmtNum(moyenne.kcal, 0)}</b><span class="muted"> / ${fmtNum(c.kcal, 0)} kcal</span></div>
           ${barre(moyenne.kcal, c.kcal)}
           ${barresNutri(moyenne, c)}` : `<p class="muted">Aucun repas saisi ${enCours ? 'cette semaine' : 'cette semaine-là'}.</p>`)}
         ${carte('Calories sur 14 jours', '<div class="chart"><canvas id="ch-kcal"></canvas></div>')}
         ${carte('Journal', jours.map(j => { const rs = d.repas.filter(r => r.date === j).sort(parDate); if (!rs.length) return '';
           const tj = totaux(rs);
-          return `<h3 class="jr-jour">${fmtDate(j, { weekday: 'long', day: 'numeric', month: 'short' })} <span class="muted small">${fmtKcal(tj.kcal)} · ${resumeNutri(tj)}</span></h3>
+          return `<h3 class="jr-jour">${fmtDate(j, { weekday: 'long', day: 'numeric', month: 'short' })} <span class="muted small">${fmtKcal(tj.kcal)} · ${resumeNutri(tj, rs.length)}</span></h3>
             <div class="journal">${repasParMoment(rs).map(g => `<div class="jr-moment"><p class="jr-titre"><b>${esc(libelleMoment(g.moment))}</b><span class="muted small">${fmtKcal(totaux(g.repas).kcal)}</span></p>
               <div class="list">${g.repas.map(r => ligneRepas(r, false)).join('')}</div></div>`).join('')}</div>`; }).join('') || `<p class="muted small">Rien ${enCours ? 'cette semaine' : 'cette semaine-là'}.</p>`, 'wide')}
         </div>`;
