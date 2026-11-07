@@ -408,6 +408,29 @@ h2 { font-family: var(--display); font-weight: 800; font-size: 12px; letter-spac
 .card.tendance .td-alerte i { background: var(--rouge); }
 .card.tendance .td-alerte .lien { color: #fff; text-decoration-color: var(--rouge); text-decoration-thickness: 2px; }
 
+/* Nutrition : tous les nutriments, semaine affichée, aperçu du plat choisi */
+.nutri { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; margin: 8px 0; }
+.nutri .small { white-space: nowrap; }
+.bar.g span { background: var(--series-4); } .bar.l span { background: var(--series-6); }
+.bar.ags span { background: var(--series-7); } .bar.sel span { background: var(--series-8); }
+.bar.g span.over, .bar.l span.over { background: var(--warning); }
+.bar.ags span.over, .bar.sel span.over { background: var(--critical); }
+.card.hero .bar.g span { background: #ffd166; } .card.hero .bar.l span { background: #c9b8ff; }
+.card.hero .bar.ags span { background: #7fe3f5; } .card.hero .bar.sel span { background: #e3e8f5; }
+.card.hero .bar.ags span.over, .card.hero .bar.sel span.over { background: #ff8fa3; }
+.sem-nav { display: flex; align-items: center; gap: 12px; background: var(--surface); border-radius: var(--radius); padding: 10px 12px; box-shadow: var(--shadow); }
+.sem-nav > div { flex: 1; text-align: center; }
+.sem-nav b { font-family: var(--display); font-weight: 800; }
+.sem-nav .icon-btn:disabled { opacity: .3; cursor: default; }
+.sem-nav .chip { padding: 6px 10px; font-size: 12px; }
+.jr-jour::first-letter { text-transform: uppercase; }
+.jr-jour .muted { font-weight: 500; }
+.pick { align-items: center; }
+.pick-k { flex: none; font-family: var(--display); font-weight: 800; font-size: 13px; }
+.apercu-t { margin: 12px 0 0; }
+.macros-7 { grid-template-columns: repeat(4, 1fr); }
+.macros-7 b { font-size: 16px; }
+
 /* Muscu : sous-onglets et cartes « Mes séances » */
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 0 16px; max-width: 420px; border-radius: 99px; background: var(--surface); box-shadow: var(--shadow); }
 .seg button { font: inherit; font-family: var(--display); font-weight: 800; font-size: 14px; padding: 10px 8px; border: 0; border-radius: 99px; background: none; color: var(--muted); cursor: pointer; transition: background-color .25s, color .25s, transform .15s; }
@@ -477,73 +500,73 @@ h2 { font-family: var(--display); font-weight: 800; font-size: 12px; letter-spac
 /* Généré par construire-page.ps1 à partir de donnees/data : ne pas modifier à la main. */
 const SEED = {
   aliments: [
-  {"id": "poulet-filet", "nom": "Filet de poulet", "rayon": "Boucherie", "kcal": 110, "p": 23, "g": 0, "l": 1.8, "f": 0},
-  {"id": "poulet-cuisse", "nom": "Cuisse de poulet désossée", "rayon": "Boucherie", "kcal": 160, "p": 18, "g": 0, "l": 10, "f": 0},
-  {"id": "dinde-escalope", "nom": "Escalope de dinde", "rayon": "Boucherie", "kcal": 105, "p": 23, "g": 0, "l": 1.5, "f": 0},
-  {"id": "boeuf-hache-5", "nom": "Bœuf haché 5 %", "rayon": "Boucherie", "kcal": 125, "p": 21, "g": 0, "l": 5, "f": 0},
-  {"id": "boeuf-braiser", "nom": "Bœuf à braiser (paleron)", "rayon": "Boucherie", "kcal": 150, "p": 21, "g": 0, "l": 7, "f": 0},
-  {"id": "porc-filet-mignon", "nom": "Filet mignon de porc", "rayon": "Boucherie", "kcal": 120, "p": 22, "g": 0, "l": 3.5, "f": 0},
-  {"id": "jambon-blanc", "nom": "Jambon blanc", "rayon": "Charcuterie", "kcal": 115, "p": 21, "g": 1, "l": 3, "f": 0},
-  {"id": "lardons", "nom": "Lardons fumés", "rayon": "Charcuterie", "kcal": 270, "p": 16, "g": 0.5, "l": 23, "f": 0},
-  {"id": "saumon", "nom": "Pavé de saumon", "rayon": "Poissonnerie", "kcal": 200, "p": 20, "g": 0, "l": 13, "f": 0},
-  {"id": "cabillaud", "nom": "Dos de cabillaud", "rayon": "Poissonnerie", "kcal": 80, "p": 18, "g": 0, "l": 0.7, "f": 0},
-  {"id": "crevettes", "nom": "Crevettes décortiquées cuites", "rayon": "Poissonnerie", "kcal": 95, "p": 21, "g": 0, "l": 1, "f": 0},
-  {"id": "thon-naturel", "nom": "Thon au naturel (égoutté)", "rayon": "Épicerie", "kcal": 115, "p": 26, "g": 0, "l": 1, "f": 0},
-  {"id": "oeufs", "nom": "Œufs", "rayon": "Crèmerie", "kcal": 140, "p": 12.5, "g": 0.5, "l": 10, "f": 0, "piece": 55, "unitePiece": "œuf"},
-  {"id": "skyr", "nom": "Skyr nature", "rayon": "Crèmerie", "kcal": 60, "p": 10, "g": 4, "l": 0.2, "f": 0},
-  {"id": "creme-legere", "nom": "Crème fraîche légère 15 %", "rayon": "Crèmerie", "kcal": 160, "p": 3, "g": 4, "l": 15, "f": 0},
-  {"id": "lait-demi", "nom": "Lait demi-écrémé", "rayon": "Crèmerie", "kcal": 46, "p": 3.3, "g": 4.8, "l": 1.6, "f": 0},
-  {"id": "feta", "nom": "Feta", "rayon": "Crèmerie", "kcal": 265, "p": 14, "g": 1, "l": 22, "f": 0},
-  {"id": "parmesan", "nom": "Parmesan", "rayon": "Crèmerie", "kcal": 400, "p": 33, "g": 0, "l": 29, "f": 0},
-  {"id": "emmental-rape", "nom": "Emmental râpé", "rayon": "Crèmerie", "kcal": 370, "p": 28, "g": 0, "l": 29, "f": 0},
-  {"id": "mozzarella", "nom": "Mozzarella", "rayon": "Crèmerie", "kcal": 250, "p": 18, "g": 1, "l": 19, "f": 0},
-  {"id": "tofu-ferme", "nom": "Tofu ferme", "rayon": "Frais", "kcal": 130, "p": 13, "g": 2, "l": 8, "f": 1},
-  {"id": "riz-basmati", "nom": "Riz basmati (cru)", "rayon": "Épicerie", "kcal": 350, "p": 8, "g": 77, "l": 0.8, "f": 1.5},
-  {"id": "pates-completes", "nom": "Pâtes complètes (crues)", "rayon": "Épicerie", "kcal": 350, "p": 13, "g": 64, "l": 2.5, "f": 8},
-  {"id": "quinoa", "nom": "Quinoa (cru)", "rayon": "Épicerie", "kcal": 370, "p": 14, "g": 64, "l": 6, "f": 7},
-  {"id": "semoule", "nom": "Semoule complète (crue)", "rayon": "Épicerie", "kcal": 355, "p": 12, "g": 68, "l": 2, "f": 7},
-  {"id": "lentilles-corail", "nom": "Lentilles corail (sèches)", "rayon": "Épicerie", "kcal": 345, "p": 24, "g": 53, "l": 1.5, "f": 11},
-  {"id": "lentilles-vertes", "nom": "Lentilles vertes (sèches)", "rayon": "Épicerie", "kcal": 330, "p": 24, "g": 48, "l": 1.5, "f": 15},
-  {"id": "pois-chiches", "nom": "Pois chiches en conserve (égouttés)", "rayon": "Épicerie", "kcal": 140, "p": 7, "g": 17, "l": 2.5, "f": 6},
-  {"id": "haricots-rouges", "nom": "Haricots rouges en conserve (égouttés)", "rayon": "Épicerie", "kcal": 115, "p": 8, "g": 15, "l": 0.5, "f": 7},
-  {"id": "mais", "nom": "Maïs en conserve", "rayon": "Épicerie", "kcal": 90, "p": 3, "g": 15, "l": 1.5, "f": 3},
-  {"id": "tomates-concassees", "nom": "Tomates concassées en conserve", "rayon": "Épicerie", "kcal": 25, "p": 1.2, "g": 4, "l": 0.2, "f": 1.2},
-  {"id": "lait-coco-light", "nom": "Lait de coco allégé", "rayon": "Épicerie", "kcal": 75, "p": 0.7, "g": 2, "l": 7, "f": 0},
-  {"id": "tortillas", "nom": "Tortillas de blé", "rayon": "Épicerie", "kcal": 310, "p": 8.5, "g": 52, "l": 7, "f": 3, "piece": 40, "unitePiece": "tortilla"},
-  {"id": "huile-olive", "nom": "Huile d'olive", "rayon": "Épicerie", "kcal": 900, "p": 0, "g": 0, "l": 100, "f": 0, "placard": true},
-  {"id": "sauce-soja", "nom": "Sauce soja", "rayon": "Épicerie", "kcal": 55, "p": 8, "g": 5, "l": 0.5, "f": 0, "placard": true},
-  {"id": "noix-cajou", "nom": "Noix de cajou", "rayon": "Épicerie", "kcal": 590, "p": 18, "g": 27, "l": 46, "f": 3},
-  {"id": "pesto", "nom": "Pesto", "rayon": "Épicerie", "kcal": 450, "p": 5, "g": 5, "l": 45, "f": 2},
-  {"id": "epices", "nom": "Épices et aromates", "rayon": "Épicerie", "kcal": 0, "p": 0, "g": 0, "l": 0, "f": 0, "placard": true},
-  {"id": "bouillon", "nom": "Bouillon cube", "rayon": "Épicerie", "kcal": 0, "p": 0, "g": 0, "l": 0, "f": 0, "placard": true},
-  {"id": "pain-complet", "nom": "Pain complet", "rayon": "Boulangerie", "kcal": 240, "p": 9, "g": 43, "l": 3, "f": 7},
-  {"id": "pomme-de-terre", "nom": "Pommes de terre", "rayon": "Fruits et légumes", "kcal": 80, "p": 2, "g": 17, "l": 0.1, "f": 2},
-  {"id": "patate-douce", "nom": "Patate douce", "rayon": "Fruits et légumes", "kcal": 86, "p": 1.6, "g": 20, "l": 0.1, "f": 3},
-  {"id": "courge-butternut", "nom": "Courge butternut", "rayon": "Fruits et légumes", "kcal": 40, "p": 1, "g": 8, "l": 0.1, "f": 2},
-  {"id": "poireau", "nom": "Poireaux", "rayon": "Fruits et légumes", "kcal": 30, "p": 1.5, "g": 4, "l": 0.3, "f": 3},
-  {"id": "chou-fleur", "nom": "Chou-fleur", "rayon": "Fruits et légumes", "kcal": 25, "p": 2, "g": 3, "l": 0.3, "f": 2.5},
-  {"id": "brocoli", "nom": "Brocoli", "rayon": "Fruits et légumes", "kcal": 35, "p": 3, "g": 4, "l": 0.4, "f": 3},
-  {"id": "choux-bruxelles", "nom": "Choux de Bruxelles", "rayon": "Fruits et légumes", "kcal": 45, "p": 3.4, "g": 5, "l": 0.3, "f": 4},
-  {"id": "chou-vert", "nom": "Chou vert", "rayon": "Fruits et légumes", "kcal": 30, "p": 2, "g": 4, "l": 0.3, "f": 3},
-  {"id": "carotte", "nom": "Carottes", "rayon": "Fruits et légumes", "kcal": 40, "p": 0.8, "g": 8, "l": 0.2, "f": 2.7},
-  {"id": "celeri-rave", "nom": "Céleri-rave", "rayon": "Fruits et légumes", "kcal": 30, "p": 1.2, "g": 3, "l": 0.3, "f": 4},
-  {"id": "oignon", "nom": "Oignons", "rayon": "Fruits et légumes", "kcal": 40, "p": 1.2, "g": 8, "l": 0.2, "f": 1.7},
-  {"id": "ail", "nom": "Ail", "rayon": "Fruits et légumes", "kcal": 130, "p": 6, "g": 25, "l": 0.5, "f": 2, "piece": 5, "unitePiece": "gousse"},
-  {"id": "champignons", "nom": "Champignons de Paris", "rayon": "Fruits et légumes", "kcal": 25, "p": 3, "g": 1, "l": 0.3, "f": 1.5},
-  {"id": "epinards", "nom": "Épinards", "rayon": "Fruits et légumes", "kcal": 25, "p": 3, "g": 1.5, "l": 0.4, "f": 2.5},
-  {"id": "endive", "nom": "Endives", "rayon": "Fruits et légumes", "kcal": 18, "p": 1, "g": 2.5, "l": 0.1, "f": 1},
-  {"id": "mache", "nom": "Mâche", "rayon": "Fruits et légumes", "kcal": 18, "p": 2, "g": 1, "l": 0.4, "f": 1.8},
-  {"id": "betterave", "nom": "Betterave cuite", "rayon": "Fruits et légumes", "kcal": 45, "p": 1.6, "g": 8, "l": 0.1, "f": 2.5},
-  {"id": "poivron", "nom": "Poivrons", "rayon": "Fruits et légumes", "kcal": 30, "p": 1, "g": 5, "l": 0.3, "f": 2},
-  {"id": "courgette", "nom": "Courgettes", "rayon": "Fruits et légumes", "kcal": 18, "p": 1.3, "g": 2, "l": 0.3, "f": 1},
-  {"id": "aubergine", "nom": "Aubergines", "rayon": "Fruits et légumes", "kcal": 22, "p": 1, "g": 3, "l": 0.2, "f": 3},
-  {"id": "tomate", "nom": "Tomates", "rayon": "Fruits et légumes", "kcal": 20, "p": 0.9, "g": 3, "l": 0.2, "f": 1.2},
-  {"id": "concombre", "nom": "Concombre", "rayon": "Fruits et légumes", "kcal": 15, "p": 0.7, "g": 2.5, "l": 0.1, "f": 0.7},
-  {"id": "haricots-verts", "nom": "Haricots verts", "rayon": "Fruits et légumes", "kcal": 30, "p": 2, "g": 4, "l": 0.2, "f": 3},
-  {"id": "asperges", "nom": "Asperges vertes", "rayon": "Fruits et légumes", "kcal": 25, "p": 2.5, "g": 2, "l": 0.2, "f": 2},
-  {"id": "avocat", "nom": "Avocats", "rayon": "Fruits et légumes", "kcal": 190, "p": 1.8, "g": 2, "l": 18, "f": 5, "piece": 150, "unitePiece": "avocat"},
-  {"id": "citron", "nom": "Citrons", "rayon": "Fruits et légumes", "kcal": 30, "p": 0.7, "g": 5.5, "l": 0.3, "f": 2, "piece": 100, "unitePiece": "citron"},
-  {"id": "petits-pois", "nom": "Petits pois surgelés", "rayon": "Surgelés", "kcal": 75, "p": 5.5, "g": 9, "l": 0.4, "f": 5.5}
+  {"id": "poulet-filet", "nom": "Filet de poulet", "rayon": "Boucherie", "kcal": 110, "p": 23, "g": 0, "l": 1.8, "f": 0, "ags": 0.5, "sel": 0.15},
+  {"id": "poulet-cuisse", "nom": "Cuisse de poulet désossée", "rayon": "Boucherie", "kcal": 160, "p": 18, "g": 0, "l": 10, "f": 0, "ags": 2.8, "sel": 0.2},
+  {"id": "dinde-escalope", "nom": "Escalope de dinde", "rayon": "Boucherie", "kcal": 105, "p": 23, "g": 0, "l": 1.5, "f": 0, "ags": 0.5, "sel": 0.15},
+  {"id": "boeuf-hache-5", "nom": "Bœuf haché 5 %", "rayon": "Boucherie", "kcal": 125, "p": 21, "g": 0, "l": 5, "f": 0, "ags": 2.2, "sel": 0.17},
+  {"id": "boeuf-braiser", "nom": "Bœuf à braiser (paleron)", "rayon": "Boucherie", "kcal": 150, "p": 21, "g": 0, "l": 7, "f": 0, "ags": 2.9, "sel": 0.15},
+  {"id": "porc-filet-mignon", "nom": "Filet mignon de porc", "rayon": "Boucherie", "kcal": 120, "p": 22, "g": 0, "l": 3.5, "f": 0, "ags": 1.2, "sel": 0.15},
+  {"id": "jambon-blanc", "nom": "Jambon blanc", "rayon": "Charcuterie", "kcal": 115, "p": 21, "g": 1, "l": 3, "f": 0, "ags": 1.1, "sel": 1.9},
+  {"id": "lardons", "nom": "Lardons fumés", "rayon": "Charcuterie", "kcal": 270, "p": 16, "g": 0.5, "l": 23, "f": 0, "ags": 8.5, "sel": 2.8},
+  {"id": "saumon", "nom": "Pavé de saumon", "rayon": "Poissonnerie", "kcal": 200, "p": 20, "g": 0, "l": 13, "f": 0, "ags": 2.5, "sel": 0.15},
+  {"id": "cabillaud", "nom": "Dos de cabillaud", "rayon": "Poissonnerie", "kcal": 80, "p": 18, "g": 0, "l": 0.7, "f": 0, "ags": 0.15, "sel": 0.25},
+  {"id": "crevettes", "nom": "Crevettes décortiquées cuites", "rayon": "Poissonnerie", "kcal": 95, "p": 21, "g": 0, "l": 1, "f": 0, "ags": 0.2, "sel": 1.5},
+  {"id": "thon-naturel", "nom": "Thon au naturel (égoutté)", "rayon": "Épicerie", "kcal": 115, "p": 26, "g": 0, "l": 1, "f": 0, "ags": 0.3, "sel": 0.8},
+  {"id": "oeufs", "nom": "Œufs", "rayon": "Crèmerie", "kcal": 140, "p": 12.5, "g": 0.5, "l": 10, "f": 0, "ags": 2.8, "sel": 0.35, "piece": 55, "unitePiece": "œuf"},
+  {"id": "skyr", "nom": "Skyr nature", "rayon": "Crèmerie", "kcal": 60, "p": 10, "g": 4, "l": 0.2, "f": 0, "ags": 0.1, "sel": 0.12},
+  {"id": "creme-legere", "nom": "Crème fraîche légère 15 %", "rayon": "Crèmerie", "kcal": 160, "p": 3, "g": 4, "l": 15, "f": 0, "ags": 10, "sel": 0.1},
+  {"id": "lait-demi", "nom": "Lait demi-écrémé", "rayon": "Crèmerie", "kcal": 46, "p": 3.3, "g": 4.8, "l": 1.6, "f": 0, "ags": 1, "sel": 0.11},
+  {"id": "feta", "nom": "Feta", "rayon": "Crèmerie", "kcal": 265, "p": 14, "g": 1, "l": 22, "f": 0, "ags": 15, "sel": 2.7},
+  {"id": "parmesan", "nom": "Parmesan", "rayon": "Crèmerie", "kcal": 400, "p": 33, "g": 0, "l": 29, "f": 0, "ags": 18, "sel": 1.6},
+  {"id": "emmental-rape", "nom": "Emmental râpé", "rayon": "Crèmerie", "kcal": 370, "p": 28, "g": 0, "l": 29, "f": 0, "ags": 18.5, "sel": 0.75},
+  {"id": "mozzarella", "nom": "Mozzarella", "rayon": "Crèmerie", "kcal": 250, "p": 18, "g": 1, "l": 19, "f": 0, "ags": 13, "sel": 0.5},
+  {"id": "tofu-ferme", "nom": "Tofu ferme", "rayon": "Frais", "kcal": 130, "p": 13, "g": 2, "l": 8, "f": 1, "ags": 1.2, "sel": 0.03},
+  {"id": "riz-basmati", "nom": "Riz basmati (cru)", "rayon": "Épicerie", "kcal": 350, "p": 8, "g": 77, "l": 0.8, "f": 1.5, "ags": 0.2, "sel": 0.01},
+  {"id": "pates-completes", "nom": "Pâtes complètes (crues)", "rayon": "Épicerie", "kcal": 350, "p": 13, "g": 64, "l": 2.5, "f": 8, "ags": 0.4, "sel": 0.02},
+  {"id": "quinoa", "nom": "Quinoa (cru)", "rayon": "Épicerie", "kcal": 370, "p": 14, "g": 64, "l": 6, "f": 7, "ags": 0.7, "sel": 0.01},
+  {"id": "semoule", "nom": "Semoule complète (crue)", "rayon": "Épicerie", "kcal": 355, "p": 12, "g": 68, "l": 2, "f": 7, "ags": 0.3, "sel": 0.02},
+  {"id": "lentilles-corail", "nom": "Lentilles corail (sèches)", "rayon": "Épicerie", "kcal": 345, "p": 24, "g": 53, "l": 1.5, "f": 11, "ags": 0.2, "sel": 0.02},
+  {"id": "lentilles-vertes", "nom": "Lentilles vertes (sèches)", "rayon": "Épicerie", "kcal": 330, "p": 24, "g": 48, "l": 1.5, "f": 15, "ags": 0.2, "sel": 0.02},
+  {"id": "pois-chiches", "nom": "Pois chiches en conserve (égouttés)", "rayon": "Épicerie", "kcal": 140, "p": 7, "g": 17, "l": 2.5, "f": 6, "ags": 0.3, "sel": 0.6},
+  {"id": "haricots-rouges", "nom": "Haricots rouges en conserve (égouttés)", "rayon": "Épicerie", "kcal": 115, "p": 8, "g": 15, "l": 0.5, "f": 7, "ags": 0.1, "sel": 0.6},
+  {"id": "mais", "nom": "Maïs en conserve", "rayon": "Épicerie", "kcal": 90, "p": 3, "g": 15, "l": 1.5, "f": 3, "ags": 0.2, "sel": 0.5},
+  {"id": "tomates-concassees", "nom": "Tomates concassées en conserve", "rayon": "Épicerie", "kcal": 25, "p": 1.2, "g": 4, "l": 0.2, "f": 1.2, "ags": 0.03, "sel": 0.3},
+  {"id": "lait-coco-light", "nom": "Lait de coco allégé", "rayon": "Épicerie", "kcal": 75, "p": 0.7, "g": 2, "l": 7, "f": 0, "ags": 6.2, "sel": 0.05},
+  {"id": "tortillas", "nom": "Tortillas de blé", "rayon": "Épicerie", "kcal": 310, "p": 8.5, "g": 52, "l": 7, "f": 3, "ags": 3, "sel": 1.3, "piece": 40, "unitePiece": "tortilla"},
+  {"id": "huile-olive", "nom": "Huile d'olive", "rayon": "Épicerie", "kcal": 900, "p": 0, "g": 0, "l": 100, "f": 0, "ags": 14.5, "sel": 0, "placard": true},
+  {"id": "sauce-soja", "nom": "Sauce soja", "rayon": "Épicerie", "kcal": 55, "p": 8, "g": 5, "l": 0.5, "f": 0, "ags": 0.1, "sel": 14.5, "placard": true},
+  {"id": "noix-cajou", "nom": "Noix de cajou", "rayon": "Épicerie", "kcal": 590, "p": 18, "g": 27, "l": 46, "f": 3, "ags": 8, "sel": 0.03},
+  {"id": "pesto", "nom": "Pesto", "rayon": "Épicerie", "kcal": 450, "p": 5, "g": 5, "l": 45, "f": 2, "ags": 7, "sel": 2.5},
+  {"id": "epices", "nom": "Épices et aromates", "rayon": "Épicerie", "kcal": 0, "p": 0, "g": 0, "l": 0, "f": 0, "ags": 0, "sel": 0, "placard": true},
+  {"id": "bouillon", "nom": "Bouillon cube", "rayon": "Épicerie", "kcal": 0, "p": 0, "g": 0, "l": 0, "f": 0, "ags": 0, "sel": 50, "placard": true},
+  {"id": "pain-complet", "nom": "Pain complet", "rayon": "Boulangerie", "kcal": 240, "p": 9, "g": 43, "l": 3, "f": 7, "ags": 0.6, "sel": 1.2},
+  {"id": "pomme-de-terre", "nom": "Pommes de terre", "rayon": "Fruits et légumes", "kcal": 80, "p": 2, "g": 17, "l": 0.1, "f": 2, "ags": 0.03, "sel": 0.01},
+  {"id": "patate-douce", "nom": "Patate douce", "rayon": "Fruits et légumes", "kcal": 86, "p": 1.6, "g": 20, "l": 0.1, "f": 3, "ags": 0.02, "sel": 0.1},
+  {"id": "courge-butternut", "nom": "Courge butternut", "rayon": "Fruits et légumes", "kcal": 40, "p": 1, "g": 8, "l": 0.1, "f": 2, "ags": 0.02, "sel": 0.01},
+  {"id": "poireau", "nom": "Poireaux", "rayon": "Fruits et légumes", "kcal": 30, "p": 1.5, "g": 4, "l": 0.3, "f": 3, "ags": 0.04, "sel": 0.05},
+  {"id": "chou-fleur", "nom": "Chou-fleur", "rayon": "Fruits et légumes", "kcal": 25, "p": 2, "g": 3, "l": 0.3, "f": 2.5, "ags": 0.08, "sel": 0.04},
+  {"id": "brocoli", "nom": "Brocoli", "rayon": "Fruits et légumes", "kcal": 35, "p": 3, "g": 4, "l": 0.4, "f": 3, "ags": 0.07, "sel": 0.07},
+  {"id": "choux-bruxelles", "nom": "Choux de Bruxelles", "rayon": "Fruits et légumes", "kcal": 45, "p": 3.4, "g": 5, "l": 0.3, "f": 4, "ags": 0.06, "sel": 0.03},
+  {"id": "chou-vert", "nom": "Chou vert", "rayon": "Fruits et légumes", "kcal": 30, "p": 2, "g": 4, "l": 0.3, "f": 3, "ags": 0.04, "sel": 0.05},
+  {"id": "carotte", "nom": "Carottes", "rayon": "Fruits et légumes", "kcal": 40, "p": 0.8, "g": 8, "l": 0.2, "f": 2.7, "ags": 0.03, "sel": 0.1},
+  {"id": "celeri-rave", "nom": "Céleri-rave", "rayon": "Fruits et légumes", "kcal": 30, "p": 1.2, "g": 3, "l": 0.3, "f": 4, "ags": 0.05, "sel": 0.25},
+  {"id": "oignon", "nom": "Oignons", "rayon": "Fruits et légumes", "kcal": 40, "p": 1.2, "g": 8, "l": 0.2, "f": 1.7, "ags": 0.03, "sel": 0.01},
+  {"id": "ail", "nom": "Ail", "rayon": "Fruits et légumes", "kcal": 130, "p": 6, "g": 25, "l": 0.5, "f": 2, "ags": 0.1, "sel": 0.04, "piece": 5, "unitePiece": "gousse"},
+  {"id": "champignons", "nom": "Champignons de Paris", "rayon": "Fruits et légumes", "kcal": 25, "p": 3, "g": 1, "l": 0.3, "f": 1.5, "ags": 0.05, "sel": 0.02},
+  {"id": "epinards", "nom": "Épinards", "rayon": "Fruits et légumes", "kcal": 25, "p": 3, "g": 1.5, "l": 0.4, "f": 2.5, "ags": 0.06, "sel": 0.2},
+  {"id": "endive", "nom": "Endives", "rayon": "Fruits et légumes", "kcal": 18, "p": 1, "g": 2.5, "l": 0.1, "f": 1, "ags": 0.02, "sel": 0.01},
+  {"id": "mache", "nom": "Mâche", "rayon": "Fruits et légumes", "kcal": 18, "p": 2, "g": 1, "l": 0.4, "f": 1.8, "ags": 0.05, "sel": 0.01},
+  {"id": "betterave", "nom": "Betterave cuite", "rayon": "Fruits et légumes", "kcal": 45, "p": 1.6, "g": 8, "l": 0.1, "f": 2.5, "ags": 0.02, "sel": 0.2},
+  {"id": "poivron", "nom": "Poivrons", "rayon": "Fruits et légumes", "kcal": 30, "p": 1, "g": 5, "l": 0.3, "f": 2, "ags": 0.05, "sel": 0.01},
+  {"id": "courgette", "nom": "Courgettes", "rayon": "Fruits et légumes", "kcal": 18, "p": 1.3, "g": 2, "l": 0.3, "f": 1, "ags": 0.07, "sel": 0.01},
+  {"id": "aubergine", "nom": "Aubergines", "rayon": "Fruits et légumes", "kcal": 22, "p": 1, "g": 3, "l": 0.2, "f": 3, "ags": 0.04, "sel": 0.01},
+  {"id": "tomate", "nom": "Tomates", "rayon": "Fruits et légumes", "kcal": 20, "p": 0.9, "g": 3, "l": 0.2, "f": 1.2, "ags": 0.03, "sel": 0.01},
+  {"id": "concombre", "nom": "Concombre", "rayon": "Fruits et légumes", "kcal": 15, "p": 0.7, "g": 2.5, "l": 0.1, "f": 0.7, "ags": 0.03, "sel": 0.01},
+  {"id": "haricots-verts", "nom": "Haricots verts", "rayon": "Fruits et légumes", "kcal": 30, "p": 2, "g": 4, "l": 0.2, "f": 3, "ags": 0.04, "sel": 0.01},
+  {"id": "asperges", "nom": "Asperges vertes", "rayon": "Fruits et légumes", "kcal": 25, "p": 2.5, "g": 2, "l": 0.2, "f": 2, "ags": 0.04, "sel": 0.01},
+  {"id": "avocat", "nom": "Avocats", "rayon": "Fruits et légumes", "kcal": 190, "p": 1.8, "g": 2, "l": 18, "f": 5, "ags": 2.6, "sel": 0.02, "piece": 150, "unitePiece": "avocat"},
+  {"id": "citron", "nom": "Citrons", "rayon": "Fruits et légumes", "kcal": 30, "p": 0.7, "g": 5.5, "l": 0.3, "f": 2, "ags": 0.04, "sel": 0.01, "piece": 100, "unitePiece": "citron"},
+  {"id": "petits-pois", "nom": "Petits pois surgelés", "rayon": "Surgelés", "kcal": 75, "p": 5.5, "g": 9, "l": 0.4, "f": 5.5, "ags": 0.07, "sel": 0.01}
 ],
   recettes: [
   {
@@ -760,7 +783,9 @@ const SEED = {
         "p":  32,
         "g":  70,
         "l":  24,
-        "f":  6
+        "f":  6,
+        "ags":  8,
+        "sel":  2.5
     },
     {
         "id":  "cantine-complet",
@@ -770,7 +795,9 @@ const SEED = {
         "p":  38,
         "g":  105,
         "l":  38,
-        "f":  8
+        "f":  8,
+        "ags":  13,
+        "sel":  3.5
     },
     {
         "id":  "foodcheri-plat",
@@ -781,7 +808,9 @@ const SEED = {
         "p":  30,
         "g":  60,
         "l":  22,
-        "f":  8
+        "f":  8,
+        "ags":  7,
+        "sel":  2.2
     },
     {
         "id":  "fc-cuisse-poulet-curry-riz",
@@ -792,7 +821,9 @@ const SEED = {
         "p":  42.1,
         "g":  55.3,
         "l":  40.8,
-        "f":  6.7
+        "f":  6.7,
+        "ags":  12,
+        "sel":  2.6
     },
     {
         "id":  "fc-skyr-brebis-abricot",
@@ -803,7 +834,9 @@ const SEED = {
         "p":  9.1,
         "g":  13.8,
         "l":  0.6,
-        "f":  0
+        "f":  0,
+        "ags":  0.4,
+        "sel":  0.15
     },
     {
         "id":  "fc-boule-pain-tradition",
@@ -814,7 +847,9 @@ const SEED = {
         "p":  4,
         "g":  27.3,
         "l":  0.5,
-        "f":  1.7
+        "f":  1.7,
+        "ags":  0.1,
+        "sel":  0.6
     },
     {
         "id":  "foodcheri-plat-dessert",
@@ -825,7 +860,9 @@ const SEED = {
         "p":  33,
         "g":  95,
         "l":  32,
-        "f":  9
+        "f":  9,
+        "ags":  12,
+        "sel":  2.5
     },
     {
         "id":  "kebab-frites",
@@ -835,7 +872,9 @@ const SEED = {
         "p":  45,
         "g":  115,
         "l":  55,
-        "f":  7
+        "f":  7,
+        "ags":  18,
+        "sel":  4.5
     },
     {
         "id":  "kebab-seul",
@@ -845,7 +884,9 @@ const SEED = {
         "p":  38,
         "g":  65,
         "l":  32,
-        "f":  4
+        "f":  4,
+        "ags":  11,
+        "sel":  3.5
     },
     {
         "id":  "burger-frites",
@@ -855,7 +896,9 @@ const SEED = {
         "p":  45,
         "g":  100,
         "l":  60,
-        "f":  6
+        "f":  6,
+        "ags":  22,
+        "sel":  4
     },
     {
         "id":  "pizza",
@@ -865,7 +908,9 @@ const SEED = {
         "p":  42,
         "g":  120,
         "l":  38,
-        "f":  6
+        "f":  6,
+        "ags":  16,
+        "sel":  5.5
     },
     {
         "id":  "sushis",
@@ -875,7 +920,9 @@ const SEED = {
         "p":  28,
         "g":  100,
         "l":  14,
-        "f":  3
+        "f":  3,
+        "ags":  3,
+        "sel":  4.5
     },
     {
         "id":  "poke-bowl",
@@ -885,7 +932,9 @@ const SEED = {
         "p":  30,
         "g":  80,
         "l":  20,
-        "f":  6
+        "f":  6,
+        "ags":  3.5,
+        "sel":  3
     },
     {
         "id":  "bo-bun",
@@ -895,7 +944,9 @@ const SEED = {
         "p":  30,
         "g":  75,
         "l":  22,
-        "f":  5
+        "f":  5,
+        "ags":  4,
+        "sel":  3.5
     },
     {
         "id":  "salade-resto",
@@ -905,7 +956,9 @@ const SEED = {
         "p":  25,
         "g":  35,
         "l":  32,
-        "f":  6
+        "f":  6,
+        "ags":  9,
+        "sel":  2.5
     },
     {
         "id":  "sandwich",
@@ -915,7 +968,9 @@ const SEED = {
         "p":  20,
         "g":  50,
         "l":  18,
-        "f":  3
+        "f":  3,
+        "ags":  9,
+        "sel":  2.8
     },
     {
         "id":  "resto-plat",
@@ -925,7 +980,9 @@ const SEED = {
         "p":  38,
         "g":  70,
         "l":  38,
-        "f":  5
+        "f":  5,
+        "ags":  14,
+        "sel":  3
     },
     {
         "id":  "resto-complet",
@@ -935,7 +992,9 @@ const SEED = {
         "p":  45,
         "g":  115,
         "l":  58,
-        "f":  7
+        "f":  7,
+        "ags":  22,
+        "sel":  4
     },
     {
         "id":  "pdj-skyr-avoine",
@@ -945,7 +1004,9 @@ const SEED = {
         "p":  25,
         "g":  55,
         "l":  6,
-        "f":  7
+        "f":  7,
+        "ags":  1.2,
+        "sel":  0.3
     },
     {
         "id":  "pdj-oeufs-pain",
@@ -955,7 +1016,9 @@ const SEED = {
         "p":  20,
         "g":  35,
         "l":  12,
-        "f":  5
+        "f":  5,
+        "ags":  3.5,
+        "sel":  1.2
     },
     {
         "id":  "pdj-tartines",
@@ -965,7 +1028,9 @@ const SEED = {
         "p":  8,
         "g":  55,
         "l":  11,
-        "f":  3
+        "f":  3,
+        "ags":  6.5,
+        "sel":  0.8
     },
     {
         "id":  "viennoiserie",
@@ -975,7 +1040,9 @@ const SEED = {
         "p":  5,
         "g":  30,
         "l":  16,
-        "f":  1.5
+        "f":  1.5,
+        "ags":  9.5,
+        "sel":  0.6
     },
     {
         "id":  "shaker-whey",
@@ -985,7 +1052,9 @@ const SEED = {
         "p":  24,
         "g":  3,
         "l":  1.5,
-        "f":  0
+        "f":  0,
+        "ags":  0.8,
+        "sel":  0.3
     },
     {
         "id":  "fruit",
@@ -995,7 +1064,9 @@ const SEED = {
         "p":  1,
         "g":  18,
         "l":  0.3,
-        "f":  2.5
+        "f":  2.5,
+        "ags":  0.05,
+        "sel":  0
     },
     {
         "id":  "amandes",
@@ -1005,7 +1076,9 @@ const SEED = {
         "p":  6,
         "g":  3,
         "l":  15,
-        "f":  3.5
+        "f":  3.5,
+        "ags":  1.1,
+        "sel":  0
     },
     {
         "id":  "skyr-pot",
@@ -1015,7 +1088,9 @@ const SEED = {
         "p":  15,
         "g":  6,
         "l":  0.3,
-        "f":  0
+        "f":  0,
+        "ags":  0.2,
+        "sel":  0.15
     },
     {
         "id":  "barre-choco",
@@ -1025,7 +1100,9 @@ const SEED = {
         "p":  3,
         "g":  32,
         "l":  12,
-        "f":  1
+        "f":  1,
+        "ags":  6.5,
+        "sel":  0.3
     },
     {
         "id":  "biere",
@@ -1035,7 +1112,9 @@ const SEED = {
         "p":  2,
         "g":  17,
         "l":  0,
-        "f":  0
+        "f":  0,
+        "ags":  0,
+        "sel":  0.02
     },
     {
         "id":  "vin",
@@ -1045,7 +1124,9 @@ const SEED = {
         "p":  0,
         "g":  3,
         "l":  0,
-        "f":  0
+        "f":  0,
+        "ags":  0,
+        "sel":  0.01
     },
     {
         "id":  "cocktail",
@@ -1055,7 +1136,9 @@ const SEED = {
         "p":  0,
         "g":  25,
         "l":  0,
-        "f":  0
+        "f":  0,
+        "ags":  0,
+        "sel":  0.02
     },
     {
         "id":  "soda",
@@ -1065,7 +1148,9 @@ const SEED = {
         "p":  0,
         "g":  35,
         "l":  0,
-        "f":  0
+        "f":  0,
+        "ags":  0,
+        "sel":  0.03
     },
     {
         "id":  "perso-pain-complet-miel-banane",
@@ -1075,7 +1160,21 @@ const SEED = {
         "p":  8.2,
         "g":  73.9,
         "l":  3.5,
-        "f":  7.4
+        "f":  7.4,
+        "ags":  0.6,
+        "sel":  0.95
+    },
+    {
+        "id":  "perso-spaetzle-poulet",
+        "nom":  "Spaetzle + poulet (1 portion)",
+        "cat":  "Perso",
+        "kcal":  522,
+        "p":  43.2,
+        "g":  48,
+        "l":  16.5,
+        "f":  2,
+        "ags":  4.5,
+        "sel":  1.9
     }
 ],
   programme: {
@@ -1283,22 +1382,33 @@ function cibles(profil, poids, date) {
     p: Math.round(poids * profil.proteinesParKg), f: profil.fibresCible,
   };
 }
+// Acides gras saturés et sel (g) : ajoutés après coup, absents de certains anciens repas ; « manque » = repas sans ces valeurs
+const NUTRIS = ['ags', 'sel'];
 function totaux(items) {
-  const t = { kcal: 0, p: 0, g: 0, l: 0, f: 0 };
-  for (const it of items) for (const k of MACROS) t[k] += Number(it[k]) || 0;
-  for (const k of MACROS) t[k] = k === 'kcal' ? Math.round(t[k]) : r1(t[k]);
+  const t = { kcal: 0, p: 0, g: 0, l: 0, f: 0, ags: 0, sel: 0, manque: 0 };
+  for (const it of items) {
+    for (const k of MACROS) t[k] += Number(it[k]) || 0;
+    if (it.ags == null || it.sel == null) t.manque++;
+    for (const k of NUTRIS) t[k] += Number(it[k]) || 0;
+  }
+  for (const k of [...MACROS, ...NUTRIS]) t[k] = k === 'kcal' ? Math.round(t[k]) : k === 'sel' ? Math.round(t[k] * 100) / 100 : r1(t[k]);
   return t;
+}
+// Repères du jour hors protéines et fibres : lipides 35 % des kcal, glucides = le reste, AGS ≤ 10 % des kcal (OMS), sel ≤ 5 g (OMS)
+function reperesNutri(c) {
+  const l = Math.round(c.kcal * 0.35 / 9);
+  return { l, g: Math.max(0, Math.round((c.kcal - 4 * c.p - 9 * l) / 4)), ags: Math.round(c.kcal * 0.10 / 9), sel: 5 };
 }
 // Macros d'une recette à partir des grammes de chaque aliment (valeurs pour 100 g)
 function macrosRecette(recette, aliments) {
-  const t = { kcal: 0, p: 0, g: 0, l: 0, f: 0 }, manquants = [];
+  const t = { kcal: 0, p: 0, g: 0, l: 0, f: 0, ags: 0, sel: 0 }, manquants = [];
   for (const ing of recette.ingredients) {
     const a = aliments[ing.a];
     if (!a) { manquants.push(ing.a); continue; }
-    for (const k of MACROS) t[k] += (a[k] || 0) * ing.g / 100;
+    for (const k of [...MACROS, ...NUTRIS]) t[k] += (a[k] || 0) * ing.g / 100;
   }
   const parPortion = {};
-  for (const k of MACROS) parPortion[k] = k === 'kcal' ? Math.round(t[k] / recette.portions) : r1(t[k] / recette.portions);
+  for (const k of [...MACROS, ...NUTRIS]) parPortion[k] = k === 'kcal' ? Math.round(t[k] / recette.portions) : k === 'sel' ? Math.round(t[k] / recette.portions * 100) / 100 : r1(t[k] / recette.portions);
   return { total: totaux([t]), parPortion, manquants };
 }
 // Moment du repas d'après l'heure
@@ -2417,14 +2527,23 @@ const Saisie = {
         const rubriques = Object.entries(parCat).filter(([, ps]) => ps.length);
         if (fc && !q && !rubriques.length) h = '<p class="muted">Aucun plat FoodChéri : envoie un screen du plat à Claude, il l’ajoute ici.</p>';
         else h = rubriques.map(([c, ps]) => `<h3>${esc(libelleMoment(c))}</h3>` + ps.map(p =>
-          `<button type="button" class="pick ${st.sel && st.sel.ref === p.id ? 'on' : ''}" data-pick="plat:${esc(p.id)}"><span>${esc(p.nom)}</span><span class="muted">${fmtKcal(p.kcal)} · ${fmtNum(p.p, 0)} g P</span></button>`).join('')).join('');
+          `<button type="button" class="pick ${st.sel && st.sel.ref === p.id ? 'on' : ''}" data-pick="plat:${esc(p.id)}"><span>${esc(p.nom)}<br><span class="muted">P ${fmtNum(p.p, 0)} · G ${fmtNum(p.g, 0)} · L ${fmtNum(p.l, 0)}</span></span><b class="pick-k">${fmtKcal(p.kcal)}</b></button>`).join('')).join('');
       } else {
         const m = menuSemaine(), ids = m ? m.recettes.map(r => r.id) : [];
         const rs = Store.data.recettes.filter(r => !q || r.nom.toLowerCase().includes(q)).sort((a, b) => (ids.includes(b.id) - ids.includes(a.id)) || a.nom.localeCompare(b.nom));
         h = rs.map(r => { const pp = macrosRecette(r, aliments).parPortion;
-          return `<button type="button" class="pick ${st.sel && st.sel.ref === r.id ? 'on' : ''}" data-pick="recette:${esc(r.id)}"><span>${ids.includes(r.id) ? '⭐ ' : ''}${esc(r.nom)}</span><span class="muted">${fmtKcal(pp.kcal)} · ${fmtNum(pp.p, 0)} g P / portion</span></button>`; }).join('');
+          return `<button type="button" class="pick ${st.sel && st.sel.ref === r.id ? 'on' : ''}" data-pick="recette:${esc(r.id)}"><span>${ids.includes(r.id) ? '⭐ ' : ''}${esc(r.nom)}<br><span class="muted">par portion · P ${fmtNum(pp.p, 0)} · G ${fmtNum(pp.g, 0)} · L ${fmtNum(pp.l, 0)}</span></span><b class="pick-k">${fmtKcal(pp.kcal)}</b></button>`; }).join('');
       }
       $('.pick-list', body).innerHTML = h || '<p class="muted">Aucun résultat.</p>';
+    };
+    // Détail du choix × quantité : tous les nutriments avant d'ajouter
+    const apercu = body => {
+      const el = $('[data-apercu]', body);
+      if (!el) return;
+      if (!st.sel) { el.innerHTML = ''; return; }
+      const m = st.sel.m, k = st.qte, v = x => (x == null ? null : x * k);
+      const cases = [['kcal', fmtNum(v(m.kcal), 0)], ['Prot.', fmtNum(v(m.p), 0)], ['Gluc.', fmtNum(v(m.g), 0)], ['Lip.', fmtNum(v(m.l), 0)], ['Fibres', fmtNum(v(m.f), 0)], ['Gras sat.', fmtNum(v(m.ags), 1)], ['Sel', fmtNum(v(m.sel), 1)]];
+      el.innerHTML = `<p class="small apercu-t"><b>${esc(st.sel.nom)}</b>${k !== 1 ? ` × ${fmtNum(k)}` : ''}</p><div class="macros macros-7">${cases.map(([l, x]) => `<div><b>${x}</b><span>${l}${l === 'kcal' ? '' : ' (g)'}</span></div>`).join('')}</div>`;
     };
     const rendre = body => {
       body.innerHTML = `
@@ -2439,16 +2558,19 @@ const Saisie = {
             <label>Gluc. (g)<input name="g" type="text" inputmode="decimal"></label>
             <label>Lip. (g)<input name="l" type="text" inputmode="decimal"></label>
             <label>Fibres (g)<input name="f" type="text" inputmode="decimal"></label></div>
+          <div class="row2">
+            <label>Gras saturés (g)<input name="ags" type="text" inputmode="decimal" placeholder="facultatif"></label>
+            <label>Sel (g)<input name="sel" type="text" inputmode="decimal" placeholder="facultatif"></label></div>
           <label class="check-line"><input type="checkbox" name="garder"> Garder comme plat type</label>
           <p class="muted small">Photo ou étiquette ? Envoie-la à Claude : il estime et l'enregistre.</p>`
         : `<input type="search" name="q" placeholder="Rechercher…" value="${esc(st.q)}"><div class="pick-list"></div>
-          <p class="muted small">Quantité ${st.onglet === 'batch' ? '(portions)' : ''}</p>${chips('qte', QTES, st.qte)}`}
+          <p class="muted small">Quantité ${st.onglet === 'batch' ? '(portions)' : ''}</p>${chips('qte', QTES, st.qte)}<div data-apercu></div>`}
         <div class="actions"><button type="button" class="btn primary" data-a="ok">Ajouter</button></div>`;
       brancherChips(body, (nom, v) => {
         if (nom === 'onglet') { st.onglet = v; st.sel = null; rendre(body); }
-        if (nom === 'qte') st.qte = Number(v);
+        if (nom === 'qte') { st.qte = Number(v); apercu(body); }
       });
-      if (st.onglet !== 'libre') liste(body);
+      if (st.onglet !== 'libre') { liste(body); apercu(body); }
     };
 
     Sheet.ouvrir('Ajouter un repas', '', body => {
@@ -2465,6 +2587,7 @@ const Saisie = {
           if (type === 'plat') { const x = Store.data.plats.find(y => y.id === ref); st.sel = { source: 'plat', ref, nom: x.nom, m: x }; }
           else { const r = Store.data.recettes.find(y => y.id === ref); st.sel = { source: 'recette', ref, nom: r.nom, m: macrosRecette(r, aliments).parPortion }; }
           $$('.pick', body).forEach(x => x.classList.toggle('on', x === p));
+          apercu(body);
           return;
         }
         if (!e.target.closest('[data-a="ok"]')) return;
@@ -2475,11 +2598,16 @@ const Saisie = {
           const nom = $('[name="nom"]', body).value.trim();
           if (!nom || v('kcal') == null) return toast('Nom et kcal nécessaires');
           item = { nom, kcal: Math.round(v('kcal')), p: v('p') ?? 0, g: v('g') ?? 0, l: v('l') ?? 0, f: v('f') ?? 0, source: 'libre', qte: 1 };
-          if ($('[name="garder"]', body).checked) Store.upsert('plats', { id: 'perso-' + uid(), nom, cat: 'Perso', kcal: item.kcal, p: item.p, g: item.g, l: item.l, f: item.f });
+          // Gras saturés et sel facultatifs : absents = non renseignés (pas 0)
+          if (v('ags') != null) item.ags = r1(v('ags'));
+          if (v('sel') != null) item.sel = Math.round(v('sel') * 100) / 100;
+          if ($('[name="garder"]', body).checked) Store.upsert('plats', { id: 'perso-' + uid(), nom, cat: 'Perso', kcal: item.kcal, p: item.p, g: item.g, l: item.l, f: item.f, ...(item.ags != null && { ags: item.ags }), ...(item.sel != null && { sel: item.sel }) });
         } else {
           if (!st.sel) return toast('Choisis un plat');
           const k = st.qte, m = st.sel.m;
           item = { nom: st.sel.nom, source: st.sel.source, ref: st.sel.ref, qte: k, kcal: Math.round(m.kcal * k), p: r1(m.p * k), g: r1(m.g * k), l: r1(m.l * k), f: r1((m.f || 0) * k) };
+          if (m.ags != null) item.ags = r1(m.ags * k);
+          if (m.sel != null) item.sel = Math.round(m.sel * k * 100) / 100;
         }
         Store.upsert('repas', { id: uid(), date: st.date, moment: st.moment, ...item, cree: Date.now() });
         Sheet.fermer();
@@ -2571,7 +2699,15 @@ function poidsActuel() {
   return m.length ? m[m.length - 1].moyenne : Store.data.profil.poidsDepart;
 }
 const carte = (titre, corps, extra = '') => `<section class="card ${extra}">${titre ? `<h2>${titre}</h2>` : ''}${corps}</section>`;
-const ligneRepas = (r, avecMoment) => `<div class="li"><span><b>${esc(r.nom)}</b>${r.qte && r.qte !== 1 ? ` <span class="muted">×${fmtNum(r.qte)}</span>` : ''}<br><span class="muted small">${avecMoment !== false ? `${esc(libelleMoment(r.moment))} · ` : ''}${fmtNum(r.p, 0)} g P · ${fmtNum(r.f, 0)} g fibres</span></span>
+// Tous les nutriments d'un total (jour ou moyenne) : cibles (protéines, fibres), repères (glucides, lipides), plafonds (AGS, sel)
+function barresNutri(t, c) {
+  const rp = reperesNutri(c);
+  const lignes = [['Protéines', 'p', c.p, ''], ['Glucides', 'g', rp.g, ''], ['Lipides', 'l', rp.l, ''], ['Fibres', 'f', c.f, ''], ['Gras sat.', 'ags', rp.ags, '≤ '], ['Sel', 'sel', rp.sel, '≤ ']];
+  return `<div class="nutri">${lignes.map(([nom, k, cible, pre]) => `<div><span class="small">${nom} <b>${fmtNum(t[k], k === 'sel' || k === 'ags' ? 1 : 0)}</b> / ${pre}${cible} g</span>${barre(t[k], cible, { classe: k })}</div>`).join('')}</div>
+    ${t.manque ? `<p class="muted small">Gras saturés et sel : ${t.manque} repas sans ces valeurs (comptés à 0).</p>` : ''}`;
+}
+const resumeNutri = m => `P ${fmtNum(m.p, 0)} · G ${fmtNum(m.g, 0)} · L ${fmtNum(m.l, 0)} · F ${fmtNum(m.f, 0)}${m.sel != null ? ` · sel ${fmtNum(m.sel, 1)}` : ''}`;
+const ligneRepas = (r, avecMoment) => `<div class="li"><span><b>${esc(r.nom)}</b>${r.qte && r.qte !== 1 ? ` <span class="muted">×${fmtNum(r.qte)}</span>` : ''}<br><span class="muted small">${avecMoment !== false ? `${esc(libelleMoment(r.moment))} · ` : ''}${resumeNutri(r)}</span></span>
   <span class="li-end">${fmtKcal(r.kcal)}<button type="button" class="icon-btn sm" data-del-repas="${esc(r.id)}" aria-label="Supprimer ${esc(r.nom)}">✕</button></span></div>`;
 const texteMontre = m => [m.kcal != null && `${fmtNum(m.kcal, 0)} kcal`, m.fcMoy != null && `FC moy ${m.fcMoy}`, m.fcMax != null && `FC max ${m.fcMax}`, m.charge != null && `charge montre ${m.charge}`].filter(Boolean).join(' · ');
 // Graphe d'un exercice : charge max (courbe, axe gauche) et reps totales (barres, axe droit) ; minutes pour le cardio
@@ -2628,9 +2764,7 @@ const Pages = {
           <div class="kpi"><b>${fmtNum(t.kcal, 0)}</b><span class="muted"> / ${fmtNum(c.kcal, 0)} kcal</span></div>
           ${barre(t.kcal, c.kcal)}
           <p class="small ${reste < 0 ? 'warn' : 'muted'}">${reste >= 0 ? `Il reste ${fmtKcal(reste)}` : `${fmtKcal(-reste)} au-dessus de la cible`}</p>
-          <div class="mini-bars">
-            <div><span class="small">Protéines <b>${fmtNum(t.p, 0)}</b> / ${c.p} g</span>${barre(t.p, c.p, { classe: 'p' })}</div>
-            <div><span class="small">Fibres <b>${fmtNum(t.f, 0)}</b> / ${c.f} g</span>${barre(t.f, c.f, { classe: 'f' })}</div></div>
+          ${barresNutri(t, c)}
           <div class="list">${rj.map(ligneRepas).join('') || '<p class="muted small">Rien de saisi aujourd’hui.</p>'}</div>`, 'hero')}
         ${carte('Prochaine séance muscu', brouillon
           ? `<p>Séance commencée, pas encore enregistrée : <b>${esc(sportDe(brouillon.sport).nom)}</b> du ${fmtCourt(brouillon.date)}</p><button type="button" class="btn primary" data-a="seance">Reprendre</button>`
@@ -2925,34 +3059,48 @@ const Pages = {
 
   /* ---------- Nutrition et poids ---------- */
   nutrition: {
-    titre: 'Nutrition',
+    titre: 'Nutrition', semaine: null,
     html() {
       const D = today(), d = Store.data, c = cibles(d.profil, poidsActuel(), D);
-      const jours = Array.from({ length: 7 }, (_, i) => addDays(D, -i));
+      // Semaine affichée (moyenne + journal) : la semaine en cours par défaut, les précédentes avec ‹ ›
+      const lundiAuj = debutSemaine(D);
+      if (!this.semaine || this.semaine > lundiAuj) this.semaine = lundiAuj;
+      const lundi = this.semaine, enCours = lundi === lundiAuj, dimanche = addDays(lundi, 6);
+      const jours = Array.from({ length: 7 }, (_, i) => addDays(lundi, 6 - i)).filter(j => j <= D);   // du plus récent au plus ancien
       const renseignes = jours.filter(j => d.repas.some(r => r.date === j));
-      const moy = k => renseignes.length ? renseignes.reduce((a, j) => a + totaux(d.repas.filter(r => r.date === j))[k], 0) / renseignes.length : null;
+      const tSem = totaux(d.repas.filter(r => renseignes.includes(r.date)));
+      const moyenne = Object.fromEntries(Object.entries(tSem).map(([k, v]) => [k, k === 'manque' || !renseignes.length ? v : v / renseignes.length]));
+      const titreSem = enCours ? 'Cette semaine' : `Semaine du ${fmtCourt(lundi)} au ${fmtCourt(dimanche)}`;
       return `<header class="page-head"><h1>Poids et nutrition</h1><p class="muted">Cible ${fmtKcal(c.kcal)} · ${c.p} g de protéines · ${c.f} g de fibres</p></header>
         <div class="quick"><button type="button" data-a="repas"><span>🍽️</span>Repas</button><button type="button" data-a="poids"><span>⚖️</span>Poids</button></div>
         <div class="grid">
         ${carte('Poids', d.poids.length ? `<div class="chart"><canvas id="ch-poids"></canvas></div>${peseesComparables(d.poids).length < d.poids.length
           ? `<p class="muted small">Seules les pesées « ${peseesComparables(d.poids)[0].conditions === 'jeun' ? 'à jeun, maison' : 'salle, habillé'} » sont affichées (mêmes conditions que la dernière) : les deux types ne se comparent pas.</p>` : ''}` : '<p class="muted">Aucune pesée.</p>', 'wide')}
-        ${carte('Moyenne des 7 derniers jours', renseignes.length ? `
-          <p class="muted small">${renseignes.length} jour${renseignes.length > 1 ? 's' : ''} renseigné${renseignes.length > 1 ? 's' : ''} sur 7 (les jours vides ne comptent pas)</p>
-          <div class="mini-bars">
-            <div><span class="small">Calories <b>${fmtNum(moy('kcal'), 0)}</b> / ${c.kcal}</span>${barre(moy('kcal'), c.kcal)}</div>
-            <div><span class="small">Protéines <b>${fmtNum(moy('p'), 0)}</b> / ${c.p} g</span>${barre(moy('p'), c.p, { classe: 'p' })}</div>
-            <div><span class="small">Fibres <b>${fmtNum(moy('f'), 0)}</b> / ${c.f} g</span>${barre(moy('f'), c.f, { classe: 'f' })}</div>
-            <div><span class="small">Glucides <b>${fmtNum(moy('g'), 0)}</b> g · Lipides <b>${fmtNum(moy('l'), 0)}</b> g</span></div></div>` : '<p class="muted">Aucun repas saisi cette semaine.</p>')}
+        <div class="wide sem-nav">
+          <button type="button" class="icon-btn" data-sem="-1" aria-label="Semaine précédente">‹</button>
+          <div><b>${titreSem}</b><br><span class="muted small">${enCours ? `du ${fmtCourt(lundi)} à aujourd’hui` : `${renseignes.length} jour${renseignes.length > 1 ? 's' : ''} renseigné${renseignes.length > 1 ? 's' : ''}`}</span></div>
+          <button type="button" class="icon-btn" data-sem="1" aria-label="Semaine suivante" ${enCours ? 'disabled' : ''}>›</button>
+          ${enCours ? '' : '<button type="button" class="chip" data-sem="0">Cette semaine</button>'}</div>
+        ${carte('Moyenne par jour', renseignes.length ? `
+          <p class="muted small">${renseignes.length} jour${renseignes.length > 1 ? 's' : ''} renseigné${renseignes.length > 1 ? 's' : ''} sur ${jours.length} (les jours vides ne comptent pas)</p>
+          <div class="kpi"><b>${fmtNum(moyenne.kcal, 0)}</b><span class="muted"> / ${fmtNum(c.kcal, 0)} kcal</span></div>
+          ${barre(moyenne.kcal, c.kcal)}
+          ${barresNutri(moyenne, c)}` : `<p class="muted">Aucun repas saisi ${enCours ? 'cette semaine' : 'cette semaine-là'}.</p>`)}
         ${carte('Calories sur 14 jours', '<div class="chart"><canvas id="ch-kcal"></canvas></div>')}
         ${carte('Journal', jours.map(j => { const rs = d.repas.filter(r => r.date === j).sort(parDate); if (!rs.length) return '';
-          return `<h3>${fmtDate(j, { weekday: 'long', day: 'numeric', month: 'short' })} <span class="muted small">${fmtKcal(totaux(rs).kcal)}</span></h3>
-            <div class="journal">${repasParMoment(rs).map(g => `<div class="jr-moment"><p class="jr-titre"><b>${esc(libelleMoment(g.moment))}</b><span class="muted small">${fmtKcal(totaux(g.repas).kcal)} · ${fmtNum(totaux(g.repas).p, 0)} g P</span></p>
-              <div class="list">${g.repas.map(r => ligneRepas(r, false)).join('')}</div></div>`).join('')}</div>`; }).join('') || '<p class="muted small">Rien sur 7 jours.</p>', 'wide')}
+          const tj = totaux(rs);
+          return `<h3 class="jr-jour">${fmtDate(j, { weekday: 'long', day: 'numeric', month: 'short' })} <span class="muted small">${fmtKcal(tj.kcal)} · ${resumeNutri(tj)}</span></h3>
+            <div class="journal">${repasParMoment(rs).map(g => `<div class="jr-moment"><p class="jr-titre"><b>${esc(libelleMoment(g.moment))}</b><span class="muted small">${fmtKcal(totaux(g.repas).kcal)}</span></p>
+              <div class="list">${g.repas.map(r => ligneRepas(r, false)).join('')}</div></div>`).join('')}</div>`; }).join('') || `<p class="muted small">Rien ${enCours ? 'cette semaine' : 'cette semaine-là'}.</p>`, 'wide')}
         </div>`;
     },
     apres(root) {
       const D = today(), d = Store.data, c = cibles(d.profil, poidsActuel(), D);
-      root.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (b && Saisie[b.dataset.a]) Saisie[b.dataset.a](); });
+      root.addEventListener('click', e => {
+        const s = e.target.closest('[data-sem]');
+        if (s) { const n = Number(s.dataset.sem); this.semaine = n ? addDays(this.semaine, 7 * n) : null; App.rendre(); return; }
+        const b = e.target.closest('[data-a]'); if (b && Saisie[b.dataset.a]) Saisie[b.dataset.a]();
+      });
       brancherListes(root);
       const mg = moyenneGlissante(peseesComparables(d.poids));
       if (mg.length) {
